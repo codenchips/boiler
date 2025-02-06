@@ -8,7 +8,7 @@ app.use(express.static('app'));
 
 // Route for index page
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'app', 'gindex.html'));
+    res.sendFile(path.join(__dirname, 'app', 'app.html'));
 });
 
 // Start server

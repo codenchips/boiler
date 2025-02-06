@@ -1,32 +1,54 @@
 module.exports = function(grunt) {
-  // Load the plugins
   grunt.loadNpmTasks('grunt-bake');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-concurrent');
   grunt.loadNpmTasks('grunt-nodemon');
+  grunt.loadNpmTasks('grunt-browserify');
 
   grunt.initConfig({
-    bake: {
-      build: {
+    browserify: {
+      dist: {
         files: {
-          "app/gindex.html": "app/gbase.html"
+          'app/js/bundle.js': ['app/js/app.js']
         }
-      }
-    },
-    watch: {
-      bake: {
-        files: ['app/gbase.html', 'app/views/*.html'],
-        tasks: ['bake']
       }
     },
     nodemon: {
       dev: {
         script: 'server.js',
         options: {
+          watch: ['server.js'],
+          ignore: ['app/**/*', 'node_modules/**/*'],
           nodeArgs: ['--inspect'],
           env: {
             PORT: '3000'
           }
+        }
+      }
+    },
+    watch: {
+      options: {
+        spawn: false
+      },
+      js: {
+        files: ['app/js/**/*.js', '!app/js/bundle.js'],
+        tasks: ['browserify']
+      },
+      bake: {
+        files: ['app/main.html', 'app/views/*.html'],
+        tasks: ['bake']
+      }
+    },
+    bake: {
+      build: {
+        options: {
+          preprocessTemplate: true,
+          preservePipes: true,
+          process: false,
+          content: null
+        },       
+        files: {
+          "app/app.html": "app/main.html"
         }
       }
     },
@@ -40,6 +62,5 @@ module.exports = function(grunt) {
     }
   });
 
-  // Default task
-  grunt.registerTask('default', ['concurrent:dev']);
+  grunt.registerTask('default', ['browserify', 'bake', 'concurrent:dev']);
 };
