@@ -2,8 +2,7 @@
 $(document).ready(function() {
     const Mustache = require('mustache');
     
-    function renderHello() {
-        console.log('render hello 5');
+    function renderHello() {        
         const template = $('#template');       
         const templateContent = template.html();
         const data = { name: 'Dean' };
