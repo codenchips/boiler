@@ -10,22 +10,22 @@ $(document).ready(function() {
     // Router function
     function router(path) {
         switch(path) {
-            case 'foo':
-                // Load foo template
-                $.get('views/foo.html', function(template) {
+            case 'tables':
+                // Load Tables template
+                $.get('views/tables.html', function(template) {
                     const rendered = Mustache.render(template, { 
-                        title: 'Foo Page',
-                        content: 'This is the foo page content'
+                        title: 'Tables Page',
+                        content: 'This is the tables page content'
                     });
                     $('#page').html(rendered);
                 });
                 break;
-            case 'bar':
-                // Load bar template
-                $.get('views/bar.html', function(template) {
+            case 'schedule':
+                // Load Schedule template
+                $.get('views/schedule.html', function(template) {
                     const rendered = Mustache.render(template, { 
-                        title: 'Bar Page',
-                        content: 'This is the bar page content'
+                        title: 'Schedule Page',
+                        content: 'This is the schedule page content'
                     });
                     $('#page').html(rendered);
                 });
