@@ -1,15 +1,64 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 $(document).ready(function() {
     const Mustache = require('mustache');
+
+    // Get current path
+    const pathParts = window.location.pathname
+        .split('/')
+        .filter(part => part.length > 0);
     
-    function renderHello() {        
-        const template = $('#template');       
-        const templateContent = template.html();
-        const data = { name: 'Dean' };
-        const rendered = Mustache.render(templateContent, data);       
-        $('#target').html(rendered);
+    // Router function
+    function router(path) {
+        switch(path) {
+            case 'foo':
+                // Load foo template
+                $.get('views/foo.html', function(template) {
+                    const rendered = Mustache.render(template, { 
+                        title: 'Foo Page',
+                        content: 'This is the foo page content'
+                    });
+                    $('#page').html(rendered);
+                });
+                break;
+            case 'bar':
+                // Load bar template
+                $.get('views/bar.html', function(template) {
+                    const rendered = Mustache.render(template, { 
+                        title: 'Bar Page',
+                        content: 'This is the bar page content'
+                    });
+                    $('#page').html(rendered);
+                });
+                break;
+            default:
+                // Load home template
+                $.get('views/home.html', function(template) {                                    
+                    const rendered = Mustache.render(template, { 
+                        title: 'Home Page',
+                        content: 'Welcome to the home page'
+                    });
+                    $('#page').html(rendered);
+                    sstEvents('home');
+                
+                });
+        }
     }
-    renderHello();
+    router(pathParts[0] || 'home');
+    
+    function sstEvents(template_name) {
+        console.log('bind events for template', template_name);
+        if (template_name == 'home') {            
+            $('.clickme').click(function() {
+                alert('Hello from '+template_name);
+            });
+
+
+        }
+
+    }
+
+
+
 });
 },{"mustache":2}],2:[function(require,module,exports){
 (function (global, factory) {
