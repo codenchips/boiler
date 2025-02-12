@@ -1,75 +1,82 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 $(document).ready(function() {
     const Mustache = require('mustache');
-    const { openDB } =require('idb');
+    
+    const db = require('./db'); // Import the db module
+    const router = require('./router'); // Import the router module
 
-    // Custom function to generate UUIDs
-    function generateUUID() {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-            const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-            return v.toString(16);
-        });
-    }    
+    // Use the generateUUID function from the db module
+    let uuid = db.generateUUID();
+    console.log("uuid: ", uuid);
 
     // Get current path
     const pathParts = window.location.pathname
         .split('/')
         .filter(part => part.length > 0);
     
-    // Router function
-    function router(path) {
-        switch(path) {
-            case 'tables':
-                // Load Tables template
-                $.get('views/tables.html', function(template) {
-                    const rendered = Mustache.render(template, { 
-                        title: 'Tables Page',
-                        content: 'This is the tables page content'
-                    });
-                    $('#page').html(rendered);
-                });
-                break;
-            case 'schedule':
-                // Load Schedule template
-                $.get('views/schedule.html', function(template) {
-                    const rendered = Mustache.render(template, { 
-                        title: 'Schedule Page',
-                        content: 'This is the schedule page content'
-                    });
-                    $('#page').html(rendered);
-                });
-                break;
-            default:
-                // Load home template
-                $.get('views/home.html', function(template) {                                    
-                    const rendered = Mustache.render(template, { 
-                        title: 'Home Page',
-                        content: 'Welcome to the home page'
-                    });
-                    $('#page').html(rendered);
-                    sstEvents('home');
-                
-                });
-        }
-    }
-    router(pathParts[0] || 'home');
-    
-    function sstEvents(template_name) {
-        console.log('bind events for template', template_name);
-        if (template_name == 'home') {            
-            $('.clickme').click(function() {
-                alert('Hello from '+template_name);
-            });
-
-
-        }
-
-    }
-
-
+    // Use the router function from the router module
+    router(pathParts[0] || 'home');   
 
 });
-},{"idb":2,"mustache":3}],2:[function(require,module,exports){
+},{"./db":2,"./router":3,"mustache":5}],2:[function(require,module,exports){
+const { openDB } = require('idb');
+
+// Custom function to generate UUIDs
+function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
+
+// Export the functions
+module.exports = {
+    generateUUID,
+    // Add other database-related functions here
+};
+
+},{"idb":4}],3:[function(require,module,exports){
+const Mustache = require('mustache');
+
+
+function router(path) {
+    switch(path) {
+        case 'tables':
+            // Load Tables template
+            $.get('views/tables.html', function(template) {
+                const rendered = Mustache.render(template, { 
+                    title: 'Tables Page',
+                    content: 'This is the tables page content'
+                });
+                $('#page').html(rendered);
+            });
+            break;
+        case 'schedule':
+            // Load Schedule template
+            $.get('views/schedule.html', function(template) {
+                const rendered = Mustache.render(template, { 
+                    title: 'Schedule Page',
+                    content: 'This is the schedule page content'
+                });
+                $('#page').html(rendered);
+            });
+            break;
+        default:
+            // Load home template
+            $.get('views/home.html', function(template) {                                    
+                const rendered = Mustache.render(template, { 
+                    title: 'Home Page',
+                    content: 'Welcome to the home page'
+                });
+                $('#page').html(rendered);                
+            });
+    }
+}
+
+module.exports = router;
+
+},{"mustache":5}],4:[function(require,module,exports){
 'use strict';
 
 const instanceOfAny = (object, constructors) => constructors.some((c) => object instanceof c);
@@ -381,7 +388,7 @@ exports.openDB = openDB;
 exports.unwrap = unwrap;
 exports.wrap = wrap;
 
-},{}],3:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
