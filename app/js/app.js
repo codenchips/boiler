@@ -8,6 +8,13 @@ $(document).ready(function() {
     let uuid = db.generateUUID();
     console.log("uuid: ", uuid);
 
+    db.initDB();
+
+    db.fetchAndStoreProducts(); 
+    console.log("Products fetched and stored in IndexedDB");
+
+
+
     // Get current path
     const pathParts = window.location.pathname
         .split('/')
@@ -15,5 +22,4 @@ $(document).ready(function() {
     
     // Use the router function from the router module
     router(pathParts[0] || 'home');   
-
 });

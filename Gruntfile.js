@@ -18,7 +18,7 @@ module.exports = function(grunt) {
         script: 'server.js',
         options: {
           watch: ['server.js'],
-          ignore: ['app/**/*', 'node_modules/**/*'],
+          ignore: ['app/**/*', 'node_modules/**/*', '!app/js/vendor/**/*.js'],
           nodeArgs: ['--inspect'],
           env: {
             PORT: '3000'
@@ -31,7 +31,7 @@ module.exports = function(grunt) {
         spawn: false
       },
       js: {
-        files: ['app/js/**/*.js', '!app/js/bundle.js'],
+        files: ['app/js/**/*.js', '!app/js/bundle.js', '!app/js/vendor/**/*.js'],
         tasks: ['browserify']
       },
       bake: {

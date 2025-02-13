@@ -2,9 +2,9 @@
   "short_name": "",
   "name": "",
   "icons": [{
-    "src": "icon.png",
-    "type": "image/png",
-    "sizes": "192x192"
+    "src": "",
+    "type": "",
+    "sizes": ""
   }],
   "start_url": "/?utm_source=homescreen",
   "background_color": "#fafafa",
