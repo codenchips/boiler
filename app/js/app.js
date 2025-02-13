@@ -1,9 +1,10 @@
 $(document).ready(function() {
     const Mustache = require('mustache');
-    
+        
     const db = require('./db'); // Import the db module
     const router = require('./router'); // Import the router module
     const sst = require('./sst'); // Import the db module
+   
 
     // Use the generateUUID function from the db module
     let uuid = db.generateUUID();

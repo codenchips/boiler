@@ -5,12 +5,16 @@
   <meta charset="utf-8">  
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   
-  <script src="js/vendor/jquery-3.7.1.min.js"></script>
+  <script type="text/javascript"  src="js/vendor/jquery-3.7.1.min.js"></script>
   
   <link rel="stylesheet" href="css/vendor/uikit.min.css" />
-  <script src="js/vendor/uikit.min.js"></script>
-  <script src="js/vendor/uikit-icons.min.js"></script>
+  <script type="text/javascript" src="js/vendor/uikit.min.js"></script>
+  <script type="text/javascript"  src="js/vendor/uikit-icons.min.js"></script>
 
+  <link rel="stylesheet" href="css/vendor/tabulator.min.css">
+  <script type="text/javascript" src="js/vendor/tabulator.min.js"></script>
+
+  
   <title>SST</title>
   <link rel="stylesheet" href="css/style.css">
   <meta name="description" content="">
@@ -33,7 +37,9 @@
         <a href="/">Home</a>
         <a href="/tables">Tables</a>
         <a href="/schedule">Schedule</a>
-        <!--(bake views/container.html)-->        
+        <!--(bake views/container.html)-->
+
+        <div id="spinner" style="display:none;"><div uk-spinner="ratio: 4"></div></div>        
         <script src="js/bundle.js"></script>      
     </body>
 </html>

@@ -23,6 +23,7 @@ function router(path) {
                     content: 'This is the schedule page content'
                 });
                 $('#page').html(rendered);
+                
             });
             break;
         default:

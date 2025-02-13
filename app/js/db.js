@@ -232,6 +232,7 @@ module.exports = {
     generateUUID, 
     initDB,
     fetchAndStoreProducts,
-    getProducts
+    getProducts,
+    getProjects
     // Add other database-related functions here
 };
