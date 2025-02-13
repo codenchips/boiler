@@ -1,10 +1,7 @@
 const Mustache = require('mustache');
 const db = require('./db'); // Import the db module
-//const Tabulator = require('tabulator-tables');
 
-UIkit.modal('#add-special', {
-    stack : true,
-});
+UIkit.modal('#add-special', { stack : true });
 
 function showSpin() {
     $('#spinner').fadeIn('fast');

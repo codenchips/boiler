@@ -4,6 +4,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-concurrent');
   grunt.loadNpmTasks('grunt-nodemon');
   grunt.loadNpmTasks('grunt-browserify');
+  grunt.loadNpmTasks('grunt-sass');
 
   grunt.initConfig({
     browserify: {
@@ -37,6 +38,10 @@ module.exports = function(grunt) {
       bake: {
         files: ['app/main.html', 'app/views/*.html'],
         tasks: ['bake']
+      },
+      sass: {
+        files: ['app/scss/**/*.scss'],
+        tasks: ['sass']
       }
     },
     bake: {
@@ -52,6 +57,17 @@ module.exports = function(grunt) {
         }
       }
     },
+    sass: {
+      options: {
+        implementation: require('sass'),
+        sourceMap: true
+      },
+      dist: {
+        files: {
+          'app/css/sst.css': 'app/scss/sst.scss'
+        }
+      }
+    },
     concurrent: {
       dev: {
         tasks: ['nodemon', 'watch'],
@@ -62,5 +78,5 @@ module.exports = function(grunt) {
     }
   });
 
-  grunt.registerTask('default', ['browserify', 'bake', 'concurrent:dev']);
+  grunt.registerTask('default', ['browserify', 'sass', 'bake', 'concurrent:dev']);
 };

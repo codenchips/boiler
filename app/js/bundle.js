@@ -317,11 +317,8 @@ module.exports = router;
 },{"./db":2,"./sst":4,"mustache":6}],4:[function(require,module,exports){
 const Mustache = require('mustache');
 const db = require('./db'); // Import the db module
-//const Tabulator = require('tabulator-tables');
 
-UIkit.modal('#add-special', {
-    stack : true,
-});
+UIkit.modal('#add-special', { stack : true });
 
 function showSpin() {
     $('#spinner').fadeIn('fast');
