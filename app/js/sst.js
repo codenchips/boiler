@@ -13,6 +13,16 @@ function hideSpin() {
     $('#spinner').fadeOut('fast');
 }
 
+var iconPlus = function(cell, formatterParams, onRendered) {
+    return '<i class="fa-solid fa-circle-plus"></i>';
+};
+var iconMinus = function(cell, formatterParams, onRendered) {
+    return '<i class="fa-solid fa-circle-minus"></i>';
+};
+var iconX = function(cell, formatterParams, onRendered) {
+    return '<span class="icon red" uk-icon="icon: trash; ratio: 1.3" title="Delete this project"></span>';
+};    
+
 
 /*
 * Home page functions
@@ -100,11 +110,11 @@ async function homeFunctions() {
                     width: 110,
                     visible: false
                 },
-                {
+                {                    
                     visible: true,
                     headerSort: false,
                     formatter: iconX,
-                    width: 20,
+                    width: 80,
                     hozAlign: "center",
                     cellClick: function (e, cell) {
                         deleteProject(cell.getRow().getData().project_id);
@@ -115,17 +125,6 @@ async function homeFunctions() {
         //dashTable.setData(data);
 
     }
-
-    var iconPlus = function(cell, formatterParams, onRendered) {
-        return '<i class="fa-solid fa-circle-plus"></i>';
-    };
-    var iconMinus = function(cell, formatterParams, onRendered) {
-        return '<i class="fa-solid fa-circle-minus"></i>';
-    };
-    var iconX = function(cell, formatterParams, onRendered) {
-        return '<i class="fa-solid fa-circle-xmark"></i>';
-    };    
-
 
 }
 /* // END homeFunctions */
