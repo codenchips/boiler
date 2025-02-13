@@ -11,14 +11,39 @@
    Base styles: opinionated defaults
    ========================================================================== */
 
-@import  "tabulator-tables";
-
 
 html {
   color: #222;
   font-size: 1em;
-  line-height: 1.4;  
+  line-height: 1;  
 }
+
+body {
+  font: 100% Helvetica, sans-serif;
+  color: #192542;
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none; /* Firefox */
+  padding: 0 2px;
+}
+
+#spinner {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#container {
+  max-width: 768px;
+  position: relative;
+  margin: 0 auto;
+}
+
 
 /*
  * Remove text-shadow in selection highlight:

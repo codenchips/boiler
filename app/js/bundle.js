@@ -301,8 +301,8 @@ function router(path) {
             $.get('views/home.html', async function(template) {    
                 
                 const rendered = Mustache.render(template, { 
-                    title: 'Home Page',
-                    content: 'Welcome to the home page'
+                    title: 'Dashboard',
+                    content: 'Your projects are listed below'
                 });
                 $('#page').html(rendered);                
 
