@@ -1,6 +1,25 @@
+$font-stack: Helvetica, sans-serif;
+$primary-color: #192542;
+$ltblue: #0f7ae5;
+$xcred: #C8102E;
+
+$handle-hover-bg-color: #0f7ae5;
+$handle-color: #fff;
+$handle-width: 348px; // Adjust to match the sidebar width
+$transition-duration: 0.3s;
+$z-index-handle: 1050;
+$handle-bg-color: rgb(34, 34, 34);;
+$darkgray: rgb(34, 34, 34);
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+
+
 body {
-    font: 100% Helvetica, sans-serif;
-    color: #192542;
+    font: 100% $font-stack;
+    color: $primary-color;
     -ms-overflow-style: none; /* Internet Explorer 10+ */
     scrollbar-width: none; /* Firefox */
     padding: 0 2px;
@@ -26,7 +45,7 @@ body {
   
   .uk-navbar-container {
     .uk-icon {
-      color: #192542;
+      color:$primary-color;
       font-weight: bold;
     }
     
@@ -41,6 +60,6 @@ body {
     position: relative;
     
     &.red {
-      color: #C8102E;
+      color: $xcred;
     }
   }
