@@ -4,17 +4,16 @@ $(document).ready(function() {
     
     const db = require('./db'); // Import the db module
     const router = require('./router'); // Import the router module
+    const sst = require('./sst'); // Import the db module
 
     // Use the generateUUID function from the db module
     let uuid = db.generateUUID();
     console.log("uuid: ", uuid);
-
+    
+    console.log("Mounted ...");
     db.initDB();
 
     db.fetchAndStoreProducts(); 
-    console.log("Products fetched and stored in IndexedDB");
-
-
 
     // Get current path
     const pathParts = window.location.pathname
@@ -23,8 +22,11 @@ $(document).ready(function() {
     
     // Use the router function from the router module
     router(pathParts[0] || 'home');   
+
+
+
 });
-},{"./db":2,"./router":3,"mustache":5}],2:[function(require,module,exports){
+},{"./db":2,"./router":3,"./sst":4,"mustache":6}],2:[function(require,module,exports){
 const { openDB } = require('idb');
 
 const DB_NAME = 'sst_database';
@@ -39,15 +41,15 @@ function generateUUID() {
     });
 }
 
-async function initDB() {
-    console.log('Initializing IndexedDB...');
+
+async function initDB() {    
     return await openDB(DB_NAME, DB_VERSION, {
         upgrade(db) {
             // Check and create existing store for products
             if (!db.objectStoreNames.contains(STORE_NAME)) {
+                console.log('Creating object store for products...');
                 db.createObjectStore(STORE_NAME, { keyPath: 'product_code' });
             }
-
             if (!db.objectStoreNames.contains("projects")) {
                 const store = db.createObjectStore("projects", { keyPath: "uuid" });
                 store.createIndex('owner_id', 'owner_id', { unique: false }); // Add owner_id index
@@ -81,7 +83,7 @@ async function initDB() {
     });
 }
 
-async function fetchAndStoreProducts() {
+async function fetchAndStoreProducts() {    
     const isEmpty = await isProductsTableEmpty();
     if (isEmpty) {
         try {
@@ -258,12 +260,15 @@ async function isDatabaseEmpty() {
 module.exports = {
     generateUUID, 
     initDB,
-    fetchAndStoreProducts
+    fetchAndStoreProducts,
+    getProducts
     // Add other database-related functions here
 };
 
-},{"idb":4}],3:[function(require,module,exports){
+},{"idb":5}],3:[function(require,module,exports){
 const Mustache = require('mustache');
+const db = require('./db'); // Import the db module
+const sst = require('./sst'); // Import the sst module
 
 
 function router(path) {
@@ -290,19 +295,41 @@ function router(path) {
             break;
         default:
             // Load home template
-            $.get('views/home.html', function(template) {                                    
+            $.get('views/home.html', async function(template) {    
+                
                 const rendered = Mustache.render(template, { 
                     title: 'Home Page',
                     content: 'Welcome to the home page'
                 });
                 $('#page').html(rendered);                
+
+                sst.homeFunctions();
+
             });
     }
 }
 
 module.exports = router;
 
-},{"mustache":5}],4:[function(require,module,exports){
+},{"./db":2,"./sst":4,"mustache":6}],4:[function(require,module,exports){
+const Mustache = require('mustache');
+const db = require('./db'); // Import the db module
+
+async function homeFunctions() {
+    if ($('#product-list').length) {
+        console.log('Product list page');
+        db.getProducts().then(products => {
+            console.log('Products:', products);
+            const template = $('#product-list').html();
+            const rendered = Mustache.render(template, { products });
+        });
+    }
+}
+
+module.exports = {
+    homeFunctions
+};
+},{"./db":2,"mustache":6}],5:[function(require,module,exports){
 'use strict';
 
 const instanceOfAny = (object, constructors) => constructors.some((c) => object instanceof c);
@@ -614,7 +641,7 @@ exports.openDB = openDB;
 exports.unwrap = unwrap;
 exports.wrap = wrap;
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :

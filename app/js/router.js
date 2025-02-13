@@ -1,4 +1,6 @@
 const Mustache = require('mustache');
+const db = require('./db'); // Import the db module
+const sst = require('./sst'); // Import the sst module
 
 
 function router(path) {
@@ -25,12 +27,16 @@ function router(path) {
             break;
         default:
             // Load home template
-            $.get('views/home.html', function(template) {                                    
+            $.get('views/home.html', async function(template) {    
+                
                 const rendered = Mustache.render(template, { 
                     title: 'Home Page',
                     content: 'Welcome to the home page'
                 });
                 $('#page').html(rendered);                
+
+                sst.homeFunctions();
+
             });
     }
 }

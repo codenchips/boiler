@@ -3,17 +3,16 @@ $(document).ready(function() {
     
     const db = require('./db'); // Import the db module
     const router = require('./router'); // Import the router module
+    const sst = require('./sst'); // Import the db module
 
     // Use the generateUUID function from the db module
     let uuid = db.generateUUID();
     console.log("uuid: ", uuid);
-
+    
+    console.log("Mounted ...");
     db.initDB();
 
     db.fetchAndStoreProducts(); 
-    console.log("Products fetched and stored in IndexedDB");
-
-
 
     // Get current path
     const pathParts = window.location.pathname
@@ -22,4 +21,7 @@ $(document).ready(function() {
     
     // Use the router function from the router module
     router(pathParts[0] || 'home');   
+
+
+
 });

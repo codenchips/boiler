@@ -12,15 +12,15 @@ function generateUUID() {
     });
 }
 
-async function initDB() {
-    console.log('Initializing IndexedDB...');
+
+async function initDB() {    
     return await openDB(DB_NAME, DB_VERSION, {
         upgrade(db) {
             // Check and create existing store for products
             if (!db.objectStoreNames.contains(STORE_NAME)) {
+                console.log('Creating object store for products...');
                 db.createObjectStore(STORE_NAME, { keyPath: 'product_code' });
             }
-
             if (!db.objectStoreNames.contains("projects")) {
                 const store = db.createObjectStore("projects", { keyPath: "uuid" });
                 store.createIndex('owner_id', 'owner_id', { unique: false }); // Add owner_id index
@@ -54,7 +54,7 @@ async function initDB() {
     });
 }
 
-async function fetchAndStoreProducts() {
+async function fetchAndStoreProducts() {    
     const isEmpty = await isProductsTableEmpty();
     if (isEmpty) {
         try {
@@ -231,6 +231,7 @@ async function isDatabaseEmpty() {
 module.exports = {
     generateUUID, 
     initDB,
-    fetchAndStoreProducts
+    fetchAndStoreProducts,
+    getProducts
     // Add other database-related functions here
 };
