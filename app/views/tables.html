@@ -1,6 +1,58 @@
-<div>
-    <h1>{{title}}</h1>
+<div id="table_mode_view" class="uk-width-1-1 uk-margin">
+    
+    <div uk-grid class="hidden">
+        <div class="uk-width-1-1 ">        
+            <h1>{{title}}</h1>
+            <p class="clickme">{{content}}</p>
+        </div>
+    </div>
 
-    <p class="clickme">{{content}}</p>
+    <div uk-grid class="hidden">
+        <div class="uk-width-1-1 ">
+            <span title="Copy Room" alt="Copy Room" id="copy-room" class="uk-icon uk-align-right uk-margin-remove" uk-icon="icon: copy; ratio: 2;"></span>
+            <button class="uk-hidden@xl  uk-button uk-button-primary uk-align-right" type="button" uk-toggle="target: #offcanvas-sidebar">Manage Project</button>
+
+        </div>
+    </div>
+
+    <div  class="uk-margin location-heading"  uk-grid>
+        <div class="uk-width-1-2">
+            <span class="uk-icon" uk-icon="icon: location;"></span>
+            <span title="Rename" alt="Rename"  data-label="location_name" data-id="" data-tbl="sst_locations" class="name location_name"></span>
+        </div>
+        <div class="uk-width-1-2">
+            <span class="uk-icon" uk-icon="icon: home;"></span>
+            <span title="Rename" alt="Rename" data-label="building_name" data-id="" data-tbl="sst_buildings" class="name building_name"></span>
+        </div>
+
+    </div>
+
+
+    <form id="product-select-form">
+
+        <div class="uk-text-center" uk-grid>
+    
+            <div class="uk-width-1-2">
+                <select id="form_brand"
+                        name="form_brand"
+                        class="uk-select select-brand">
+                    <option selected value="1">Tamlite</option>
+                    <option value="2">xcite</option>
+                </select>
+            </div>
+
+            <div class="uk-width-1-2">
+                <select id="form_brand"
+                        name="form_brand"
+                        class="uk-select select-brand">
+                    <option selected value="1">Tamlite</option>
+                    <option value="2">xcite</option>
+                </select>
+            </div>                
+
+        </div>
+
+    </form>    
 
 </div>
+

@@ -331,6 +331,9 @@ function hideSpin() {
 }
 
 
+/*
+* Home page functions
+*/
 async function homeFunctions() {
     console.log('Running home functions');
 
@@ -442,6 +445,8 @@ async function homeFunctions() {
 
 
 }
+/* // END homeFunctions */
+
 
 module.exports = {
     homeFunctions
