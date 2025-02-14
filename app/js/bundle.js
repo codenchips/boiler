@@ -294,9 +294,9 @@ class TablesModule {
             return;
         }
 
-        const template = $('#products_options');
+        const template = $('#options');
         const templateContent = template.html();
-        const rendered = Mustache.render(templateContent, { products });    
+        const rendered = Mustache.render(templateContent, { options: products, title: 'Select Product' });    
         $('#form_product').html(rendered);
     }
 
@@ -306,15 +306,15 @@ class TablesModule {
         return products
             .filter(product => product.type_slug === type)
             .reduce((acc, product) => {
-                if (!acc.some(item => item.product_slug === product.product_slug)) {
+                if (!acc.some(item => item.slug === product.product_slug)) {
                     acc.push({ 
-                        product_slug: product.product_slug, 
-                        product_name: product.product_name 
+                        slug: product.product_slug, 
+                        name: product.product_name 
                     });
                 }
                 return acc;
             }, [])            
-            .sort((a, b) => a.product_name.localeCompare(b.product_name));
+            .sort((a, b) => a.name.localeCompare(b.name));
     }    
 
     async updateTypesDropdown(brand) {
@@ -328,15 +328,15 @@ class TablesModule {
         return products
             .filter(product => product.site === brand)
             .reduce((acc, product) => {
-                if (!acc.some(item => item.type_slug === product.type_slug)) {
+                if (!acc.some(item => item.slug === product.type_slug)) {
                     acc.push({ 
-                        type_slug: product.type_slug, 
-                        type_name: product.type_name 
+                        slug: product.type_slug, 
+                        name: product.type_name 
                     });
                 }
                 return acc;
             }, [])
-            .sort((a, b) => a.type_name.localeCompare(b.type_name));
+            .sort((a, b) => a.name.localeCompare(b.name));
     }
 
     renderTypesDropdown(types) {
@@ -345,9 +345,9 @@ class TablesModule {
             return;
         }
 
-        const template = $('#types_options');
+        const template = $('#options');
         const templateContent = template.html();
-        const rendered = Mustache.render(templateContent, { types });    
+        const rendered = Mustache.render(templateContent, { options: types, title: 'Select Type' });    
         $('#form_type').html(rendered);
     }
 }

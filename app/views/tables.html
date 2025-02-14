@@ -64,15 +64,9 @@
 </div>
 
 
-<script id="products_options" type="x-tmpl-mustache">
-    <option value="">Select Product</option>
-    [[#products]]
-        <option value="[[product_slug]]">[[product_name]]</option>
-    [[/products]]
-    </script>
-<script id="types_options" type="x-tmpl-mustache">
-    <option value="">Select Type</option>
-    [[#types]]
-        <option value="[[type_slug]]">[[type_name]]</option>
-    [[/types]]
+<script id="options" type="x-tmpl-mustache">
+    <option value="">[[title]]</option>
+    [[#options]]
+        <option value="[[slug]]">[[name]]</option>
+    [[/options  ]]
 </script>
