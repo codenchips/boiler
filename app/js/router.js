@@ -13,6 +13,8 @@ function router(path) {
                     content: 'This is the tables page content'
                 });
                 $('#page').html(rendered);
+                
+                sst.tablesFunctions();
             });
             break;
         case 'schedule':

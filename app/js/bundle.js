@@ -283,6 +283,8 @@ function router(path) {
                     content: 'This is the tables page content'
                 });
                 $('#page').html(rendered);
+                
+                sst.tablesFunctions();
             });
             break;
         case 'schedule':
@@ -336,6 +338,46 @@ var iconMinus = function(cell, formatterParams, onRendered) {
 var iconX = function(cell, formatterParams, onRendered) {
     return '<span class="icon red" uk-icon="icon: trash; ratio: 1.3" title="Delete this project"></span>';
 };    
+
+/*
+* Tables page functions
+*/
+async function tablesFunctions() {
+    console.log('Running tables functions');
+    let productList = [];
+    const selectedBrand = "1";
+
+    $('#form_brand').on('change', function() {
+        console.log('Brand changed:', $(this).val());
+        getTypesForBrand($(this).val());
+    });
+
+    typesForBrand = await db.getProducts().then(products => {        
+        // Filter products by selected brand (1 or 2)
+        const filteredTypes = products
+            .filter(product => product.site === selectedBrand)
+            .reduce((acc, product) => {
+            if (!acc.some(item => item.type_slug === product.type_slug)) {
+                acc.push({ type_slug: product.type_slug, type_name: product.type_name });
+            }
+            return acc;
+            }, [])
+        .sort((a, b) => a.type_name.localeCompare(b.type_name));        
+        
+        return filteredTypes; // Assign filtered products to allProducts
+    });
+
+    console.log('typesForBrand:', typesForBrand);
+
+    // const template = $('#product-list').html();
+    // const rendered = Mustache.render(template, { products });
+
+}
+/* // END tablesFunctions */
+
+function getTypesForBrand(brand) {
+}
+
 
 
 /*
@@ -445,7 +487,8 @@ async function homeFunctions() {
 
 
 module.exports = {
-    homeFunctions
+    homeFunctions,
+    tablesFunctions
 };
 },{"./db":2,"mustache":6}],5:[function(require,module,exports){
 'use strict';
