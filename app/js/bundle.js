@@ -273,12 +273,18 @@ const Mustache = require('mustache');
 
 class TablesModule {
     constructor() {
-        Mustache.tags = ["[[", "]]"];
+        this.isInitialized = false;
     }
 
+    init() {
+        if (this.isInitialized) return;
+        Mustache.tags = ["[[", "]]"];
+        this.isInitialized = true;
+        console.log('TablesModule initialized with tags:', Mustache.tags);
+    }
 
     async updateTypesDropdown(brand) {
-        console.log('updateTypesDropdown', brand);  
+        this.init();
         const types = await this.getTypesForBrand(brand);
         this.renderTypesDropdown(types);
     }
@@ -300,12 +306,14 @@ class TablesModule {
     }
 
     renderTypesDropdown(types) {
-        console.log('renderTypesDropdown', types);
-        Mustache.tags = ["[[", "]]"];
-        const template = $('#types_options').html();
-        Mustache.parse(template);
-        console.log('template', template);
-        const rendered = Mustache.render(template, { types });    
+        if (!types || !types.length) {
+            console.error('No types data provided');
+            return;
+        }
+
+        const template = $('#types_options');
+        const templateContent = template.html();
+        const rendered = Mustache.render(templateContent, { types });    
         $('#form_type').html(rendered);
     }
 }
@@ -385,56 +393,27 @@ var iconX = function(cell, formatterParams, onRendered) {
 };    
 
 /*
-* Tables page functions
+*   Tables page functions
 */
-// async function tablesFunctions() {
-//     console.log('Running tables functions');
+async function tablesFunctions() {
+    tables.init();    
     
-//     // Initial load of types for default brand
-//     await updateTypesDropdown('1');
-
-//     // Handle brand changes
-//     $('#form_brand').on('change', async function() {
-//         await updateTypesDropdown($(this).val());
-//     });
-// }
-
-// async function updateTypesDropdown(brand) {
-//     const types = await getTypesForBrand(brand);
-//     renderTypesDropdown(types);
-// }
-
-// async function getTypesForBrand(brand) {
-//     const products = await db.getProducts();
-//     return products
-//         .filter(product => product.site === brand)
-//         .reduce((acc, product) => {
-//             if (!acc.some(item => item.type_slug === product.type_slug)) {
-//                 acc.push({ 
-//                     type_slug: product.type_slug, 
-//                     type_name: product.type_name 
-//                 });
-//             }
-//             return acc;
-//         }, [])
-//         .sort((a, b) => a.type_name.localeCompare(b.type_name));
-// }
-
-// function renderTypesDropdown(types) {
-//     Mustache.tags = ["[[", "]]"];
-//     const template = $('#types_options').html();
-//     const rendered = Mustache.render(template, { types });    
-//     $('#form_type').html(rendered);
-// }
-
-// /* // END tablesFunctions */
-
-
+    // Initial load with default brand
+    await tables.updateTypesDropdown('1');
+    
+    // Handle brand changes
+    $('#form_brand').on('change', async function() {
+        await tables.updateTypesDropdown($(this).val());
+    });
+}
+/* 
+    // End tablesFunctions 
+*/
 
 
 
 /*
-* Home page functions
+*   Home page functions
 */
 async function homeFunctions() {
     console.log('Running home functions');
@@ -536,21 +515,11 @@ async function homeFunctions() {
     }
 
 }
-/* // END homeFunctions */
+/* 
+    // END homeFunctions 
+*/
 
-async function tablesFunctions() {
 
-    // Initial load with default brand
-    tables.updateTypesDropdown('1');
-    
-    // Handle brand changes
-    $('#form_brand').on('change', function() {
-        const selectedBrand = $(this).val();
-        console.log('Selected brand:', selectedBrand);
-        tables.updateTypesDropdown(selectedBrand);
-    });
-
-}
 
 module.exports = {
     homeFunctions,
@@ -1643,4 +1612,4 @@ exports.wrap = wrap;
 
 })));
 
-},{}]},{},[1,4,2,5]);
+},{}]},{},[1,4,2,3,5]);

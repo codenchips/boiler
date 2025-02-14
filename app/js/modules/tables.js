@@ -3,12 +3,18 @@ const Mustache = require('mustache');
 
 class TablesModule {
     constructor() {
-        Mustache.tags = ["[[", "]]"];
+        this.isInitialized = false;
     }
 
+    init() {
+        if (this.isInitialized) return;
+        Mustache.tags = ["[[", "]]"];
+        this.isInitialized = true;
+        console.log('TablesModule initialized with tags:', Mustache.tags);
+    }
 
     async updateTypesDropdown(brand) {
-        console.log('updateTypesDropdown', brand);  
+        this.init();
         const types = await this.getTypesForBrand(brand);
         this.renderTypesDropdown(types);
     }
@@ -30,12 +36,14 @@ class TablesModule {
     }
 
     renderTypesDropdown(types) {
-        console.log('renderTypesDropdown', types);
-        Mustache.tags = ["[[", "]]"];
-        const template = $('#types_options').html();
-        Mustache.parse(template);
-        console.log('template', template);
-        const rendered = Mustache.render(template, { types });    
+        if (!types || !types.length) {
+            console.error('No types data provided');
+            return;
+        }
+
+        const template = $('#types_options');
+        const templateContent = template.html();
+        const rendered = Mustache.render(templateContent, { types });    
         $('#form_type').html(rendered);
     }
 }
