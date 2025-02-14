@@ -44,3 +44,15 @@ body {
 .icon.red {
   color: #C8102E;
 }
+
+.uk-input:focus, .uk-select:focus, .uk-textarea:focus {
+  outline: 0;
+  background-color: #fff;
+  color: #333;
+  border-color: #0f7ae5;
+  border-width: 3px;
+}
+
+.uk-input, .uk-select, .uk-textarea {
+  border-radius: 5px;
+}
