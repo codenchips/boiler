@@ -281,6 +281,41 @@ class TablesModule {
         Mustache.tags = ["[[", "]]"];
         this.isInitialized = true;        
     }
+
+    async updateSkusDropdown(product) {
+        this.init();
+        const skus = await this.getSkusForProduct(product);        
+        this.renderSkusDropdown(skus);
+    }
+
+    async renderSkusDropdown(skus) {
+        if (!skus || !skus.length) {
+            console.error('No sku data provided');
+            return;
+        }
+
+        const template = $('#options');
+        const templateContent = template.html();
+        const rendered = Mustache.render(templateContent, { options: skus, title: 'Select SKU' });    
+        $('#form_sku').html(rendered);
+    }
+
+    async getSkusForProduct(user_product) {
+        const products = await db.getProducts();
+        
+        return products
+            .filter(product => product.product_slug === user_product)
+            .reduce((acc, product) => {
+                if (!acc.some(item => item.slug === product.product_slug)) {
+                    acc.push({ 
+                        slug: product.product_code, 
+                        name: product.product_code 
+                    });
+                }
+                return acc;
+            }, [])            
+            .sort((a, b) => a.name.localeCompare(b.name));
+    }       
     
     async updateProductsDropdown(type) {
         this.init();
@@ -443,6 +478,10 @@ async function tablesFunctions() {
     $('#form_type').on('change', async function() {
         await tables.updateProductsDropdown($(this).val());
     });
+    // Handle product changes
+    $('#form_product').on('change', async function() {
+        await tables.updateSkusDropdown($(this).val());
+    });    
 
 }
 /* 

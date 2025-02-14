@@ -38,6 +38,10 @@ async function tablesFunctions() {
     $('#form_type').on('change', async function() {
         await tables.updateProductsDropdown($(this).val());
     });
+    // Handle product changes
+    $('#form_product').on('change', async function() {
+        await tables.updateSkusDropdown($(this).val());
+    });    
 
 }
 /* 
