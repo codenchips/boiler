@@ -49,9 +49,17 @@ module.exports = function(grunt) {
         options: {
           preprocessTemplate: true,
           preservePipes: true,
-          process: false,
-          content: null
-        },       
+          process: function(content) {
+            // Preserve content within <script type="x-tmpl-mustache">
+            content = content.replace(
+              /<script type="x-tmpl-mustache">([\s\S]*?)<\/script>/g,
+              function(match) {
+                return match.replace(/{{/g, '\\{{').replace(/}}/g, '\\}}');
+              }
+            );
+            return content;
+          }
+        },
         files: {
           "app/app.html": "app/main.html"
         }

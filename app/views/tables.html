@@ -42,11 +42,10 @@
             </div>
 
             <div class="uk-width-1-2">
-                <select id="form_brand"
-                        name="form_brand"
-                        class="uk-select select-brand">
-                    <option selected value="1">Tamlite</option>
-                    <option value="2">xcite</option>
+                <select id="form_type"
+                        name="form_type"
+                        class="uk-select select-type">
+                    <option value="">Select Type</option>
                 </select>
             </div>                
 
@@ -56,3 +55,9 @@
 
 </div>
 
+<script id="types_options" type="x-tmpl-mustache">
+<option value="">Select Type</option>
+[[#types]]
+    <option value="[[type_slug]]">[[type_name]]</option>
+[[/types]]
+</script>

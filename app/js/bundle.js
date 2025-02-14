@@ -320,6 +320,7 @@ module.exports = router;
 const Mustache = require('mustache');
 const db = require('./db'); // Import the db module
 
+
 UIkit.modal('#add-special', { stack : true });
 
 function showSpin() {
@@ -344,39 +345,47 @@ var iconX = function(cell, formatterParams, onRendered) {
 */
 async function tablesFunctions() {
     console.log('Running tables functions');
-    let productList = [];
-    const selectedBrand = "1";
+    
+    // Initial load of types for default brand
+    await updateTypesDropdown('1');
 
-    $('#form_brand').on('change', function() {
-        console.log('Brand changed:', $(this).val());
-        getTypesForBrand($(this).val());
+    // Handle brand changes
+    $('#form_brand').on('change', async function() {
+        await updateTypesDropdown($(this).val());
     });
+}
 
-    typesForBrand = await db.getProducts().then(products => {        
-        // Filter products by selected brand (1 or 2)
-        const filteredTypes = products
-            .filter(product => product.site === selectedBrand)
-            .reduce((acc, product) => {
+async function updateTypesDropdown(brand) {
+    const types = await getTypesForBrand(brand);
+    renderTypesDropdown(types);
+}
+
+async function getTypesForBrand(brand) {
+    const products = await db.getProducts();
+    return products
+        .filter(product => product.site === brand)
+        .reduce((acc, product) => {
             if (!acc.some(item => item.type_slug === product.type_slug)) {
-                acc.push({ type_slug: product.type_slug, type_name: product.type_name });
+                acc.push({ 
+                    type_slug: product.type_slug, 
+                    type_name: product.type_name 
+                });
             }
             return acc;
-            }, [])
-        .sort((a, b) => a.type_name.localeCompare(b.type_name));        
-        
-        return filteredTypes; // Assign filtered products to allProducts
-    });
-
-    console.log('typesForBrand:', typesForBrand);
-
-    // const template = $('#product-list').html();
-    // const rendered = Mustache.render(template, { products });
-
+        }, [])
+        .sort((a, b) => a.type_name.localeCompare(b.type_name));
 }
+
+function renderTypesDropdown(types) {
+    Mustache.tags = ["[[", "]]"];
+    const template = $('#types_options').html();
+    const rendered = Mustache.render(template, { types });    
+    $('#form_type').html(rendered);
+}
+
 /* // END tablesFunctions */
 
-function getTypesForBrand(brand) {
-}
+
 
 
 
