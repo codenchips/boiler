@@ -34,6 +34,11 @@ async function tablesFunctions() {
     $('#form_brand').on('change', async function() {
         await tables.updateTypesDropdown($(this).val());
     });
+    // Handle type changes
+    $('#form_type').on('change', async function() {
+        await tables.updateProductsDropdown($(this).val());
+    });
+
 }
 /* 
     // End tablesFunctions 

@@ -47,7 +47,15 @@
                         class="uk-select select-type">
                     <option value="">Select Type</option>
                 </select>
-            </div>                
+            </div>          
+            
+            <div class="uk-width-1-2">
+                <select id="form_product"
+                        name="form_product"
+                        class="uk-select select-product">
+                    <option value="">Select Product</option>
+                </select>
+            </div>                   
 
         </div>
 
@@ -55,9 +63,16 @@
 
 </div>
 
+
+<script id="products_options" type="x-tmpl-mustache">
+    <option value="">Select Product</option>
+    [[#products]]
+        <option value="[[product_slug]]">[[product_name]]</option>
+    [[/products]]
+    </script>
 <script id="types_options" type="x-tmpl-mustache">
-<option value="">Select Type</option>
-[[#types]]
-    <option value="[[type_slug]]">[[type_name]]</option>
-[[/types]]
+    <option value="">Select Type</option>
+    [[#types]]
+        <option value="[[type_slug]]">[[type_name]]</option>
+    [[/types]]
 </script>

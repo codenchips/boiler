@@ -279,9 +279,43 @@ class TablesModule {
     init() {
         if (this.isInitialized) return;
         Mustache.tags = ["[[", "]]"];
-        this.isInitialized = true;
-        console.log('TablesModule initialized with tags:', Mustache.tags);
+        this.isInitialized = true;        
     }
+    
+    async updateProductsDropdown(type) {
+        this.init();
+        const products = await this.getProductsForType(type);        
+        this.renderProductsDropdown(products);
+    }
+
+    async renderProductsDropdown(products) {
+        if (!products || !products.length) {
+            console.error('No products data provided');
+            return;
+        }
+
+        const template = $('#products_options');
+        const templateContent = template.html();
+        const rendered = Mustache.render(templateContent, { products });    
+        $('#form_product').html(rendered);
+    }
+
+    async getProductsForType(type) {
+        const products = await db.getProducts();
+        
+        return products
+            .filter(product => product.type_slug === type)
+            .reduce((acc, product) => {
+                if (!acc.some(item => item.product_slug === product.product_slug)) {
+                    acc.push({ 
+                        product_slug: product.product_slug, 
+                        product_name: product.product_name 
+                    });
+                }
+                return acc;
+            }, [])            
+            .sort((a, b) => a.product_name.localeCompare(b.product_name));
+    }    
 
     async updateTypesDropdown(brand) {
         this.init();
@@ -405,6 +439,11 @@ async function tablesFunctions() {
     $('#form_brand').on('change', async function() {
         await tables.updateTypesDropdown($(this).val());
     });
+    // Handle type changes
+    $('#form_type').on('change', async function() {
+        await tables.updateProductsDropdown($(this).val());
+    });
+
 }
 /* 
     // End tablesFunctions 
