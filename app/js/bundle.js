@@ -27,7 +27,7 @@ $(document).ready(function() {
 
 
 });
-},{"./db":2,"./router":3,"./sst":4,"mustache":6}],2:[function(require,module,exports){
+},{"./db":2,"./router":4,"./sst":5,"mustache":7}],2:[function(require,module,exports){
 const { openDB } = require('idb');
 
 const DB_NAME = 'sst_database';
@@ -267,7 +267,51 @@ module.exports = {
     // Add other database-related functions here
 };
 
-},{"idb":5}],3:[function(require,module,exports){
+},{"idb":6}],3:[function(require,module,exports){
+const db = require('../db');
+const Mustache = require('mustache');
+
+class TablesModule {
+    constructor() {
+        Mustache.tags = ["[[", "]]"];
+    }
+
+
+    async updateTypesDropdown(brand) {
+        console.log('updateTypesDropdown', brand);  
+        const types = await this.getTypesForBrand(brand);
+        this.renderTypesDropdown(types);
+    }
+
+    async getTypesForBrand(brand) {
+        const products = await db.getProducts();
+        return products
+            .filter(product => product.site === brand)
+            .reduce((acc, product) => {
+                if (!acc.some(item => item.type_slug === product.type_slug)) {
+                    acc.push({ 
+                        type_slug: product.type_slug, 
+                        type_name: product.type_name 
+                    });
+                }
+                return acc;
+            }, [])
+            .sort((a, b) => a.type_name.localeCompare(b.type_name));
+    }
+
+    renderTypesDropdown(types) {
+        console.log('renderTypesDropdown', types);
+        Mustache.tags = ["[[", "]]"];
+        const template = $('#types_options').html();
+        Mustache.parse(template);
+        console.log('template', template);
+        const rendered = Mustache.render(template, { types });    
+        $('#form_type').html(rendered);
+    }
+}
+
+module.exports = new TablesModule();
+},{"../db":2,"mustache":7}],4:[function(require,module,exports){
 const Mustache = require('mustache');
 const db = require('./db'); // Import the db module
 const sst = require('./sst'); // Import the sst module
@@ -316,10 +360,10 @@ function router(path) {
 
 module.exports = router;
 
-},{"./db":2,"./sst":4,"mustache":6}],4:[function(require,module,exports){
+},{"./db":2,"./sst":5,"mustache":7}],5:[function(require,module,exports){
 const Mustache = require('mustache');
 const db = require('./db'); // Import the db module
-
+const tables = require('./modules/tables');
 
 UIkit.modal('#add-special', { stack : true });
 
@@ -343,47 +387,47 @@ var iconX = function(cell, formatterParams, onRendered) {
 /*
 * Tables page functions
 */
-async function tablesFunctions() {
-    console.log('Running tables functions');
+// async function tablesFunctions() {
+//     console.log('Running tables functions');
     
-    // Initial load of types for default brand
-    await updateTypesDropdown('1');
+//     // Initial load of types for default brand
+//     await updateTypesDropdown('1');
 
-    // Handle brand changes
-    $('#form_brand').on('change', async function() {
-        await updateTypesDropdown($(this).val());
-    });
-}
+//     // Handle brand changes
+//     $('#form_brand').on('change', async function() {
+//         await updateTypesDropdown($(this).val());
+//     });
+// }
 
-async function updateTypesDropdown(brand) {
-    const types = await getTypesForBrand(brand);
-    renderTypesDropdown(types);
-}
+// async function updateTypesDropdown(brand) {
+//     const types = await getTypesForBrand(brand);
+//     renderTypesDropdown(types);
+// }
 
-async function getTypesForBrand(brand) {
-    const products = await db.getProducts();
-    return products
-        .filter(product => product.site === brand)
-        .reduce((acc, product) => {
-            if (!acc.some(item => item.type_slug === product.type_slug)) {
-                acc.push({ 
-                    type_slug: product.type_slug, 
-                    type_name: product.type_name 
-                });
-            }
-            return acc;
-        }, [])
-        .sort((a, b) => a.type_name.localeCompare(b.type_name));
-}
+// async function getTypesForBrand(brand) {
+//     const products = await db.getProducts();
+//     return products
+//         .filter(product => product.site === brand)
+//         .reduce((acc, product) => {
+//             if (!acc.some(item => item.type_slug === product.type_slug)) {
+//                 acc.push({ 
+//                     type_slug: product.type_slug, 
+//                     type_name: product.type_name 
+//                 });
+//             }
+//             return acc;
+//         }, [])
+//         .sort((a, b) => a.type_name.localeCompare(b.type_name));
+// }
 
-function renderTypesDropdown(types) {
-    Mustache.tags = ["[[", "]]"];
-    const template = $('#types_options').html();
-    const rendered = Mustache.render(template, { types });    
-    $('#form_type').html(rendered);
-}
+// function renderTypesDropdown(types) {
+//     Mustache.tags = ["[[", "]]"];
+//     const template = $('#types_options').html();
+//     const rendered = Mustache.render(template, { types });    
+//     $('#form_type').html(rendered);
+// }
 
-/* // END tablesFunctions */
+// /* // END tablesFunctions */
 
 
 
@@ -494,12 +538,26 @@ async function homeFunctions() {
 }
 /* // END homeFunctions */
 
+async function tablesFunctions() {
+
+    // Initial load with default brand
+    tables.updateTypesDropdown('1');
+    
+    // Handle brand changes
+    $('#form_brand').on('change', function() {
+        const selectedBrand = $(this).val();
+        console.log('Selected brand:', selectedBrand);
+        tables.updateTypesDropdown(selectedBrand);
+    });
+
+}
 
 module.exports = {
     homeFunctions,
-    tablesFunctions
+    tablesFunctions    
 };
-},{"./db":2,"mustache":6}],5:[function(require,module,exports){
+
+},{"./db":2,"./modules/tables":3,"mustache":7}],6:[function(require,module,exports){
 'use strict';
 
 const instanceOfAny = (object, constructors) => constructors.some((c) => object instanceof c);
@@ -811,7 +869,7 @@ exports.openDB = openDB;
 exports.unwrap = unwrap;
 exports.wrap = wrap;
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -1585,4 +1643,4 @@ exports.wrap = wrap;
 
 })));
 
-},{}]},{},[1,3,2,4]);
+},{}]},{},[1,4,2,5]);

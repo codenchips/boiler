@@ -1,6 +1,6 @@
 const Mustache = require('mustache');
 const db = require('./db'); // Import the db module
-
+const tables = require('./modules/tables');
 
 UIkit.modal('#add-special', { stack : true });
 
@@ -24,47 +24,47 @@ var iconX = function(cell, formatterParams, onRendered) {
 /*
 * Tables page functions
 */
-async function tablesFunctions() {
-    console.log('Running tables functions');
+// async function tablesFunctions() {
+//     console.log('Running tables functions');
     
-    // Initial load of types for default brand
-    await updateTypesDropdown('1');
+//     // Initial load of types for default brand
+//     await updateTypesDropdown('1');
 
-    // Handle brand changes
-    $('#form_brand').on('change', async function() {
-        await updateTypesDropdown($(this).val());
-    });
-}
+//     // Handle brand changes
+//     $('#form_brand').on('change', async function() {
+//         await updateTypesDropdown($(this).val());
+//     });
+// }
 
-async function updateTypesDropdown(brand) {
-    const types = await getTypesForBrand(brand);
-    renderTypesDropdown(types);
-}
+// async function updateTypesDropdown(brand) {
+//     const types = await getTypesForBrand(brand);
+//     renderTypesDropdown(types);
+// }
 
-async function getTypesForBrand(brand) {
-    const products = await db.getProducts();
-    return products
-        .filter(product => product.site === brand)
-        .reduce((acc, product) => {
-            if (!acc.some(item => item.type_slug === product.type_slug)) {
-                acc.push({ 
-                    type_slug: product.type_slug, 
-                    type_name: product.type_name 
-                });
-            }
-            return acc;
-        }, [])
-        .sort((a, b) => a.type_name.localeCompare(b.type_name));
-}
+// async function getTypesForBrand(brand) {
+//     const products = await db.getProducts();
+//     return products
+//         .filter(product => product.site === brand)
+//         .reduce((acc, product) => {
+//             if (!acc.some(item => item.type_slug === product.type_slug)) {
+//                 acc.push({ 
+//                     type_slug: product.type_slug, 
+//                     type_name: product.type_name 
+//                 });
+//             }
+//             return acc;
+//         }, [])
+//         .sort((a, b) => a.type_name.localeCompare(b.type_name));
+// }
 
-function renderTypesDropdown(types) {
-    Mustache.tags = ["[[", "]]"];
-    const template = $('#types_options').html();
-    const rendered = Mustache.render(template, { types });    
-    $('#form_type').html(rendered);
-}
+// function renderTypesDropdown(types) {
+//     Mustache.tags = ["[[", "]]"];
+//     const template = $('#types_options').html();
+//     const rendered = Mustache.render(template, { types });    
+//     $('#form_type').html(rendered);
+// }
 
-/* // END tablesFunctions */
+// /* // END tablesFunctions */
 
 
 
@@ -175,8 +175,21 @@ async function homeFunctions() {
 }
 /* // END homeFunctions */
 
+async function tablesFunctions() {
+
+    // Initial load with default brand
+    tables.updateTypesDropdown('1');
+    
+    // Handle brand changes
+    $('#form_brand').on('change', function() {
+        const selectedBrand = $(this).val();
+        console.log('Selected brand:', selectedBrand);
+        tables.updateTypesDropdown(selectedBrand);
+    });
+
+}
 
 module.exports = {
     homeFunctions,
-    tablesFunctions
+    tablesFunctions    
 };

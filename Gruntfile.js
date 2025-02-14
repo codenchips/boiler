@@ -10,7 +10,13 @@ module.exports = function(grunt) {
     browserify: {
       dist: {
         files: {
-          'app/js/bundle.js': ['app/js/app.js', 'app/js/router.js', 'app/js/db.js', 'app/js/sst.js']
+          'app/js/bundle.js': [
+            'app/js/app.js',
+            'app/js/router.js',
+            'app/js/db.js',
+            'app/js/modules/*.js',
+            'app/js/sst.js'
+          ]
         }
       }
     },
@@ -49,16 +55,6 @@ module.exports = function(grunt) {
         options: {
           preprocessTemplate: true,
           preservePipes: true,
-          process: function(content) {
-            // Preserve content within <script type="x-tmpl-mustache">
-            content = content.replace(
-              /<script type="x-tmpl-mustache">([\s\S]*?)<\/script>/g,
-              function(match) {
-                return match.replace(/{{/g, '\\{{').replace(/}}/g, '\\}}');
-              }
-            );
-            return content;
-          }
         },
         files: {
           "app/app.html": "app/main.html"
