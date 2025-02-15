@@ -242,6 +242,7 @@ module.exports = {
     getProducts,
     getProjects,
     syncData,
-    saveProductToRoom
+    saveProductToRoom,
+    getProductsForRoom
     // Add other database-related functions here
 };
