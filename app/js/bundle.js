@@ -253,6 +253,25 @@ const saveProductToRoom = async (product) => {
     console.log('Product added to room:', product);
 };
 
+const deleteProductFromRoom = async (sku, room_id) => {
+    const db = await initDB();
+    const tx = db.transaction("products", "readwrite");
+    const store = tx.objectStore("products");
+    const index = store.index("room_id_fk");
+
+    const products = await index.getAll(room_id);
+    const product = products.find(p => p.sku === sku);
+
+    if (product) {
+        await store.delete(product.uuid);
+        await tx.done;
+        console.log('Product deleted from room:', product);
+    } else {
+        console.log('Product not found in room:', sku);
+    }
+}
+
+
 async function isDatabaseEmpty() {
     const db = await initDB();
     const projectCount = await db.count('projects');
@@ -276,7 +295,8 @@ module.exports = {
     getProjects,
     syncData,
     saveProductToRoom,
-    getProductsForRoom
+    getProductsForRoom,
+    deleteProductFromRoom
     // Add other database-related functions here
 };
 
@@ -472,6 +492,30 @@ class TablesModule {
         return Object.values(groupedProducts);
     }    
 
+
+
+    async removeSkuDialog(sku) {
+        // open the del-sku modal and pass the sku to be deleted
+        $('span.place_sku').html(sku);
+        $('input#del_sku').val(sku);
+
+        UIkit.modal('#del-sku').show();
+        console.log('Remove SKU: ', sku);
+
+        $('#form-submit-del-sku').on('submit', async (e) => {
+            e.preventDefault();
+            const sku = $('#del_sku').val();
+            const room_id = $('#m_room_id').val();
+            
+            console.log('Delete SKU:', sku);
+            await db.deleteProductFromRoom(sku, room_id);
+            this.refreshTableData();
+            UIkit.modal('#del-sku').hide();
+            
+        });      
+
+    }
+
     async refreshTableData() {
         const allProductsInRoom = await db.getProductsForRoom($('#m_room_id').val());
         const groupedProducts = await this.groupProductsBySKU(allProductsInRoom);
@@ -514,12 +558,12 @@ class TablesModule {
                 },
                 {
                     title: "Ref",
-                    field: "qty",                    
+                    field: "ref",                    
                     visible: true
                 },
                 {
-                    title: "QTY",
-                    field: "ref",                    
+                    title: "Qty",
+                    field: "qty",                    
                     visible: true
                 },
                 {                    
@@ -528,14 +572,16 @@ class TablesModule {
                     formatter: utils.iconX,
                     width: 80,
                     hozAlign: "center",
-                    cellClick: function (e, cell) {
-                        deleteProject(cell.getRow().getData().project_id);
+                    cellClick: (e, cell) => {
+                        this.removeSkuDialog(cell.getRow().getData().sku);
                     }
                 },
             ],
         });
 
     }
+    
+
 
 }
 

@@ -220,6 +220,25 @@ const saveProductToRoom = async (product) => {
     console.log('Product added to room:', product);
 };
 
+const deleteProductFromRoom = async (sku, room_id) => {
+    const db = await initDB();
+    const tx = db.transaction("products", "readwrite");
+    const store = tx.objectStore("products");
+    const index = store.index("room_id_fk");
+
+    const products = await index.getAll(room_id);
+    const product = products.find(p => p.sku === sku);
+
+    if (product) {
+        await store.delete(product.uuid);
+        await tx.done;
+        console.log('Product deleted from room:', product);
+    } else {
+        console.log('Product not found in room:', sku);
+    }
+}
+
+
 async function isDatabaseEmpty() {
     const db = await initDB();
     const projectCount = await db.count('projects');
@@ -243,6 +262,7 @@ module.exports = {
     getProjects,
     syncData,
     saveProductToRoom,
-    getProductsForRoom
+    getProductsForRoom,
+    deleteProductFromRoom
     // Add other database-related functions here
 };

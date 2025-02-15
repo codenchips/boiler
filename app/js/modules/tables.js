@@ -189,6 +189,30 @@ class TablesModule {
         return Object.values(groupedProducts);
     }    
 
+
+
+    async removeSkuDialog(sku) {
+        // open the del-sku modal and pass the sku to be deleted
+        $('span.place_sku').html(sku);
+        $('input#del_sku').val(sku);
+
+        UIkit.modal('#del-sku').show();
+        console.log('Remove SKU: ', sku);
+
+        $('#form-submit-del-sku').on('submit', async (e) => {
+            e.preventDefault();
+            const sku = $('#del_sku').val();
+            const room_id = $('#m_room_id').val();
+            
+            console.log('Delete SKU:', sku);
+            await db.deleteProductFromRoom(sku, room_id);
+            this.refreshTableData();
+            UIkit.modal('#del-sku').hide();
+            
+        });      
+
+    }
+
     async refreshTableData() {
         const allProductsInRoom = await db.getProductsForRoom($('#m_room_id').val());
         const groupedProducts = await this.groupProductsBySKU(allProductsInRoom);
@@ -231,12 +255,12 @@ class TablesModule {
                 },
                 {
                     title: "Ref",
-                    field: "qty",                    
+                    field: "ref",                    
                     visible: true
                 },
                 {
-                    title: "QTY",
-                    field: "ref",                    
+                    title: "Qty",
+                    field: "qty",                    
                     visible: true
                 },
                 {                    
@@ -245,14 +269,16 @@ class TablesModule {
                     formatter: utils.iconX,
                     width: 80,
                     hozAlign: "center",
-                    cellClick: function (e, cell) {
-                        deleteProject(cell.getRow().getData().project_id);
+                    cellClick: (e, cell) => {
+                        this.removeSkuDialog(cell.getRow().getData().sku);
                     }
                 },
             ],
         });
 
     }
+    
+
 
 }
 

@@ -105,6 +105,33 @@
 <!--
     DIALOGS
 -->
+<!-- dleet SKU (group) modal -->
+<div id="del-sku" uk-modal>
+    <div class="uk-modal-dialog uk-margin-auto-vertical uk-modal-body">
+        <button class="uk-modal-close-default" type="button" uk-close></button>
+        <form id="form-submit-del-sku">
+            <div class="uk-text-center" uk-grid>
+                <div class="uk-width-1-1">
+                    <h3>Remove this product?</h3>
+                </div>
+
+                <div class="uk-width-1-1 uk-align-center">
+                    <p>Are you sure you want to remove the <span class="place_sku"></span> from the rooom?</p>
+                </div>
+
+                <div class="uk-width-1-1 uk-margin-small">
+                    <input type="hidden" name="del_sku" id="del_sku" value="" />
+
+                    <button  id="form-submit-del-sku" type="submit" class="uk-button uk-button-primary">Remove</button>
+                    <button  class="uk-modal-close uk-button uk-button-default">Cancel</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
 <!-- Copy Project -->
 <div id="copy-project-modal" uk-modal>
     <div class="uk-modal-dialog uk-margin-auto-vertical uk-modal-body">
