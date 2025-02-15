@@ -16,6 +16,8 @@ $(document).ready(function() {
 
     db.fetchAndStoreProducts(); 
 
+    db.syncData(8);
+
     // Get current path
     const pathParts = window.location.pathname
         .split('/')
@@ -27,7 +29,7 @@ $(document).ready(function() {
 
 
 });
-},{"./db":2,"./router":4,"./sst":5,"mustache":7}],2:[function(require,module,exports){
+},{"./db":2,"./router":5,"./sst":6,"mustache":8}],2:[function(require,module,exports){
 const { openDB } = require('idb');
 
 const DB_NAME = 'sst_database';
@@ -102,13 +104,20 @@ async function fetchAndStoreProducts() {
             console.error('Error fetching product data:', error);
         }
     } else {
-        console.log('Products already exist in IndexedDB, skipping API call.');
+        console.log('Product data is present in indexedDB, skipping fetch.');
     }
 }
 
 
 
 async function syncData(owner_id) {
+
+    const isEmpty = await isDatabaseEmpty();
+    if (!isEmpty) {
+        console.log('User data exists, skipping sync.');
+        return (false);
+    }
+
     const formData = new FormData();
     formData.append("user_id", owner_id); // Use the owner_id variable
     console.log('get userdata for user: ', owner_id);
@@ -133,7 +142,7 @@ async function syncData(owner_id) {
                 "readwrite"
             );
 
-            ["projects", "locations", "buildings", "floors", "rooms"].forEach(
+            ["projects", "locations", "buildings", "floors", "rooms", "products"].forEach(
                 (storeName) => {
                     const store = transaction.objectStore(storeName);
                     store.clear();  // Clear existing data
@@ -150,7 +159,7 @@ async function syncData(owner_id) {
                     });
                 }
             );
-
+            return(true);
             console.log("Data synced to IndexedDB successfully.");
         };
     } catch (error) {
@@ -263,13 +272,15 @@ module.exports = {
     initDB,
     fetchAndStoreProducts,
     getProducts,
-    getProjects
+    getProjects,
+    syncData
     // Add other database-related functions here
 };
 
-},{"idb":6}],3:[function(require,module,exports){
+},{"idb":7}],3:[function(require,module,exports){
 const db = require('../db');
 const Mustache = require('mustache');
+const utils = require('./utils');
 
 class TablesModule {
     constructor() {
@@ -278,7 +289,7 @@ class TablesModule {
 
     init() {
         if (this.isInitialized) return;
-        Mustache.tags = ["[[", "]]"];
+        Mustache.tags = ["[[", "]]"];        
         this.isInitialized = true;        
     }
 
@@ -385,10 +396,86 @@ class TablesModule {
         const rendered = Mustache.render(templateContent, { options: types, title: 'Select Type' });    
         $('#form_type').html(rendered);
     }
+
+
+    async addProductToRoomClick() {
+        const productData = {
+            brand: $('#form_brand').val(),
+            type: $('#form_type').val(),
+            product_slug: $('#form_product').val(),
+            product_name: $('#form_product option:selected').text(),
+            sku: $('#form_sku').val(),
+            
+            room_id_fk: $('#m_room_id').val(),
+            owner_id: '8', // Hardcoded for now
+            custom: 0,
+            ref: "",
+        }
+
+        console.log('Product data:', productData);
+
+        if ( !productData.sku ) {
+            UIkit.notification({
+                message: 'All fields are required',
+                status: 'danger',
+                pos: 'top-center',
+                timeout: 5000
+            });
+            return;
+        }
+
+        utils.showSpin();
+
+        try {
+            await db.saveProductToRoom(productData);
+            UIkit.notification({
+                message: 'Product added to room',
+                status: 'success',
+                pos: 'top-center',
+                timeout: 5000
+            });
+            utils.hideSpin();
+        } catch (err) {
+            console.error('Error saving product to room:', err);
+            UIkit.notification({
+                message: 'Error saving product to room',
+                status: 'danger',
+                pos: 'top-center',
+                timeout: 5000
+            });
+            utils.hideSpin();
+        }
+    }
+
+
 }
 
 module.exports = new TablesModule();
-},{"../db":2,"mustache":7}],4:[function(require,module,exports){
+},{"../db":2,"./utils":4,"mustache":8}],4:[function(require,module,exports){
+class UtilsModule {
+
+    constructor() {
+        this.isInitialized = false;
+    }
+
+    init() {
+        if (this.isInitialized) return;
+        Mustache.tags = ["[[", "]]"];
+        this.isInitialized = true;        
+    }
+
+    async showSpin() {
+        $('#spinner').fadeIn('fast');
+    }
+    
+    async hideSpin() {
+        $('#spinner').fadeOut('fast');
+    }
+    
+
+}
+module.exports = new UtilsModule();
+},{}],5:[function(require,module,exports){
 const Mustache = require('mustache');
 const db = require('./db'); // Import the db module
 const sst = require('./sst'); // Import the sst module
@@ -437,10 +524,12 @@ function router(path) {
 
 module.exports = router;
 
-},{"./db":2,"./sst":5,"mustache":7}],5:[function(require,module,exports){
+},{"./db":2,"./sst":6,"mustache":8}],6:[function(require,module,exports){
 const Mustache = require('mustache');
 const db = require('./db'); // Import the db module
 const tables = require('./modules/tables');
+const utils = require('./modules/utils');
+
 
 UIkit.modal('#add-special', { stack : true });
 
@@ -450,6 +539,7 @@ function showSpin() {
 function hideSpin() {
     $('#spinner').fadeOut('fast');
 }
+
 
 var iconPlus = function(cell, formatterParams, onRendered) {
     return '<i class="fa-solid fa-circle-plus"></i>';
@@ -465,7 +555,7 @@ var iconX = function(cell, formatterParams, onRendered) {
 *   Tables page functions
 */
 async function tablesFunctions() {
-    tables.init();    
+    tables.init();        
     
     // Initial load with default brand
     await tables.updateTypesDropdown('1');
@@ -482,6 +572,13 @@ async function tablesFunctions() {
     $('#form_product').on('change', async function() {
         await tables.updateSkusDropdown($(this).val());
     });    
+
+    $('#btn_add_product').on('click', async function() {
+
+        await tables.addProductToRoomClick();
+        
+    });
+    
 
 }
 /* 
@@ -604,7 +701,7 @@ module.exports = {
     tablesFunctions    
 };
 
-},{"./db":2,"./modules/tables":3,"mustache":7}],6:[function(require,module,exports){
+},{"./db":2,"./modules/tables":3,"./modules/utils":4,"mustache":8}],7:[function(require,module,exports){
 'use strict';
 
 const instanceOfAny = (object, constructors) => constructors.some((c) => object instanceof c);
@@ -916,7 +1013,7 @@ exports.openDB = openDB;
 exports.unwrap = unwrap;
 exports.wrap = wrap;
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -1690,4 +1787,4 @@ exports.wrap = wrap;
 
 })));
 
-},{}]},{},[1,4,2,3,5]);
+},{}]},{},[1,5,2,3,4,6]);

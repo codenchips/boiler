@@ -1,6 +1,8 @@
 const Mustache = require('mustache');
 const db = require('./db'); // Import the db module
 const tables = require('./modules/tables');
+const utils = require('./modules/utils');
+
 
 UIkit.modal('#add-special', { stack : true });
 
@@ -10,6 +12,7 @@ function showSpin() {
 function hideSpin() {
     $('#spinner').fadeOut('fast');
 }
+
 
 var iconPlus = function(cell, formatterParams, onRendered) {
     return '<i class="fa-solid fa-circle-plus"></i>';
@@ -25,7 +28,7 @@ var iconX = function(cell, formatterParams, onRendered) {
 *   Tables page functions
 */
 async function tablesFunctions() {
-    tables.init();    
+    tables.init();        
     
     // Initial load with default brand
     await tables.updateTypesDropdown('1');
@@ -42,6 +45,13 @@ async function tablesFunctions() {
     $('#form_product').on('change', async function() {
         await tables.updateSkusDropdown($(this).val());
     });    
+
+    $('#btn_add_product').on('click', async function() {
+
+        await tables.addProductToRoomClick();
+        
+    });
+    
 
 }
 /* 

@@ -1,5 +1,6 @@
 const db = require('../db');
 const Mustache = require('mustache');
+const utils = require('./utils');
 
 class TablesModule {
     constructor() {
@@ -8,7 +9,7 @@ class TablesModule {
 
     init() {
         if (this.isInitialized) return;
-        Mustache.tags = ["[[", "]]"];
+        Mustache.tags = ["[[", "]]"];        
         this.isInitialized = true;        
     }
 
@@ -115,6 +116,58 @@ class TablesModule {
         const rendered = Mustache.render(templateContent, { options: types, title: 'Select Type' });    
         $('#form_type').html(rendered);
     }
+
+
+    async addProductToRoomClick() {
+        const productData = {
+            brand: $('#form_brand').val(),
+            type: $('#form_type').val(),
+            product_slug: $('#form_product').val(),
+            product_name: $('#form_product option:selected').text(),
+            sku: $('#form_sku').val(),
+            
+            room_id_fk: $('#m_room_id').val(),
+            owner_id: '8', // Hardcoded for now
+            custom: 0,
+            ref: "",
+        }
+
+        console.log('Product data:', productData);
+
+        if ( !productData.sku ) {
+            UIkit.notification({
+                message: 'All fields are required',
+                status: 'danger',
+                pos: 'top-center',
+                timeout: 5000
+            });
+            return;
+        }
+
+        utils.showSpin();
+
+        try {
+            await db.saveProductToRoom(productData);
+            UIkit.notification({
+                message: 'Product added to room',
+                status: 'success',
+                pos: 'top-center',
+                timeout: 5000
+            });
+            utils.hideSpin();
+        } catch (err) {
+            console.error('Error saving product to room:', err);
+            UIkit.notification({
+                message: 'Error saving product to room',
+                status: 'danger',
+                pos: 'top-center',
+                timeout: 5000
+            });
+            utils.hideSpin();
+        }
+    }
+
+
 }
 
 module.exports = new TablesModule();

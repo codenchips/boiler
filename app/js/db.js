@@ -72,13 +72,20 @@ async function fetchAndStoreProducts() {
             console.error('Error fetching product data:', error);
         }
     } else {
-        console.log('Products already exist in IndexedDB, skipping API call.');
+        console.log('Product data is present in indexedDB, skipping fetch.');
     }
 }
 
 
 
 async function syncData(owner_id) {
+
+    const isEmpty = await isDatabaseEmpty();
+    if (!isEmpty) {
+        console.log('User data exists, skipping sync.');
+        return (false);
+    }
+
     const formData = new FormData();
     formData.append("user_id", owner_id); // Use the owner_id variable
     console.log('get userdata for user: ', owner_id);
@@ -103,7 +110,7 @@ async function syncData(owner_id) {
                 "readwrite"
             );
 
-            ["projects", "locations", "buildings", "floors", "rooms"].forEach(
+            ["projects", "locations", "buildings", "floors", "rooms", "products"].forEach(
                 (storeName) => {
                     const store = transaction.objectStore(storeName);
                     store.clear();  // Clear existing data
@@ -120,7 +127,7 @@ async function syncData(owner_id) {
                     });
                 }
             );
-
+            return(true);
             console.log("Data synced to IndexedDB successfully.");
         };
     } catch (error) {
@@ -233,6 +240,7 @@ module.exports = {
     initDB,
     fetchAndStoreProducts,
     getProducts,
-    getProjects
+    getProjects,
+    syncData
     // Add other database-related functions here
 };

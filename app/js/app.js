@@ -15,6 +15,9 @@ $(document).ready(function() {
 
     db.fetchAndStoreProducts(); 
 
+    
+    db.syncData(8);
+
     // Get current path
     const pathParts = window.location.pathname
         .split('/')
