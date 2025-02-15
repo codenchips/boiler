@@ -6,23 +6,7 @@ const utils = require('./modules/utils');
 
 UIkit.modal('#add-special', { stack : true });
 
-function showSpin() {
-    $('#spinner').fadeIn('fast');
-}
-function hideSpin() {
-    $('#spinner').fadeOut('fast');
-}
 
-
-var iconPlus = function(cell, formatterParams, onRendered) {
-    return '<i class="fa-solid fa-circle-plus"></i>';
-};
-var iconMinus = function(cell, formatterParams, onRendered) {
-    return '<i class="fa-solid fa-circle-minus"></i>';
-};
-var iconX = function(cell, formatterParams, onRendered) {
-    return '<span class="icon red" uk-icon="icon: trash; ratio: 1.3" title="Delete this project"></span>';
-};    
 
 /*
 *   Tables page functions
@@ -47,10 +31,10 @@ async function tablesFunctions() {
     });    
 
     $('#btn_add_product').on('click', async function() {
-
-        await tables.addProductToRoomClick();
-        
+        await tables.addProductToRoomClick();       
     });
+
+    await tables.renderProdctsTable();
     
 
 }
@@ -149,7 +133,7 @@ async function homeFunctions() {
                 {                    
                     visible: true,
                     headerSort: false,
-                    formatter: iconX,
+                    formatter: utils.iconX,
                     width: 80,
                     hozAlign: "center",
                     cellClick: function (e, cell) {

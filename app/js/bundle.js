@@ -454,6 +454,86 @@ class TablesModule {
     }
 
 
+    async renderProdctsTable() {
+
+        const tabledata = [
+            {
+                project_name: "My Project",
+                project_slug: "my-project",
+                version: "1",
+                project_id: "23",
+                created: "27/1/25",
+                products: "10"
+            }
+        ];
+
+        var dashTable = new Tabulator("#ptable", {
+            data: tabledata,            
+            loader: false,
+            layout: "fitColumns",
+            dataLoaderError: "There was an error loading the data",
+            initialSort:[
+                {column:"project_name", dir:"asc"}, //sort by this first
+            ],
+            columns: [{
+                    title: "project_id",
+                    field: "id",
+                    visible: false
+                },
+                {
+                    title: "project_slug",
+                    field: "project_slug",
+                    visible: false
+                },
+                {
+                    title: "Project Name",
+                    field: "project_name",
+                    formatter: "link",
+                    sorter:"string",
+                    visible: true,
+                    headerSortStartingDir:"desc",
+                    formatterParams:{
+                        labelField: "project_name",
+                        target: "_self",
+                        url: "#",
+                    },
+                    cellClick: function(e, cell) {
+                        location = "/tables/"+cell.getRow().getData().project_id;
+                    }
+                },
+                {
+                    title: "Products",
+                    field: "products",
+                    width: 120
+                },
+                {
+                    title: "Rev",
+                    field: "version",
+                    width: 80,
+                    visible: false
+                },
+                {
+                    title: "Created",
+                    field: "created",
+                    width: 110,
+                    visible: false
+                },
+                {                    
+                    visible: true,
+                    headerSort: false,
+                    formatter: utils.iconX,
+                    width: 80,
+                    hozAlign: "center",
+                    cellClick: function (e, cell) {
+                        deleteProject(cell.getRow().getData().project_id);
+                    }
+                },
+            ],
+        });
+        //dashTable.setData(data);
+
+    }
+
 }
 
 module.exports = new TablesModule();
@@ -461,7 +541,17 @@ module.exports = new TablesModule();
 class UtilsModule {
 
     constructor() {
-        this.isInitialized = false;
+        this.isInitialized = false;   
+        
+        this.iconPlus = function(cell, formatterParams, onRendered) {
+            return '<i class="fa-solid fa-circle-plus"></i>';
+        };
+        this.iconMinus = function(cell, formatterParams, onRendered) {
+            return '<i class="fa-solid fa-circle-minus"></i>';
+        };
+        this.iconX = function(cell, formatterParams, onRendered) {
+            return '<span class="icon red" uk-icon="icon: trash; ratio: 1.3" title="Delete this project"></span>';
+        };        
     }
 
     init() {
@@ -469,6 +559,7 @@ class UtilsModule {
         Mustache.tags = ["[[", "]]"];
         this.isInitialized = true;        
     }
+
 
     async showSpin() {
         $('#spinner').fadeIn('fast');
@@ -544,23 +635,7 @@ const utils = require('./modules/utils');
 
 UIkit.modal('#add-special', { stack : true });
 
-function showSpin() {
-    $('#spinner').fadeIn('fast');
-}
-function hideSpin() {
-    $('#spinner').fadeOut('fast');
-}
 
-
-var iconPlus = function(cell, formatterParams, onRendered) {
-    return '<i class="fa-solid fa-circle-plus"></i>';
-};
-var iconMinus = function(cell, formatterParams, onRendered) {
-    return '<i class="fa-solid fa-circle-minus"></i>';
-};
-var iconX = function(cell, formatterParams, onRendered) {
-    return '<span class="icon red" uk-icon="icon: trash; ratio: 1.3" title="Delete this project"></span>';
-};    
 
 /*
 *   Tables page functions
@@ -585,10 +660,10 @@ async function tablesFunctions() {
     });    
 
     $('#btn_add_product').on('click', async function() {
-
-        await tables.addProductToRoomClick();
-        
+        await tables.addProductToRoomClick();       
     });
+
+    await tables.renderProdctsTable();
     
 
 }
@@ -687,7 +762,7 @@ async function homeFunctions() {
                 {                    
                     visible: true,
                     headerSort: false,
-                    formatter: iconX,
+                    formatter: utils.iconX,
                     width: 80,
                     hozAlign: "center",
                     cellClick: function (e, cell) {

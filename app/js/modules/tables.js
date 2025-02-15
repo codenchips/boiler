@@ -172,6 +172,86 @@ class TablesModule {
     }
 
 
+    async renderProdctsTable() {
+
+        const tabledata = [
+            {
+                project_name: "My Project",
+                project_slug: "my-project",
+                version: "1",
+                project_id: "23",
+                created: "27/1/25",
+                products: "10"
+            }
+        ];
+
+        var dashTable = new Tabulator("#ptable", {
+            data: tabledata,            
+            loader: false,
+            layout: "fitColumns",
+            dataLoaderError: "There was an error loading the data",
+            initialSort:[
+                {column:"project_name", dir:"asc"}, //sort by this first
+            ],
+            columns: [{
+                    title: "project_id",
+                    field: "id",
+                    visible: false
+                },
+                {
+                    title: "project_slug",
+                    field: "project_slug",
+                    visible: false
+                },
+                {
+                    title: "Project Name",
+                    field: "project_name",
+                    formatter: "link",
+                    sorter:"string",
+                    visible: true,
+                    headerSortStartingDir:"desc",
+                    formatterParams:{
+                        labelField: "project_name",
+                        target: "_self",
+                        url: "#",
+                    },
+                    cellClick: function(e, cell) {
+                        location = "/tables/"+cell.getRow().getData().project_id;
+                    }
+                },
+                {
+                    title: "Products",
+                    field: "products",
+                    width: 120
+                },
+                {
+                    title: "Rev",
+                    field: "version",
+                    width: 80,
+                    visible: false
+                },
+                {
+                    title: "Created",
+                    field: "created",
+                    width: 110,
+                    visible: false
+                },
+                {                    
+                    visible: true,
+                    headerSort: false,
+                    formatter: utils.iconX,
+                    width: 80,
+                    hozAlign: "center",
+                    cellClick: function (e, cell) {
+                        deleteProject(cell.getRow().getData().project_id);
+                    }
+                },
+            ],
+        });
+        //dashTable.setData(data);
+
+    }
+
 }
 
 module.exports = new TablesModule();
