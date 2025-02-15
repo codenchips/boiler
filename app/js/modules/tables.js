@@ -5,11 +5,12 @@ const utils = require('./utils');
 class TablesModule {
     constructor() {
         this.isInitialized = false;
+        this.pTable = null;
     }
 
     init() {
         if (this.isInitialized) return;
-        Mustache.tags = ["[[", "]]"];        
+        Mustache.tags = ["[[", "]]"];                
         this.isInitialized = true;        
     }
 
@@ -152,6 +153,9 @@ class TablesModule {
 
         try {
             await db.saveProductToRoom(productData);
+
+            this.refreshTableData();
+
             UIkit.notification({
                 message: 'Product added to room',
                 status: 'success',
@@ -172,12 +176,32 @@ class TablesModule {
     }
 
 
+    // Group products by SKU and count occurrences
+    async groupProductsBySKU(products) {
+        const groupedProducts = products.reduce((acc, product) => {
+            if (!acc[product.sku]) {
+                acc[product.sku] = { ...product, qty: 0 };
+            }
+            acc[product.sku].qty += 1;
+            return acc;
+        }, {});
+
+        return Object.values(groupedProducts);
+    }    
+
+    async refreshTableData() {
+        const allProductsInRoom = await db.getProductsForRoom($('#m_room_id').val());
+        const groupedProducts = await this.groupProductsBySKU(allProductsInRoom);
+        this.pTable.setData(groupedProducts);
+    }
+
     async renderProdctsTable() {
 
-        const productsInRoomData = await db.getProductsForRoom($('#m_room_id').val());
+        const allProductsInRoom = await db.getProductsForRoom($('#m_room_id').val());
+        const groupedProducts = await this.groupProductsBySKU(allProductsInRoom);
 
-        var dashTable = new Tabulator("#ptable", {
-            data: productsInRoomData,            
+        this.pTable = new Tabulator("#ptable", {
+            data: groupedProducts,            
             loader: false,
             layout: "fitColumns",
             dataLoaderError: "There was an error loading the data",
@@ -207,7 +231,7 @@ class TablesModule {
                 },
                 {
                     title: "Ref",
-                    field: "ref",                    
+                    field: "qty",                    
                     visible: true
                 },
                 {
@@ -227,7 +251,6 @@ class TablesModule {
                 },
             ],
         });
-        //dashTable.setData(data);
 
     }
 
