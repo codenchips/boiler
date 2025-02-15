@@ -209,7 +209,7 @@ const saveProductToRoom = async (product) => {
 
     // Ensure the product has a uuid and room_id_fk
     if (!product.uuid) {
-        product.uuid = uuidv4();
+        product.uuid = generateUUID();
     }
     if (!product.room_id_fk) {
         throw new Error("room_id_fk is required");
@@ -241,6 +241,7 @@ module.exports = {
     fetchAndStoreProducts,
     getProducts,
     getProjects,
-    syncData
+    syncData,
+    saveProductToRoom
     // Add other database-related functions here
 };

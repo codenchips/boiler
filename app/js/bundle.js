@@ -16,6 +16,7 @@ $(document).ready(function() {
 
     db.fetchAndStoreProducts(); 
 
+    
     db.syncData(8);
 
     // Get current path
@@ -241,7 +242,7 @@ const saveProductToRoom = async (product) => {
 
     // Ensure the product has a uuid and room_id_fk
     if (!product.uuid) {
-        product.uuid = uuidv4();
+        product.uuid = generateUUID();
     }
     if (!product.room_id_fk) {
         throw new Error("room_id_fk is required");
@@ -273,7 +274,8 @@ module.exports = {
     fetchAndStoreProducts,
     getProducts,
     getProjects,
-    syncData
+    syncData,
+    saveProductToRoom
     // Add other database-related functions here
 };
 
@@ -399,20 +401,24 @@ class TablesModule {
 
 
     async addProductToRoomClick() {
+
         const productData = {
             brand: $('#form_brand').val(),
             type: $('#form_type').val(),
             product_slug: $('#form_product').val(),
             product_name: $('#form_product option:selected').text(),
-            sku: $('#form_sku').val(),
-            
+            sku: $('#form_sku').val(),            
             room_id_fk: $('#m_room_id').val(),
             owner_id: '8', // Hardcoded for now
             custom: 0,
             ref: "",
-        }
+            created_on: await utils.formatDateTime(new Date()),
+            last_updated: await utils.formatDateTime(new Date()),
+            order: null,
+            range: null
+        };
 
-        console.log('Product data:', productData);
+        console.log('Add product, data:', productData);
 
         if ( !productData.sku ) {
             UIkit.notification({
@@ -467,9 +473,14 @@ class UtilsModule {
     async showSpin() {
         $('#spinner').fadeIn('fast');
     }
-    
+
     async hideSpin() {
         $('#spinner').fadeOut('fast');
+    }
+
+    async formatDateTime (date) {
+        const pad = (num) => num.toString().padStart(2, '0');
+        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
     }
     
 

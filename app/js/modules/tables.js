@@ -119,20 +119,24 @@ class TablesModule {
 
 
     async addProductToRoomClick() {
+
         const productData = {
             brand: $('#form_brand').val(),
             type: $('#form_type').val(),
             product_slug: $('#form_product').val(),
             product_name: $('#form_product option:selected').text(),
-            sku: $('#form_sku').val(),
-            
+            sku: $('#form_sku').val(),            
             room_id_fk: $('#m_room_id').val(),
             owner_id: '8', // Hardcoded for now
             custom: 0,
             ref: "",
-        }
+            created_on: await utils.formatDateTime(new Date()),
+            last_updated: await utils.formatDateTime(new Date()),
+            order: null,
+            range: null
+        };
 
-        console.log('Product data:', productData);
+        console.log('Add product, data:', productData);
 
         if ( !productData.sku ) {
             UIkit.notification({
