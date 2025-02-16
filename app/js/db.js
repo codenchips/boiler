@@ -245,12 +245,12 @@ const setSkuQtyForRoom = async (qty, sku, room_id) => {
     const products = await index.getAll(room_id);
     const product = products.find(p => p.sku === sku);
 
-    console.log(`setting qty for sku: ${sku} in room: ${room_id} to ${qty}`);
-    
+    console.log(`setting qty for sku: ${sku} in room: ${room_id} to ${qty}`);  
 
     // Remove all existing products with the given SKU in the specified room
     for (const product of products) {
         if (product.sku === sku) {
+            console.warn('Deleting product:', product);
             await store.delete(product.uuid);
         }
     }

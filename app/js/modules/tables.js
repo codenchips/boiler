@@ -199,7 +199,7 @@ class TablesModule {
         UIkit.modal('#del-sku').show();
         console.log('Remove SKU: ', sku);
 
-        $('#form-submit-del-sku').on('submit', async (e) => {
+        $('#form-submit-del-sku').off('submit').on('submit', async (e) => {
             e.preventDefault();
             const sku = $('#del_sku').val();
             const room_id = $('#m_room_id').val();
@@ -221,7 +221,7 @@ class TablesModule {
         UIkit.modal('#set-qty').show();
         console.log('Set qty for SKU: ', sku);
 
-        $('#form-submit-set-qty').on('submit', async (e) => {
+        $('#form-submit-set-qty').off('submit').on('submit', async (e) => {
             e.preventDefault();
             const qty = $('#set_qty_qty').val();
             const sku = $('#set_qty_sku').val();

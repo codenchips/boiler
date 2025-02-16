@@ -278,12 +278,12 @@ const setSkuQtyForRoom = async (qty, sku, room_id) => {
     const products = await index.getAll(room_id);
     const product = products.find(p => p.sku === sku);
 
-    console.log(`setting qty for sku: ${sku} in room: ${room_id} to ${qty}`);
-    
+    console.log(`setting qty for sku: ${sku} in room: ${room_id} to ${qty}`);  
 
     // Remove all existing products with the given SKU in the specified room
     for (const product of products) {
         if (product.sku === sku) {
+            console.warn('Deleting product:', product);
             await store.delete(product.uuid);
         }
     }
@@ -527,7 +527,7 @@ class TablesModule {
         UIkit.modal('#del-sku').show();
         console.log('Remove SKU: ', sku);
 
-        $('#form-submit-del-sku').on('submit', async (e) => {
+        $('#form-submit-del-sku').off('submit').on('submit', async (e) => {
             e.preventDefault();
             const sku = $('#del_sku').val();
             const room_id = $('#m_room_id').val();
@@ -549,7 +549,7 @@ class TablesModule {
         UIkit.modal('#set-qty').show();
         console.log('Set qty for SKU: ', sku);
 
-        $('#form-submit-set-qty').on('submit', async (e) => {
+        $('#form-submit-set-qty').off('submit').on('submit', async (e) => {
             e.preventDefault();
             const qty = $('#set_qty_qty').val();
             const sku = $('#set_qty_sku').val();
