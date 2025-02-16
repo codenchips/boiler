@@ -599,7 +599,7 @@ class TablesModule {
             layout: "fitColumns",
             dataLoaderError: "There was an error loading the data",
             initialSort:[
-                {column:"project_name", dir:"asc"}, //sort by this first
+                {column:"product_slug", dir:"asc"}, //sort by this first
             ],
             columns: [{
                     title: "product_id",
@@ -656,15 +656,11 @@ class TablesModule {
                 },
             ],
         });
-        this.pTable.on("cellEdited", function (cell) {
-            //cell - cell component
+        this.pTable.on("cellEdited", function (cell) {            
             const sku = cell.getRow().getData().sku;
             const room_id = $('#m_room_id').val();
-            const ref = cell.getRow().getData().ref
-            console.log('sku: '+sku+' ref: '+ref);
-            db.updateProductRef(room_id, sku, ref);
- 
-          
+            const ref = cell.getRow().getData().ref            
+            db.updateProductRef(room_id, sku, ref);         
         });        
 
     }
