@@ -271,6 +271,29 @@ const deleteProductFromRoom = async (sku, room_id) => {
     }
 }
 
+const setSkuQtyForRoom = async (qty, sku, room_id) => {
+    const db = await initDB();
+    const tx = db.transaction("products", "readwrite");
+    const store = tx.objectStore("products");
+    const index = store.index("room_id_fk");
+
+    const products = await index.getAll(room_id);
+    const product = products.find(p => p.sku === sku);
+
+    console.log(`setting qty for sku: ${sku} in room: ${room_id} to ${qty}`);
+    return;
+
+
+    if (product) {
+        product.qty = qty;
+        await store.put(product);
+        await tx.done;
+        console.log('Product quantity updated:', product);
+    } else {
+        console.log('Product not found in room:', sku);
+    }
+}
+
 
 async function isDatabaseEmpty() {
     const db = await initDB();
@@ -296,7 +319,8 @@ module.exports = {
     syncData,
     saveProductToRoom,
     getProductsForRoom,
-    deleteProductFromRoom
+    deleteProductFromRoom,
+    setSkuQtyForRoom
     // Add other database-related functions here
 };
 
@@ -513,8 +537,31 @@ class TablesModule {
             UIkit.modal('#del-sku').hide();
             
         });      
-
     }
+
+    async setQtyDialog(sku, qty) {
+        // open the del-sku modal and pass the sku to be deleted
+        $('span.place_sku').html(sku);
+        $('input#set_qty_sku').val(sku);
+        $('input#set_qty_qty').val(qty);
+
+        UIkit.modal('#set-qty').show();
+        console.log('Set qty for SKU: ', sku);
+
+        $('#form-submit-set-qty').on('submit', async (e) => {
+            e.preventDefault();
+            const qty = $('#set_qty_qty').val();
+            const sku = $('#set_qty_sku').val();
+            const room_id = $('#m_room_id').val();
+            
+            console.log('setqty for  SKU:', sku);
+            await db.setSkuQtyForRoom(qty, sku, room_id);
+            this.refreshTableData();
+            UIkit.modal('#set-qty').hide();
+            
+        });      
+    }
+
 
     async refreshTableData() {
         const allProductsInRoom = await db.getProductsForRoom($('#m_room_id').val());
@@ -564,7 +611,10 @@ class TablesModule {
                 {
                     title: "Qty",
                     field: "qty",                    
-                    visible: true
+                    visible: true,
+                    cellClick: (e, cell) => {
+                        this.setQtyDialog(cell.getRow().getData().sku, cell.getRow().getData().qty);
+                    }                    
                 },
                 {                    
                     visible: true,
