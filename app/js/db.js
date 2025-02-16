@@ -245,8 +245,6 @@ const setSkuQtyForRoom = async (qty, sku, room_id) => {
     const products = await index.getAll(room_id);
     const product = products.find(p => p.sku === sku);
 
-    console.log(`setting qty for sku: ${sku} in room: ${room_id} to ${qty}`);  
-
     // Remove all existing products with the given SKU in the specified room
     for (const product of products) {
         if (product.sku === sku) {
@@ -261,6 +259,25 @@ const setSkuQtyForRoom = async (qty, sku, room_id) => {
         await store.add(newProduct);
     }
 }
+
+
+const updateProductRef = async (room_id, sku, ref) => {
+    const db = await initDB();
+    const tx = db.transaction("products", "readwrite");
+    const store = tx.objectStore("products");
+    const index = store.index("room_id_fk");
+
+    const products = await index.getAll(room_id);
+    const product = products.find(p => p.sku === sku);    
+
+    if (product) {
+        product.ref = ref;
+        await store.put(product);
+    } else {
+        console.error('Product not found for SKU:', sku);
+    }
+}
+
 
 
 async function isDatabaseEmpty() {
@@ -288,6 +305,7 @@ module.exports = {
     saveProductToRoom,
     getProductsForRoom,
     deleteProductFromRoom,
-    setSkuQtyForRoom
+    setSkuQtyForRoom,
+    updateProductRef
     // Add other database-related functions here
 };

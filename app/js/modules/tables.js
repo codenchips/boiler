@@ -279,7 +279,16 @@ class TablesModule {
                 {
                     title: "Ref",
                     field: "ref",                    
-                    visible: true
+                    visible: true,
+                    editor: "input",
+                    editorParams: {
+                        search: true,
+                        mask: "",
+                        selectContents: true,
+                        elementAttributes: {
+                            maxlength: "7",
+                        }
+                    }                    
                 },
                 {
                     title: "Qty",
@@ -301,6 +310,16 @@ class TablesModule {
                 },
             ],
         });
+        this.pTable.on("cellEdited", function (cell) {
+            //cell - cell component
+            const sku = cell.getRow().getData().sku;
+            const room_id = $('#m_room_id').val();
+            const ref = cell.getRow().getData().ref
+            console.log('sku: '+sku+' ref: '+ref);
+            db.updateProductRef(room_id, sku, ref);
+ 
+          
+        });        
 
     }
     

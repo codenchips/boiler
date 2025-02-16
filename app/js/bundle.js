@@ -278,8 +278,6 @@ const setSkuQtyForRoom = async (qty, sku, room_id) => {
     const products = await index.getAll(room_id);
     const product = products.find(p => p.sku === sku);
 
-    console.log(`setting qty for sku: ${sku} in room: ${room_id} to ${qty}`);  
-
     // Remove all existing products with the given SKU in the specified room
     for (const product of products) {
         if (product.sku === sku) {
@@ -294,6 +292,25 @@ const setSkuQtyForRoom = async (qty, sku, room_id) => {
         await store.add(newProduct);
     }
 }
+
+
+const updateProductRef = async (room_id, sku, ref) => {
+    const db = await initDB();
+    const tx = db.transaction("products", "readwrite");
+    const store = tx.objectStore("products");
+    const index = store.index("room_id_fk");
+
+    const products = await index.getAll(room_id);
+    const product = products.find(p => p.sku === sku);    
+
+    if (product) {
+        product.ref = ref;
+        await store.put(product);
+    } else {
+        console.error('Product not found for SKU:', sku);
+    }
+}
+
 
 
 async function isDatabaseEmpty() {
@@ -321,7 +338,8 @@ module.exports = {
     saveProductToRoom,
     getProductsForRoom,
     deleteProductFromRoom,
-    setSkuQtyForRoom
+    setSkuQtyForRoom,
+    updateProductRef
     // Add other database-related functions here
 };
 
@@ -607,7 +625,16 @@ class TablesModule {
                 {
                     title: "Ref",
                     field: "ref",                    
-                    visible: true
+                    visible: true,
+                    editor: "input",
+                    editorParams: {
+                        search: true,
+                        mask: "",
+                        selectContents: true,
+                        elementAttributes: {
+                            maxlength: "7",
+                        }
+                    }                    
                 },
                 {
                     title: "Qty",
@@ -629,6 +656,16 @@ class TablesModule {
                 },
             ],
         });
+        this.pTable.on("cellEdited", function (cell) {
+            //cell - cell component
+            const sku = cell.getRow().getData().sku;
+            const room_id = $('#m_room_id').val();
+            const ref = cell.getRow().getData().ref
+            console.log('sku: '+sku+' ref: '+ref);
+            db.updateProductRef(room_id, sku, ref);
+ 
+          
+        });        
 
     }
     
@@ -673,6 +710,36 @@ class UtilsModule {
         const pad = (num) => num.toString().padStart(2, '0');
         return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
     }
+
+    async deleteCookie( name, path, domain ) {
+        if( getCookie( name ) ) {
+            document.cookie = name + "=" +
+                ((path) ? ";path="+path:"")+
+                ((domain)?";domain="+domain:"") +
+                ";expires=Thu, 01 Jan 1970 00:00:01 GMT";
+        }
+    }
+    async setCookie(cname, cvalue, exdays) {
+        const d = new Date();
+        d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
+        let expires = "expires="+d.toUTCString();
+        document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+    }
+
+    async getCookie(cname) {
+        let name = cname + "=";
+        let ca = document.cookie.split(';');
+        for(let i = 0; i < ca.length; i++) {
+            let c = ca[i];
+            while (c.charAt(0) == ' ') {
+                c = c.substring(1);
+            }
+            if (c.indexOf(name) == 0) {
+                return c.substring(name.length, c.length);
+            }
+        }
+        return "";
+    }    
     
 
 }
