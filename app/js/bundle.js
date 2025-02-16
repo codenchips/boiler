@@ -24,8 +24,16 @@ $(document).ready(function() {
         .split('/')
         .filter(part => part.length > 0);
     
+
+// todo: manage url parts with server.js         
     // Use the router function from the router module
-    router(pathParts[0] || 'home');   
+    const projectId = pathParts[1] || '';
+    router(pathParts[0] || 'home', projectId);
+
+    // Set the project id in the hidden input
+    if (projectId) {
+        $('#m_project_id').val(projectId);
+    }
 
 
 
@@ -746,7 +754,8 @@ const db = require('./db'); // Import the db module
 const sst = require('./sst'); // Import the sst module
 
 
-function router(path) {
+function router(path, project_id) {
+    
     switch(path) {
         case 'tables':
             // Load Tables template

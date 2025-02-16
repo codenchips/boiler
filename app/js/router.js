@@ -3,7 +3,8 @@ const db = require('./db'); // Import the db module
 const sst = require('./sst'); // Import the sst module
 
 
-function router(path) {
+function router(path, project_id) {
+    
     switch(path) {
         case 'tables':
             // Load Tables template

@@ -23,8 +23,16 @@ $(document).ready(function() {
         .split('/')
         .filter(part => part.length > 0);
     
+
+// todo: manage url parts with server.js         
     // Use the router function from the router module
-    router(pathParts[0] || 'home');   
+    const projectId = pathParts[1] || '';
+    router(pathParts[0] || 'home', projectId);
+
+    // Set the project id in the hidden input
+    if (projectId) {
+        $('#m_project_id').val(projectId);
+    }
 
 
 
