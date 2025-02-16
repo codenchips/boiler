@@ -260,14 +260,12 @@ const deleteProductFromRoom = async (sku, room_id) => {
     const index = store.index("room_id_fk");
 
     const products = await index.getAll(room_id);
-    const product = products.find(p => p.sku === sku);
 
-    if (product) {
-        await store.delete(product.uuid);
-        await tx.done;
-        console.log('Product deleted from room:', product);
-    } else {
-        console.log('Product not found in room:', sku);
+    for (const product of products) {
+        if (product.sku === sku) {
+            await store.delete(product.uuid);
+            console.log('Product deleted from room:', product);
+        }
     }
 }
 
@@ -281,16 +279,19 @@ const setSkuQtyForRoom = async (qty, sku, room_id) => {
     const product = products.find(p => p.sku === sku);
 
     console.log(`setting qty for sku: ${sku} in room: ${room_id} to ${qty}`);
-    return;
+    
 
+    // Remove all existing products with the given SKU in the specified room
+    for (const product of products) {
+        if (product.sku === sku) {
+            await store.delete(product.uuid);
+        }
+    }
 
-    if (product) {
-        product.qty = qty;
-        await store.put(product);
-        await tx.done;
-        console.log('Product quantity updated:', product);
-    } else {
-        console.log('Product not found in room:', sku);
+    // Re-add the products with the specified quantity
+    for (let i = 0; i < qty; i++) {
+        const newProduct = { ...product, uuid: generateUUID() };
+        await store.add(newProduct);
     }
 }
 
