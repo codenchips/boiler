@@ -5,6 +5,13 @@ $(document).ready(function() {
     const router = require('./router'); // Import the router module
     const sst = require('./sst'); // Import the db module
 
+    $('a[href^="/"]').on('click', function(e) {
+        e.preventDefault();
+        const path = $(this).attr('href').substring(1);
+        router(path);
+    });
+    
+
     // Register Service Worker
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js')
@@ -982,6 +989,8 @@ const sst = require('./sst'); // Import the sst module
 
 
 function router(path, project_id) {
+    // Update browser URL without reload
+    window.history.pushState({}, '', `/${path}`);
     
     switch(path) {
         case 'tables':
@@ -1022,6 +1031,14 @@ function router(path, project_id) {
             });
     }
 }
+
+// Handle browser back/forward buttons
+window.addEventListener('popstate', () => {
+    const pathParts = window.location.pathname
+        .split('/')
+        .filter(part => part.length > 0);
+    router(pathParts[0] || 'home', pathParts[1]);
+});
 
 module.exports = router;
 

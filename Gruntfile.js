@@ -94,7 +94,8 @@ module.exports = function(grunt) {
             'img/**',
             'manifest.json',
             'site.webmanifest',
-            'sw.js'
+            'sw.js',
+            '_redirects'
           ],
           dest: 'dist/'
         }]

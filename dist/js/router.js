@@ -4,6 +4,8 @@ const sst = require('./sst'); // Import the sst module
 
 
 function router(path, project_id) {
+    // Update browser URL without reload
+    window.history.pushState({}, '', `/${path}`);
     
     switch(path) {
         case 'tables':
@@ -44,5 +46,13 @@ function router(path, project_id) {
             });
     }
 }
+
+// Handle browser back/forward buttons
+window.addEventListener('popstate', () => {
+    const pathParts = window.location.pathname
+        .split('/')
+        .filter(part => part.length > 0);
+    router(pathParts[0] || 'home', pathParts[1]);
+});
 
 module.exports = router;

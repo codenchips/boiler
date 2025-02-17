@@ -4,6 +4,13 @@ $(document).ready(function() {
     const router = require('./router'); // Import the router module
     const sst = require('./sst'); // Import the db module
 
+    $('a[href^="/"]').on('click', function(e) {
+        e.preventDefault();
+        const path = $(this).attr('href').substring(1);
+        router(path);
+    });
+    
+
     // Register Service Worker
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js')
