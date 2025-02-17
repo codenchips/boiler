@@ -2,6 +2,7 @@ const Mustache = require('mustache');
 const db = require('./db'); // Import the db module
 const tables = require('./modules/tables');
 const utils = require('./modules/utils');
+const sidebar = require('./modules/sidebar');
 
 
 UIkit.modal('#add-special', { stack : true });
@@ -38,8 +39,11 @@ async function tablesFunctions() {
 
     const projectStructure = await db.getProjectStructure('26'); // project_id
     console.log('Product Structure:', projectStructure);
-  
-    
+        
+    const sidemenuHtml = await sidebar.generateNavMenu(projectStructure);
+    console.log('Generated sidemenu:', sidemenuHtml);
+    $('#sidebar').html(sidemenuHtml);
+
 
 }
 /* 
