@@ -21,35 +21,42 @@ $(document).ready(function() {
                 console.log('ServiceWorker registration failed:', err);
             });
     }
-
-    // Use the generateUUID function from the db module
-    let uuid = db.generateUUID();
-    console.log("uuid: ", uuid);
     
     console.log("Mounted ...");
-    db.initDB();
 
-    if (navigator.onLine) {    
-        db.fetchAndStoreProducts(); 
+    // Handle online/offline status
+    window.addEventListener('online', function() {
+        console.log('App is online');
+        db.fetchAndStoreProducts();
         db.syncData(8);
+    });
+
+    window.addEventListener('offline', function() {
+        console.log('App is offline - using cached data');
+    });
+
+    // Initialize app
+    async function initApp() {
+        await db.initDB();
+        
+        if (navigator.onLine) {    
+            await db.fetchAndStoreProducts(); 
+            await db.syncData(8);
+        }
+
+        // Get current path and route
+        const pathParts = window.location.pathname
+            .split('/')
+            .filter(part => part.length > 0);
+        
+        const projectId = pathParts[1] || '';
+        router(pathParts[0] || 'home', projectId);
+
+        // Set the project id in the hidden input
+        if (projectId) {
+            $('#m_project_id').val(projectId);
+        }
     }
 
-    // Get current path
-    const pathParts = window.location.pathname
-        .split('/')
-        .filter(part => part.length > 0);
-    
-
-// todo: manage url parts with server.js         
-    // Use the router function from the router module
-    const projectId = pathParts[1] || '';
-    router(pathParts[0] || 'home', projectId);
-
-    // Set the project id in the hidden input
-    if (projectId) {
-        $('#m_project_id').val(projectId);
-    }
-
-
-
+    initApp();
 });
