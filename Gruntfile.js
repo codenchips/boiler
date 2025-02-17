@@ -58,7 +58,7 @@ module.exports = function(grunt) {
           preservePipes: true,
         },
         files: {
-          "app/app.html": "app/main.html"
+          "app/index.html": "app/main.html"  // Changed from app.html to index.html
         }
       }
     },
@@ -87,7 +87,7 @@ module.exports = function(grunt) {
           expand: true,
           cwd: 'app',
           src: [
-            '*.html',
+            'index.html',  // Changed from app.html
             'views/**',
             'css/**',
             'js/**',
