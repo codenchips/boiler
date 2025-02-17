@@ -91,7 +91,9 @@ module.exports = function(grunt) {
             'views/**',
             'css/**',
             'js/**',
+            'img/**',
             'manifest.json',
+            'site.webmanifest',
             'sw.js'
           ],
           dest: 'dist/'
