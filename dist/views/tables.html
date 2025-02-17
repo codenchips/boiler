@@ -1,0 +1,373 @@
+<div id="table_mode_view" class="uk-width-1-1 uk-margin">
+    
+    <div uk-grid class="hidden">
+        <div class="uk-width-1-1 ">
+            <span title="Copy Room" alt="Copy Room" id="copy-room" class="uk-icon uk-align-right uk-margin-remove" uk-icon="icon: copy; ratio: 2;"></span>
+            <button class="uk-hidden@xl  uk-button uk-button-primary uk-align-right" type="button" uk-toggle="target: #offcanvas-sidebar">Manage Project</button>
+
+        </div>
+    </div>
+
+    <div  class="uk-margin location-heading"  uk-grid>
+        <div class="uk-width-1-2">
+            <span class="uk-icon" uk-icon="icon: location;"></span>
+            <span title="Rename" alt="Rename"  data-label="location_name" data-id="" data-tbl="sst_locations" class="name location_name"></span>
+        </div>
+        <div class="uk-width-1-2">
+            <span class="uk-icon" uk-icon="icon: home;"></span>
+            <span title="Rename" alt="Rename" data-label="building_name" data-id="" data-tbl="sst_buildings" class="name building_name"></span>
+        </div>
+
+    </div>
+
+
+    <form id="product-select-form">
+
+        <div class="uk-text-center" uk-grid>
+    
+            <div class="uk-width-1-2">
+                <select id="form_brand"
+                        name="form_brand"
+                        class="uk-select select-brand">
+                    <option selected value="1">Tamlite</option>
+                    <option value="2">xcite</option>
+                </select>
+            </div>
+
+            <div class="uk-width-1-2">
+                <select id="form_type"
+                        name="form_type"
+                        class="uk-select select-type">
+                    <option value="">Select Type</option>
+                </select>
+            </div>          
+            
+            <div class="uk-width-1-2">
+                <select id="form_product"
+                        name="form_product"
+                        class="uk-select select-product">
+                    <option value="">Select Product</option>
+                </select>
+            </div>           
+            
+            <div class="uk-width-1-2">
+                <select id="form_sku"
+                        name="form_sku"
+                        class="uk-select select-sku">
+                    <option value="">Select SKU</option>
+                </select>
+            </div>     
+            
+            <div class="uk-width-1-2 uk-grid-margin uk-first-column">
+                <button id="btn_add_product" type="button" class="uk-button uk-button-primary uk-width-1-1">Add</button>
+            </div>            
+
+            <div class="uk-width-1-2 uk-grid-margin">
+                <button type="button" uk-toggle="target: #add-special" class="uk-button uk-button-primary uk-width-1-1">Add Special</button>
+            </div>
+
+            <div class="uk-width-1-1 uk-margin uk-grid-margin uk-first-column">
+
+            </div>            
+        </div>
+
+    </form>    
+
+    <div class="room-heading uk-grid" uk-grid>
+
+        <div class="uk-width-1-2">
+            <span class="uk-icon" uk-icon="icon: table;"></span>
+            <span title="Rename" alt="Rename" data-label="floor_name" data-id="" data-tbl="sst_floors" class="name floor_name"></span>
+        </div>
+        <div class="uk-width-1-2">
+            <span class="uk-icon" uk-icon="icon: move;"></span>
+            <span title="Rename" alt="Rename" data-label="room_name" data-id="" data-tbl="sst_rooms" class="name room_name"></span>
+        </div>
+
+    </div>
+
+
+    <div class="uk-width-1-1 uk-margin">
+
+        <div uk-grid>
+            <div class="uk-width-1-1">
+                <div id="ptable"></div>
+            </div>
+        </div>
+
+    </div>       
+
+</div>
+
+
+
+
+<!--
+    DIALOGS
+-->
+<!-- dleet SKU (group) modal -->
+<div id="del-sku" uk-modal>
+    <div class="uk-modal-dialog uk-margin-auto-vertical uk-modal-body">
+        <button class="uk-modal-close-default" type="button" uk-close></button>
+        <form id="form-submit-del-sku">
+            <div class="uk-text-center" uk-grid>
+                <div class="uk-width-1-1">
+                    <h3>Remove this product?</h3>
+                </div>
+
+                <div class="uk-width-1-1 uk-align-center">
+                    <p>Are you sure you want to remove the <span class="place_sku"></span> from the rooom?</p>
+                </div>
+
+                <div class="uk-width-1-1 uk-margin-small">
+                    <input type="hidden" name="del_sku" id="del_sku" value="" />
+
+                    <button  id="form-submit-del-sku" type="submit" class="uk-button uk-button-primary">Remove</button>
+                    <button  class="uk-modal-close uk-button uk-button-default">Cancel</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
+<!-- Copy Project -->
+<div id="copy-project-modal" uk-modal>
+    <div class="uk-modal-dialog uk-margin-auto-vertical uk-modal-body">
+        <button class="uk-modal-close-default" type="button" uk-close></button>
+        <form id="form-copy-project">
+            <div class="uk-text-center" uk-grid>
+                <div class="uk-width-1-1">
+                    <h3>Copy Project</h3>
+                </div>
+
+                <div class="uk-width-1-1 uk-text-left">
+                    <label>New Project Name</label>
+                    <input id="modal_form_new_project_name"
+                           name="val"
+                           class="uk-input free-type"
+                           placeholder="Project Name"
+                           required
+                           value=""
+                           oninvalid="this.setCustomValidity('You must enter a name')"
+                           oninput="this.setCustomValidity('')" />
+                </div>
+
+                <div class="uk-width-1-1">
+                    <input type="hidden" id="copy_from_project_id" name="modal_form_project_id" value="" />
+
+                    <div class="form-actions">
+                        <button disabled type="submit" class="copy-project-button uk-button uk-button-primary">Duplicate Project</button>
+                        <button class="uk-modal-close uk-button uk-button-default">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- Copy Room -->
+<div id="copy-room-modal" uk-modal>
+    <div class="uk-modal-dialog uk-margin-auto-vertical uk-modal-body">
+        <button class="uk-modal-close-default" type="button" uk-close></button>
+        <form id="form-copy-room">
+            <div class="uk-text-center" uk-grid>
+                <div class="uk-width-1-1">
+                    <h3>Copy Room</h3>
+                </div>
+
+                <div class="uk-width-1-1 uk-text-left">
+                    <label>New Room Name</label>
+                    <input id="modal_form_new_name"
+                           name="val"
+                           class="uk-input free-type"
+                           placeholder="Name"
+                           required
+                           value=""
+                           oninvalid="this.setCustomValidity('You must enter a name')"
+                           oninput="this.setCustomValidity('')" />
+                </div>
+                <div class="uk-width-1-1 uk-text-left">
+                    <div id="target-select-floor" class="uk-margin">
+                        <select required id="model_form_floor"
+                                name="modal_form_floor"
+                                class="uk-select model-select-floor"
+                                oninvalid="this.setCustomValidity('Please select a floor.')"
+                                oninput="this.setCustomValidity('')">
+                            <option value="">Select a floor</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="uk-width-1-1">
+                    <input type="hidden" name="modal_form_room_id" value="" />
+
+                    <div class="form-actions">
+                        <button disabled type="submit" class="copy-room-button uk-button uk-button-primary">Duplicate</button>
+                        <button class="uk-modal-close uk-button uk-button-default">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit name -->
+<div id="edit-name" uk-modal>
+    <div class="uk-modal-dialog uk-margin-auto-vertical uk-modal-body">
+        <button class="uk-modal-close-default" type="button" uk-close></button>
+        <form id="form-edit-name">
+            <div class="uk-text-center" uk-grid>
+                <div class="uk-width-1-1">
+                    <h3>Edit Name</h3>
+                </div>
+
+                <div class="uk-width-1-1 uk-text-left">
+                    <label>Name</label>
+                    <input id="modal_form_name"
+                           name="val"
+                           class="uk-input free-type"
+                           placeholder="Name"
+                           required
+                           value=""
+                           oninvalid="this.setCustomValidity('You must enter a name')"
+                           oninput="this.setCustomValidity('')" />
+                </div>
+
+                <div class="uk-width-1-1">
+                    <input type="hidden" name="id" value="" />
+                    <input type="hidden" name="tbl" value="" />
+                    <input type="hidden" name="col" value="" />
+                    <input type="hidden" name="label" value="" />
+
+                    <div class="form-actions">
+                        <button type="submit" class="uk-button uk-button-primary">Update</button>
+                        <button class="uk-modal-close uk-button uk-button-default">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- File upload progress -->
+<div id="upload-progress" uk-modal>
+    <div class="uk-modal-dialog uk-margin-auto-vertical uk-modal-body">
+        <button class="uk-modal-close-default" type="button" uk-close></button>
+            <div class="uk-text-center" uk-grid>
+                <div class="uk-width-1-1">
+                    <h3>Processing</h3>
+                </div>
+                <div class="uk-width-1-1 uk-align-center">
+                    <progress id="js-progressbar" class="uk-progress" value="10" max="100"></progress>
+                    <p id="progress-text">Preparing upload ...</p>
+                </div>
+                <div class="uk-width-1-1 uk-align-center">
+                    <button type="button" disabled id="close-progress" class="uk-button uk-button-primary" type="button">Close</button>
+                </div>
+
+            </div>
+    </div>
+</div>
+
+<!-- set qty modal -->
+<div id="set-qty" uk-modal>
+    <div class="uk-modal-dialog uk-margin-auto-vertical uk-modal-body">
+        <button class="uk-modal-close-default" type="button" uk-close></button>
+        <form id="form-submit-set-qty">
+            <div class="uk-text-center" uk-grid>
+                <div class="uk-width-1-1">
+                    <h3>Set Quantity</h3>
+                </div>
+
+                <div class="uk-width-1-1 uk-align-center">
+                    <p>How Many <span class="place_sku"></span> in this room?</p>
+                    <input id="set_qty_qty" class="uk-input uk-width-1-5" name="set_qty_qty" type="number" min="0" max="999" step="1" value="">
+                </div>
+
+                <div class="uk-width-1-1 uk-margin-small">                    
+                    <input type="hidden" name="set_qty_sku" id="set_qty_sku" value="" />
+
+                    <button  id="form-submit-set-qty" type="submit" class="uk-button uk-button-primary">OK</button>
+                    <button  class="uk-modal-close uk-button uk-button-default">Cancel</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- add special modal -->
+<div id="add-special" uk-modal>
+    <div class="uk-modal-dialog uk-margin-auto-vertical uk-modal-body">
+        <button class="uk-modal-close-default" type="button" uk-close></button>
+        <form id="form-submit-special">
+        <div class="uk-text-center" uk-grid>
+            <div class="uk-width-1-1">
+                <h3>Add Special</h3>
+            </div>
+
+            <div class="uk-width-1-1 uk-text-left">
+                <label>Brand</label>
+                <select required id="form_brand"
+                        name="form_custom_brand"
+                        class="uk-select"
+                        oninvalid="this.setCustomValidity('You must select a brand')"
+                        oninput="this.setCustomValidity('')">
+                    <option selected value="">Select Brand</option>
+                    <option value="1">Tamlite</option>
+                    <option value="2">xcite</option>
+                    <option value="3">Other</option>
+                </select>
+            </div>
+
+            <div class="uk-width-1-1 uk-text-left">
+                <label>Product Code or SKU</label>
+                <input id="form_custom"
+                       name="form_custom_sku"
+                       class="uk-input free-type"
+                       placeholder="A product code or identifier is required"
+                       required
+                       value=""
+                       oninvalid="this.setCustomValidity('You must enter a product code or unique identifier')"
+                       oninput="this.setCustomValidity('')" />
+            </div>
+
+            <div class="uk-width-1-1 uk-text-left">
+                <label>Product Name</label>
+                <input id="form_custom"
+                       name="form_custom_product_name"
+                       class="uk-input free-type"
+                       placeholder="Free type a product name"
+                       required
+                       value=""
+                       oninvalid="this.setCustomValidity('Enter the full name of this product')"
+                       oninput="this.setCustomValidity('')" />
+            </div>
+
+            <div class="uk-width-1-1">
+                <input type="hidden" name="form_custom" value="1" />
+                <input type="hidden" name="add_product_room_id" id="add_product_room_id" value="" />
+                <button  id="form-submit-special" type="submit" class="uk-button uk-button-primary">Add</button>
+                <button  class="uk-modal-close uk-button uk-button-default">Cancel</button>
+            </div>
+        </div>
+        </form>
+    </div>
+</div>
+
+
+
+
+
+
+<!--
+    TEMPLATES
+-->
+<script id="options" type="x-tmpl-mustache">
+    <option value="">[[title]]</option>
+    [[#options]]
+        <option value="[[slug]]">[[name]]</option>
+    [[/options  ]]
+</script>

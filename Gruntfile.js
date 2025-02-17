@@ -5,6 +5,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-nodemon');
   grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-sass');
+  grunt.loadNpmTasks('grunt-contrib-copy'); 
 
   grunt.initConfig({
     browserify: {
@@ -79,8 +80,37 @@ module.exports = function(grunt) {
           logConcurrentOutput: true
         }
       }
-    }
+    },
+    copy: {
+      dist: {
+        files: [{
+          expand: true,
+          cwd: 'app',
+          src: [
+            '*.html',
+            'views/**',
+            'css/**',
+            'js/**',
+            'manifest.json',
+            'sw.js'
+          ],
+          dest: 'dist/'
+        }]
+      }
+    }    
   });
 
-  grunt.registerTask('default', ['browserify', 'sass', 'bake', 'concurrent:dev']);
+  grunt.registerTask('default', [
+    'browserify', 
+    'sass', 
+    'bake', 
+    'concurrent:dev',    
+  ]);
+
+  grunt.registerTask('build', [
+    'browserify', 
+    'sass', 
+    'bake', 
+    'copy:dist',    
+  ]);
 };
