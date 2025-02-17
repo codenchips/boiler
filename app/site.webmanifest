@@ -1,12 +1,16 @@
 {
-  "short_name": "",
-  "name": "",
-  "icons": [{
-    "src": "",
-    "type": "",
-    "sizes": ""
-  }],
-  "start_url": "/?utm_source=homescreen",
-  "background_color": "#fafafa",
-  "theme_color": "#fafafa"
+  "name": "SST App 2",
+  "short_name": "SST",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#192542",
+  "icons": [
+    {
+      "src": "img/tamlite-logo-pwa.webp",
+      "sizes": "512x512",
+      "type": "image/webp",
+      "purpose": "any maskable"
+    }
+  ]
 }

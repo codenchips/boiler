@@ -55,6 +55,40 @@ async function tablesFunctions() {
 async function homeFunctions() {
     console.log('Running home functions');
 
+
+    let deferredPrompt;
+    const installButton = $('#installButton');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();        
+        // Stash the event so it can be triggered later
+        deferredPrompt = e;
+        // Show the install button
+        console.log('beforeinstallprompt fired');
+        installButton.show();
+    });
+
+    installButton.on('click', async () => {
+        if (!deferredPrompt) {
+            return;
+        }
+        // Show the install prompt
+        deferredPrompt.prompt();
+        // Wait for the user to respond to the prompt
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`User response to the install prompt: ${outcome}`);
+        // We've used the prompt, and can't use it again, discard it
+        deferredPrompt = null;
+        // Hide the install button
+        installButton.hide();
+    });
+
+    window.addEventListener('appinstalled', (evt) => {
+        console.log('Application installed');
+        installButton.hide();
+    });
+
+
     if ($('#product-list').length) {
         db.getProducts().then(products => {
             console.log('Products:', products);
