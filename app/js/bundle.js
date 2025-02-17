@@ -449,14 +449,6 @@ class SidebarModule {
             }
         });
 
-        // Add "Add Location" at the end
-        html += `
-        <ul class="building-list">
-            <li class="building-item">
-                <p><a class="add-location" href="#" data-id="${data.project_id}" data-action="add">Add Location</a></p>
-            </li>
-        </ul>`;
-
         return html;
     }
 
@@ -467,8 +459,8 @@ class SidebarModule {
                 <span class="location-name">
                     <span uk-icon="icon: location;"></span> ${location.location_name}
                 </span>
-                <div class="action-icons location">
-                    <i class="fa-solid fa-circle-minus" data-id="${location.location_id}" data-action="remove"></i>
+                <div class="action-icons location">                    
+                    <span uk-icon="minus-circle" class="action-icon" data-id="${location.location_id}" data-action="remove"></span>
                 </div>
             </div>
             <ul class="building-list">`;
@@ -500,7 +492,7 @@ class SidebarModule {
                     <span uk-icon="icon: home;"></span> ${building.building_name}
                 </span>
                 <div class="action-icons building">
-                    <i class="fa-solid fa-circle-minus" data-id="${building.building_id}" data-action="remove"></i>
+                    <span uk-icon="minus-circle" class="action-icon" data-id="${building.building_id}" data-action="remove"></span>
                 </div>
             </h4>
             <ul class="floor-list">`;
@@ -536,7 +528,7 @@ class SidebarModule {
                     </span>
                 </a>
                 <div class="action-icons floor">
-                    <i class="fa-solid fa-circle-minus" data-id="${floor.floor_id}" data-action="remove"></i>
+                    <span uk-icon="minus-circle" class="action-icon" data-id="${floor.floor_id}" data-action="remove"></span>
                 </div>
             </div>
             <ul class="room-list">`;
@@ -570,7 +562,7 @@ class SidebarModule {
                     <span uk-icon="icon: move;"></span> ${room.room_name}
                 </a>
             </span>
-            <i class="fa-solid fa-circle-minus action-icon" data-id="${room.room_id}" data-action="remove"></i>
+            <span uk-icon="minus-circle" class="action-icon" data-id="${room.room_id}" data-action="remove"></span>
         </li>`;
     }
 }
@@ -1068,7 +1060,7 @@ async function tablesFunctions() {
         
     const sidemenuHtml = await sidebar.generateNavMenu(projectStructure);
     console.log('Generated sidemenu:', sidemenuHtml);
-    $('#sidebar').html(sidemenuHtml);
+    $('#locations').html(sidemenuHtml);
 
 
 }

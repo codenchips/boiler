@@ -42,7 +42,7 @@ async function tablesFunctions() {
         
     const sidemenuHtml = await sidebar.generateNavMenu(projectStructure);
     console.log('Generated sidemenu:', sidemenuHtml);
-    $('#sidebar').html(sidemenuHtml);
+    $('#locations').html(sidemenuHtml);
 
 
 }

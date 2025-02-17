@@ -75,3 +75,178 @@ body {
 .uk-input, .uk-select, .uk-textarea {
     border-radius: 5px;
 }
+
+#desktop-sidebar {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 330px;
+  z-index: 1000;
+  overflow-y: auto;
+  background: #333;
+  border-right: 1px solid #ddd;
+}
+
+
+.room-heading, .location-heading {
+  font-weight: bold;
+
+  span {
+    display: inline-block;
+    color: $primary-color;
+    &.uk-icon {
+      margin-right: 5px;
+      position: relative;
+      top: -3px;
+    }
+    &.name {
+      margin-right: 25px;
+      font-weight: normal;
+    }
+  }
+  span:first-child {
+    //padding-left: 10px;
+  }
+  span:last-child {
+    margin-right: 0;
+  }
+  span:hover {
+    cursor: pointer;
+  }
+
+}
+
+.nav-menu {
+  list-style: none;
+  padding: 0;
+  .ik-icon {
+    position: relative;
+    top: -3px;
+  }
+
+  .location-item {
+    font-size: 1.2em; // ~19px
+
+    .location-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .location-name {
+        font-weight: bold;
+      }
+    }
+  }
+
+  .building-list {
+    margin-top: 0;
+    list-style: none;
+    padding-left: 0.5em; // Reduced indentation
+
+    .building-item {
+      font-size: 1em; // ~17px
+      padding-bottom: 15px;
+
+      p {
+        margin: 0;
+      }
+      &:last-child a {
+        color: $ltblue;
+      }
+      .add-location {
+        font-size: 1.15em;
+      }
+
+      .building-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0;
+        margin-top: 5px;
+
+        .building-name {
+          font-weight: 600;
+        }
+      }
+    }
+  }
+
+  .floor-list {
+    list-style: none;
+    padding-left: 0.75em; // Reduced indentation
+    margin-top: 10px;
+
+    .floor-item {
+      font-size: 1em; // ~14px, matching room size
+      &.add-floor {
+        padding-top: 5px;
+        padding-bottom: 5px;
+
+      }
+      &:last-child a {
+        color: $ltblue;
+      }
+
+      .floor-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .floor-name {
+          padding-top: 15px;
+          font-weight: 500;
+        }
+      }
+    }
+
+    h5 {
+      font-size: 0.95em; // ~15px
+      font-weight: bold;
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+  }
+
+  .room-list {
+    list-style: none;
+    padding-left: 1em; // Reduced indentation
+
+    .room-item {
+      font-size: 1em;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0.5em; // Spacing between room names
+      margin-bottom: 0.5em; // Spacing between room names
+      &.add-room {
+        padding-top: 5px;
+        padding-bottom: 5px;
+
+      }
+      &.add-room a {
+        color: $ltblue;
+      }
+
+
+      .room-name {
+        font-weight: normal;
+      }
+
+      .action-icon {
+        margin-left: auto;
+      }
+    }
+  }
+
+  .action-icons, .action-icon {
+    color: #777;
+    margin-left: 0.5em;
+    cursor: pointer;
+    font-size: 1em; // ~16px, consistent size for tappable icons
+  }
+
+  .action-icons {
+    display: flex;
+    gap: 0.5em;
+  }
+}
