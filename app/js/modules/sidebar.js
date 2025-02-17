@@ -13,9 +13,7 @@ class SidebarModule {
     }
 
     async generateNavMenu(data) {
-        if (!data) return '<div>No project structure available</div>';
-        
-        console.log('Received project structure:', data);
+        if (!data) return '<div>No project structure available</div>';                
         let html = '';
 
         // Process locations

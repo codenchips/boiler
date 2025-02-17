@@ -1,11 +1,20 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 $(document).ready(function() {
     const Mustache = require('mustache');
-        
     const db = require('./db'); // Import the db module
     const router = require('./router'); // Import the router module
     const sst = require('./sst'); // Import the db module
-   
+
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js')
+            .then(registration => {
+                console.log('ServiceWorker registration successful');
+            })
+            .catch(err => {
+                console.log('ServiceWorker registration failed:', err);
+            });
+    }
 
     // Use the generateUUID function from the db module
     let uuid = db.generateUUID();
@@ -436,9 +445,7 @@ class SidebarModule {
     }
 
     async generateNavMenu(data) {
-        if (!data) return '<div>No project structure available</div>';
-        
-        console.log('Received project structure:', data);
+        if (!data) return '<div>No project structure available</div>';                
         let html = '';
 
         // Process locations
@@ -1055,11 +1062,8 @@ async function tablesFunctions() {
 
     await tables.renderProdctsTable();
 
-    const projectStructure = await db.getProjectStructure('26'); // project_id
-    console.log('Product Structure:', projectStructure);
-        
-    const sidemenuHtml = await sidebar.generateNavMenu(projectStructure);
-    console.log('Generated sidemenu:', sidemenuHtml);
+    const projectStructure = await db.getProjectStructure('26'); // project_id            
+    const sidemenuHtml = await sidebar.generateNavMenu(projectStructure);    
     $('#locations').html(sidemenuHtml);
 
 

@@ -37,11 +37,8 @@ async function tablesFunctions() {
 
     await tables.renderProdctsTable();
 
-    const projectStructure = await db.getProjectStructure('26'); // project_id
-    console.log('Product Structure:', projectStructure);
-        
-    const sidemenuHtml = await sidebar.generateNavMenu(projectStructure);
-    console.log('Generated sidemenu:', sidemenuHtml);
+    const projectStructure = await db.getProjectStructure('26'); // project_id            
+    const sidemenuHtml = await sidebar.generateNavMenu(projectStructure);    
     $('#locations').html(sidemenuHtml);
 
 
