@@ -292,7 +292,75 @@ async function isDatabaseEmpty() {
     return projectCount === 0 && locationCount === 0 && buildingCount === 0 && floorCount === 0 && roomCount === 0 && productCount === 0;
 }
 
+async function getProjectStructure(projectId) {
+    const hierarchy = await getProjectHierarchy(8, projectId); // assuming owner_id 8
+    let result = {};
 
+    // Get the project details
+    const project = hierarchy.projects[0];
+    if (!project) return null;
+
+    // Initialize project level
+    result = {
+        project_name: project.name,
+        project_slug: project.slug,
+        project_id: project.uuid
+    };
+
+    // Get locations for this project
+    const projectLocations = hierarchy.locations
+        .filter(loc => loc.project_id_fk === project.uuid);
+
+    // Build location level
+    projectLocations.forEach(location => {
+        result[location.slug] = {
+            location_name: location.name,
+            location_slug: location.slug,
+            location_id: location.uuid
+        };
+
+        // Get buildings for this location
+        const locationBuildings = hierarchy.buildings
+            .filter(build => build.location_id_fk === location.uuid);
+
+        // Build building level
+        locationBuildings.forEach(building => {
+            result[location.slug][building.slug] = {
+                building_name: building.name,
+                building_slug: building.slug,
+                building_id: building.uuid
+            };
+
+            // Get floors for this building
+            const buildingFloors = hierarchy.floors
+                .filter(floor => floor.building_id_fk === building.uuid);
+
+            // Build floor level
+            buildingFloors.forEach(floor => {
+                result[location.slug][building.slug][floor.slug] = {
+                    floor_name: floor.name,
+                    floor_slug: floor.slug,
+                    floor_id: floor.uuid
+                };
+
+                // Get rooms for this floor
+                const floorRooms = hierarchy.rooms
+                    .filter(room => room.floor_id_fk === floor.uuid);
+
+                // Build room level
+                floorRooms.forEach(room => {
+                    result[location.slug][building.slug][floor.slug][room.slug] = {
+                        room_name: room.name,
+                        room_slug: room.slug,
+                        room_id: room.uuid
+                    };
+                });
+            });
+        });
+    });
+
+    return result;
+}
 
 // Export the functions
 module.exports = {
@@ -306,6 +374,7 @@ module.exports = {
     getProductsForRoom,
     deleteProductFromRoom,
     setSkuQtyForRoom,
-    updateProductRef
+    updateProductRef,
+    getProjectStructure
     // Add other database-related functions here
 };

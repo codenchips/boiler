@@ -35,6 +35,10 @@ async function tablesFunctions() {
     });
 
     await tables.renderProdctsTable();
+
+    const projectStructure = await db.getProjectStructure('26'); // project_id
+    console.log('Product Structure:', projectStructure);
+  
     
 
 }
