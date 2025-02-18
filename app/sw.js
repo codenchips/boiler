@@ -20,6 +20,12 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  if (event.request.url.startsWith('chrome-extension://')) {
+    console.log(`Ignoring chrome-extension:// request: ${event.request.url}`);
+    event.respondWith(fetch(event.request)); // Just fetch normally
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then(response => {

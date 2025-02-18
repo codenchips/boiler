@@ -31,6 +31,7 @@
                                 <small>Account</small>
                             </a>
                         </li>
+                        <input type="text" id="m_project_id" name="m_project_id" value="" />
                     </ul>
                 </div>
             </div>
@@ -38,7 +39,7 @@
     </nav>
     
     <input type="hidden" id="site_uid" name="site_uid" value="" />
-    <input type="hidden" id="m_project_id" name="m_project_id" value="" />
+    
     <input type="hidden" id="m_project_slug" name="m_project_slug" value="" />
     <input type="hidden" id="m_project_version" name="m_project_version" value="" />
     <input type="hidden" id="m_user_id" name="m_user_id" value="" />
@@ -153,7 +154,7 @@
                         <input type="hidden" name="modal_form_project_slug" value="<?php echo $project_slug; ?>" />
                         <input type="hidden" name="modal_form_uid" value="" />
     
-                        <button id="form-submit-room" type="submit" class="uk-button uk-button-danger">Remove</button>
+                        <button id="btn-remove-location" type="submit" class="uk-button uk-button-danger">Remove</button>
                         <button class="uk-modal-close uk-button uk-button-default">Cancel</button>
                     </div>
                 </div>
@@ -180,7 +181,7 @@
                         <input type="hidden" name="modal_form_project_slug" value="<?php echo $project_slug; ?>" />
                         <input type="hidden" name="modal_form_uid" value="" />
     
-                        <button id="form-submit-room" type="submit" class="uk-button uk-button-danger">Remove</button>
+                        <button id="btn-remove-location" type="submit" class="uk-button uk-button-danger">Remove</button>
                         <button class="uk-modal-close uk-button uk-button-default">Cancel</button>
                     </div>
                 </div>
