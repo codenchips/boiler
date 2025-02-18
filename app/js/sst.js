@@ -39,18 +39,40 @@ async function tablesFunctions() {
 
     await tables.renderProdctsTable();
 
-    const projectStructure = await db.getProjectStructure('26'); // project_id            
-    const sidemenuHtml = await sidebar.generateNavMenu(projectStructure);   
+    await renderSidebar('26'); // project_id
 
-    $('#locations').html(sidemenuHtml);
 
-    $('a.room-link').on('click', async function(e) {
-        e.preventDefault();
-        console.log('Room clicked: ', $(this).data('id'));
-        loadRoomData($(this).data('id'));
-       
+    $('span.name').on('click', function() {
+        console.log('Name clicked:', $(this).data('id'));    
+        const store = $(this).data('tbl');
+        const uuid = $(this).data('id');
+        const name = $(this).text();
+        const that = this;
+        // call the modal to update the name
+        UIkit.modal.prompt('New name:', name).then(async function(newName) {
+            if (newName) {                
+                await db.updateName(store, uuid, newName);
+                $(that).text(newName);
+                
+                renderSidebar('26'); // project_id           
+            }
+        });
+    });
 
-    });    
+    async function renderSidebar(project_id) {
+        
+        const projectStructure = await db.getProjectStructure('26'); // project_id            
+        const sidemenuHtml = await sidebar.generateNavMenu(projectStructure);   
+    
+        $('#locations').html(sidemenuHtml);
+    
+        $('a.room-link').on('click', async function(e) {
+            e.preventDefault();
+            console.log('Room clicked: ', $(this).data('id'));
+            loadRoomData($(this).data('id'));
+        });    
+    
+    }
 
     async function loadRoomData(roomId) {
         $('#m_room_id').val(roomId);

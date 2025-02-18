@@ -62,7 +62,20 @@ class UtilsModule {
             }
         }
         return "";
-    }    
+    }   
+    
+    async slugify(text) {
+        // make a slug of this text
+        return text.toString().toLowerCase().trim()
+            .replace(/\s+/g, '-')           // Replace spaces with -
+            .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
+            .replace(/\-\-+/g, '-');        // Replace multiple - with single -
+    }
+    async deslugify(text) {
+        // make human readable text from slug   
+        return text.toString().toLowerCase().trim()
+            .replace(/-/g, ' ');           // Replace - with space          
+    }
     
 
 }

@@ -1,4 +1,5 @@
 const { openDB } = require('idb');
+const utils = require('./modules/utils');
 
 const DB_NAME = 'sst_database';
 const DB_VERSION = 9;
@@ -309,8 +310,19 @@ const getRoomMeta = async (roomId) => {
         floor: { name: floor.name, uuid: floor.uuid },
         room: { name: room.name, uuid: room.uuid }
     };
-
 };
+
+async function updateName(store, uuid, newName) {
+    const db = await initDB();
+    const tx = db.transaction(store, "readwrite");
+    const objectStore = tx.objectStore(store);
+    uuid = String(uuid);
+    const record = await objectStore.get(uuid);
+    record.name = newName;
+    record.slug = await utils.slugify(newName);
+    await objectStore.put(record);
+    await tx.done;    
+}
 
 async function isDatabaseEmpty() {
     const db = await initDB();
@@ -408,6 +420,7 @@ module.exports = {
     setSkuQtyForRoom,
     updateProductRef,
     getProjectStructure,
-    getRoomMeta
+    getRoomMeta,
+    updateName
     // Add other database-related functions here
 };

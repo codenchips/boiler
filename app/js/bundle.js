@@ -63,6 +63,7 @@ $(document).ready(function() {
 });
 },{"./db":2,"./router":6,"./sst":7,"mustache":9}],2:[function(require,module,exports){
 const { openDB } = require('idb');
+const utils = require('./modules/utils');
 
 const DB_NAME = 'sst_database';
 const DB_VERSION = 9;
@@ -373,8 +374,19 @@ const getRoomMeta = async (roomId) => {
         floor: { name: floor.name, uuid: floor.uuid },
         room: { name: room.name, uuid: room.uuid }
     };
-
 };
+
+async function updateName(store, uuid, newName) {
+    const db = await initDB();
+    const tx = db.transaction(store, "readwrite");
+    const objectStore = tx.objectStore(store);
+    uuid = String(uuid);
+    const record = await objectStore.get(uuid);
+    record.name = newName;
+    record.slug = await utils.slugify(newName);
+    await objectStore.put(record);
+    await tx.done;    
+}
 
 async function isDatabaseEmpty() {
     const db = await initDB();
@@ -472,11 +484,12 @@ module.exports = {
     setSkuQtyForRoom,
     updateProductRef,
     getProjectStructure,
-    getRoomMeta
+    getRoomMeta,
+    updateName
     // Add other database-related functions here
 };
 
-},{"idb":8}],3:[function(require,module,exports){
+},{"./modules/utils":5,"idb":8}],3:[function(require,module,exports){
 const Mustache = require('mustache');
 
 class SidebarModule {
@@ -845,8 +858,7 @@ class TablesModule {
         $('input#set_qty_sku').val(sku);
         $('input#set_qty_qty').val(qty);
 
-        UIkit.modal('#set-qty').show();
-        console.log('Set qty for SKU: ', sku);
+        UIkit.modal('#set-qty').show();        
 
         $('#form-submit-set-qty').off('submit').on('submit', async (e) => {
             e.preventDefault();
@@ -857,8 +869,7 @@ class TablesModule {
             console.log('setqty for  SKU:', sku);
             await db.setSkuQtyForRoom(qty, sku, room_id);
             this.refreshTableData();
-            UIkit.modal('#set-qty').hide();
-            
+            UIkit.modal('#set-qty').hide();            
         });      
     }
 
@@ -1021,7 +1032,20 @@ class UtilsModule {
             }
         }
         return "";
-    }    
+    }   
+    
+    async slugify(text) {
+        // make a slug of this text
+        return text.toString().toLowerCase().trim()
+            .replace(/\s+/g, '-')           // Replace spaces with -
+            .replace(/[^\w\-]+/g, '')       // Remove all non-word chars
+            .replace(/\-\-+/g, '-');        // Replace multiple - with single -
+    }
+    async deslugify(text) {
+        // make human readable text from slug   
+        return text.toString().toLowerCase().trim()
+            .replace(/-/g, ' ');           // Replace - with space          
+    }
     
 
 }
@@ -1138,18 +1162,42 @@ async function tablesFunctions() {
 
     await tables.renderProdctsTable();
 
-    const projectStructure = await db.getProjectStructure('26'); // project_id            
-    const sidemenuHtml = await sidebar.generateNavMenu(projectStructure);   
+    await renderSidebar('26'); // project_id
 
-    $('#locations').html(sidemenuHtml);
 
-    $('a.room-link').on('click', async function(e) {
-        e.preventDefault();
-        console.log('Room clicked: ', $(this).data('id'));
-        loadRoomData($(this).data('id'));
-       
+    $('span.name').on('click', function() {
+        console.log('Name clicked:', $(this).data('id'));    
+        const store = $(this).data('tbl');
+        const uuid = $(this).data('id');
+        const name = $(this).text();
+        const that = this;
+        // call the modal to update the name
+        UIkit.modal.prompt('New name:', name).then(async function(newName) {
+            if (newName) {                
+                await db.updateName(store, uuid, newName);
+                $(that).text(newName);
+                
+                renderSidebar('26'); // project_id
 
-    });    
+            
+            }
+        });
+    });
+
+    async function renderSidebar(project_id) {
+        
+        const projectStructure = await db.getProjectStructure('26'); // project_id            
+        const sidemenuHtml = await sidebar.generateNavMenu(projectStructure);   
+    
+        $('#locations').html(sidemenuHtml);
+    
+        $('a.room-link').on('click', async function(e) {
+            e.preventDefault();
+            console.log('Room clicked: ', $(this).data('id'));
+            loadRoomData($(this).data('id'));
+        });    
+    
+    }
 
     async function loadRoomData(roomId) {
         $('#m_room_id').val(roomId);

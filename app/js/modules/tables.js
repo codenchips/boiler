@@ -218,8 +218,7 @@ class TablesModule {
         $('input#set_qty_sku').val(sku);
         $('input#set_qty_qty').val(qty);
 
-        UIkit.modal('#set-qty').show();
-        console.log('Set qty for SKU: ', sku);
+        UIkit.modal('#set-qty').show();        
 
         $('#form-submit-set-qty').off('submit').on('submit', async (e) => {
             e.preventDefault();
@@ -230,8 +229,7 @@ class TablesModule {
             console.log('setqty for  SKU:', sku);
             await db.setSkuQtyForRoom(qty, sku, room_id);
             this.refreshTableData();
-            UIkit.modal('#set-qty').hide();
-            
+            UIkit.modal('#set-qty').hide();            
         });      
     }
 
