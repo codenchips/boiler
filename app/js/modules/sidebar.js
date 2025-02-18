@@ -50,8 +50,8 @@ class SidebarModule {
 
         // Add "Add Building" option
         html += `
-                <li class="building-item">
-                    <p><a href="#" data-id="${location.location_id}" data-action="add">Add Building</a></p>
+                <li class="add-building">
+                    <a href="#" data-id="${location.location_id}" data-action="add">Add Building</a>
                 </li>
             </ul>
         </li>`;
@@ -83,7 +83,7 @@ class SidebarModule {
         // Add "Add Floor" option
         html += `
                 <li class="floor-item">
-                    <span class="floor-name">
+                    <span class="add-floor">
                         <a href="#" data-id="${building.building_id}" data-action="add">Add Floor</a>
                     </span>
                 </li>
@@ -97,7 +97,7 @@ class SidebarModule {
         let html = `
         <li class="floor-item">
             <div class="floor-header">
-                <a href="/plan/${projectId}/${floor.floor_id}" data-id="${floor.floor_id}">
+                <a href="#" data-id="${floor.floor_id}">
                     <span class="floor-name">
                         <span uk-icon="icon: table;"></span> ${floor.floor_name}
                     </span>
@@ -119,7 +119,7 @@ class SidebarModule {
         // Add "Add Room" option
         html += `
                 <li class="room-item add-room">
-                    <span class="room-name">
+                    <span class="add-room">
                         <a href="#" data-action="add" data-id="${floor.floor_id}">Add Room</a>
                     </span>
                 </li>
@@ -133,7 +133,7 @@ class SidebarModule {
         return `
         <li class="room-item view-room">
             <span class="room-name">
-                <a href="/tables/${projectId}/${room.room_id}" data-id="${room.room_id}">
+                <a href="#" class="room-link" data-id="${room.room_id}">
                     <span uk-icon="icon: move;"></span> ${room.room_name}
                 </a>
             </span>

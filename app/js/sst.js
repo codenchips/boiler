@@ -14,7 +14,8 @@ UIkit.modal('#add-special', { stack : true });
 */
 async function tablesFunctions() {
     tables.init();        
-    
+    console.log('Running tables functions');
+
     // Initial load with default brand
     await tables.updateTypesDropdown('1');
     
@@ -35,11 +36,20 @@ async function tablesFunctions() {
         await tables.addProductToRoomClick();       
     });
 
+
     await tables.renderProdctsTable();
 
     const projectStructure = await db.getProjectStructure('26'); // project_id            
-    const sidemenuHtml = await sidebar.generateNavMenu(projectStructure);    
+    const sidemenuHtml = await sidebar.generateNavMenu(projectStructure);   
+
     $('#locations').html(sidemenuHtml);
+
+    $('a.room-link').on('click', async function(e) {
+        e.preventDefault();
+        console.log('Room clicked: ', $(this).data('id'));
+
+    });    
+
 
 
 }
