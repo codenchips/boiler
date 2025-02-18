@@ -50,8 +50,10 @@ class SidebarModule {
 
         // Add "Add Building" option
         html += `
-                <li class="add-building">
-                    <a href="#" data-id="${location.location_id}" data-action="add">Add Building</a>
+                <li class="building-item">
+                    <span class="add-building">
+                        <a href="#" data-id="${location.location_id}" data-action="add">Add Building</a>
+                    </span>
                 </li>
             </ul>
         </li>`;
