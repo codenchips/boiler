@@ -41,6 +41,10 @@ async function tablesFunctions() {
 
     await renderSidebar('26'); // project_id
 
+    // loadRoomData for the first mentioned room id in the sidebar
+    const firstRoomId = $('#locations .room-link').first().data('id');    
+    await loadRoomData(firstRoomId);
+
 
     $('span.name').on('click', function() {
         console.log('Name clicked:', $(this).data('id'));    

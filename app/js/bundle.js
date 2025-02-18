@@ -5,9 +5,12 @@ $(document).ready(function() {
     const router = require('./router'); // Import the router module
     const sst = require('./sst'); // Import the db module
 
+
+
     $('a[href^="/"]').on('click', function(e) {
         e.preventDefault();
         const path = $(this).attr('href').substring(1);
+        console.log('link intercepted:', path);
         router(path);
     });
     
@@ -649,7 +652,7 @@ class TablesModule {
     }
 
     init() {
-        if (this.isInitialized) return;
+        //if (this.isInitialized) return;
         Mustache.tags = ["[[", "]]"];                
         this.isInitialized = true;        
     }
@@ -666,10 +669,12 @@ class TablesModule {
             return;
         }
 
-        const template = $('#options');
-        const templateContent = template.html();
-        const rendered = Mustache.render(templateContent, { options: skus, title: 'Select SKU' });    
-        $('#form_sku').html(rendered);
+
+        let optionsHtml = '<option value="">Select SKU</option>';
+        skus.forEach(sku => {
+            optionsHtml += `<option value="${sku.slug}">${sku.name}</option>`;
+        }); 
+        $('#form_sku').html(optionsHtml);
     }
 
     async getSkusForProduct(user_product) {
@@ -701,10 +706,11 @@ class TablesModule {
             return;
         }
 
-        const template = $('#options');
-        const templateContent = template.html();
-        const rendered = Mustache.render(templateContent, { options: products, title: 'Select Product' });    
-        $('#form_product').html(rendered);
+        let optionsHtml = '<option value="">Select Product</option>';
+        products.forEach(product => {
+            optionsHtml += `<option value="${product.slug}">${product.name}</option>`;
+        });        
+        $('#form_product').html(optionsHtml);
     }
 
     async getProductsForType(type) {
@@ -725,8 +731,8 @@ class TablesModule {
     }    
 
     async updateTypesDropdown(brand) {
-        this.init();
-        const types = await this.getTypesForBrand(brand);
+        this.init();        
+        const types = await this.getTypesForBrand(brand);        
         this.renderTypesDropdown(types);
     }
 
@@ -746,16 +752,24 @@ class TablesModule {
             .sort((a, b) => a.name.localeCompare(b.name));
     }
 
-    renderTypesDropdown(types) {
+    async renderTypesDropdown(types) {
         if (!types || !types.length) {
             console.error('No types data provided');
             return;
         }
 
         const template = $('#options');
-        const templateContent = template.html();
-        const rendered = Mustache.render(templateContent, { options: types, title: 'Select Type' });    
-        $('#form_type').html(rendered);
+        if (!template.length) {
+            console.error('Template #options not found');
+            return;
+        }
+
+        
+        let optionsHtml = '<option value="">Select Type</option>';
+        types.forEach(type => {
+            optionsHtml += `<option value="${type.slug}">${type.name}</option>`;
+        });        
+        $('#form_type').html(optionsHtml);
     }
 
 
@@ -1055,6 +1069,8 @@ const Mustache = require('mustache');
 const db = require('./db');
 const sst = require('./sst');
 
+
+
 async function loadTemplate(path) {
     try {
         const response = await fetch(`/views/${path}.html`);
@@ -1079,9 +1095,9 @@ async function router(path, project_id) {
         let template;
         switch(path) {
             case 'tables':
-                template = await loadTemplate('tables');
+                template = await loadTemplate('tables');                
                 const rendered = Mustache.render(template, { 
-                    title: 'Tables Page',
+                    title: 'Tables Page huh',
                     content: 'This is the tables page content'
                 });
                 $('#page').html(rendered);
@@ -1164,6 +1180,10 @@ async function tablesFunctions() {
 
     await renderSidebar('26'); // project_id
 
+    // loadRoomData for the first mentioned room id in the sidebar
+    const firstRoomId = $('#locations .room-link').first().data('id');    
+    await loadRoomData(firstRoomId);
+
 
     $('span.name').on('click', function() {
         console.log('Name clicked:', $(this).data('id'));    
@@ -1177,9 +1197,7 @@ async function tablesFunctions() {
                 await db.updateName(store, uuid, newName);
                 $(that).text(newName);
                 
-                renderSidebar('26'); // project_id
-
-            
+                renderSidebar('26'); // project_id           
             }
         });
     });

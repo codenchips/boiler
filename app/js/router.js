@@ -2,6 +2,8 @@ const Mustache = require('mustache');
 const db = require('./db');
 const sst = require('./sst');
 
+
+
 async function loadTemplate(path) {
     try {
         const response = await fetch(`/views/${path}.html`);
@@ -26,9 +28,9 @@ async function router(path, project_id) {
         let template;
         switch(path) {
             case 'tables':
-                template = await loadTemplate('tables');
+                template = await loadTemplate('tables');                
                 const rendered = Mustache.render(template, { 
-                    title: 'Tables Page',
+                    title: 'Tables Page huh',
                     content: 'This is the tables page content'
                 });
                 $('#page').html(rendered);

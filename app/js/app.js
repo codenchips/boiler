@@ -4,9 +4,12 @@ $(document).ready(function() {
     const router = require('./router'); // Import the router module
     const sst = require('./sst'); // Import the db module
 
+
+
     $('a[href^="/"]').on('click', function(e) {
         e.preventDefault();
         const path = $(this).attr('href').substring(1);
+        console.log('link intercepted:', path);
         router(path);
     });
     
