@@ -236,15 +236,20 @@ class TablesModule {
     }
 
 
-    async refreshTableData() {
-        const allProductsInRoom = await db.getProductsForRoom($('#m_room_id').val());
+    async refreshTableData(roomID) {
+        console.log('Refreshing table data for room:', roomID);
+        let roomIDToUse = roomID || $('#m_room_id').val();
+        console.log('Room ID to use:', roomIDToUse);
+        const allProductsInRoom = await db.getProductsForRoom(roomIDToUse);
+        console.log('All products in room:', allProductsInRoom);
         const groupedProducts = await this.groupProductsBySKU(allProductsInRoom);
         this.pTable.setData(groupedProducts);
     }
 
-    async renderProdctsTable() {
+    async renderProdctsTable(roomID) {
 
-        const allProductsInRoom = await db.getProductsForRoom($('#m_room_id').val());
+        let roomIDToUse = roomID || $('#m_room_id').val();
+        const allProductsInRoom = await db.getProductsForRoom(roomIDToUse);
         const groupedProducts = await this.groupProductsBySKU(allProductsInRoom);
 
         this.pTable = new Tabulator("#ptable", {

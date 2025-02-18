@@ -16,7 +16,7 @@
   <script type="text/javascript" src="js/vendor/tabulator.min.js"></script>
 
   
-  <title>SST</title>
+  <title>SST Main</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/sst.css">
   <meta name="description" content="">
@@ -69,20 +69,23 @@
                                         <small>Account</small>
                                     </a>
                                 </li>
-                                <input type="text" id="m_project_id" name="m_project_id" value="" />
+
+                                <input type="text" id="m_room_id" name="m_room_id" value="" />
                             </ul>
                         </div>
                     </div>
                 </div>
             </nav>
 
+
             <input type="hidden" id="site_uid" name="site_uid" value="" />
 
+            <input type="hidden" id="m_project_id" name="m_project_id" value="" />    
             <input type="hidden" id="m_project_slug" name="m_project_slug" value="" />
             <input type="hidden" id="m_project_version" name="m_project_version" value="" />
             <input type="hidden" id="m_user_id" name="m_user_id" value="" />
             <input type="hidden" id="m_area_id" name="m_area_id" value="" />
-            <input type="hidden" id="m_room_id" name="m_room_id" value="26" />
+
             <input type="hidden" id="m_floor_id" name="m_floor_id" value="" />
             <input type="hidden" id="m_building_id" name="m_building_id" value="" />
             <input type="hidden" id="m_location_id" name="m_location_id" value="" />
@@ -137,14 +140,11 @@
             <div id="sidebar"></div>
 
 
-            <?php //$data = get_project_sidenav('cov-uni'); ?>
-
-
             <!-- rooms nav -->
             <div class="uk-offcanvas-bar uk-visible@xl tables-side" id="desktop-sidebar">
                 <div class="uk-visible@m uk-flex uk-flex-column">
 
-                    <h4>Manage Project</h4>
+                    <h4>Manage Project 1.1</h4>
 
                     <div id="locations" class="locations nav-menu"></div>
 
@@ -161,7 +161,7 @@
 
                 <div class="uk-offcanvas-bar uk-flex uk-flex-column">
 
-                    <h4>Manage Project</h4>
+                    <h4>Manage Project 2</h4>
 
                     <div id="locations" class="locations nav-menu"></div>
 

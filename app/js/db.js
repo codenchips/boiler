@@ -1,7 +1,7 @@
 const { openDB } = require('idb');
 
 const DB_NAME = 'sst_database';
-const DB_VERSION = 8;
+const DB_VERSION = 9;
 const STORE_NAME = 'product_data';
 
 // Custom function to generate UUIDs
@@ -23,27 +23,28 @@ async function initDB() {
             }
             if (!db.objectStoreNames.contains("projects")) {
                 const store = db.createObjectStore("projects", { keyPath: "uuid" });
-                store.createIndex('owner_id', 'owner_id', { unique: false }); // Add owner_id index
+                store.createIndex('owner_id', 'owner_id', { unique: false });
             }
             if (!db.objectStoreNames.contains("locations")) {
                 const store = db.createObjectStore("locations", { keyPath: "uuid" });
                 store.createIndex("project_id_fk", "project_id_fk", { unique: false });
-                store.createIndex('owner_id', 'owner_id', { unique: false }); // Add owner_id index
+                store.createIndex('owner_id', 'owner_id', { unique: false });
             }
             if (!db.objectStoreNames.contains("buildings")) {
                 const store = db.createObjectStore("buildings", { keyPath: "uuid" });
                 store.createIndex("location_id_fk", "location_id_fk", { unique: false });
-                store.createIndex('owner_id', 'owner_id', { unique: false }); // Add owner_id index
+                store.createIndex('owner_id', 'owner_id', { unique: false });
             }
             if (!db.objectStoreNames.contains("floors")) {
                 const store = db.createObjectStore("floors", { keyPath: "uuid" });
                 store.createIndex("building_id_fk", "building_id_fk", { unique: false });
-                store.createIndex('owner_id', 'owner_id', { unique: false }); // Add owner_id index
+                store.createIndex('owner_id', 'owner_id', { unique: false }); 
             }
             if (!db.objectStoreNames.contains("rooms")) {
                 const store = db.createObjectStore("rooms", { keyPath: "uuid" });
                 store.createIndex("floor_id_fk", "floor_id_fk", { unique: false });
-                store.createIndex('owner_id', 'owner_id', { unique: false }); // Add owner_id index
+                store.createIndex('owner_id', 'owner_id', { unique: false }); 
+                store.createIndex('room_id_fk', 'room_id_fk', { unique: false });
             }
             if (!db.objectStoreNames.contains("products")) {
                 const store = db.createObjectStore("products", { keyPath: "uuid" });
@@ -124,6 +125,7 @@ async function syncData(owner_id) {
                         } else {
                             item.uuid = item.id;  // Map 'id' to 'uuid' for IndexedDB
                             item.owner_id = owner_id; // Add owner_id
+                            item.room_id_fk = item.uuid; // Ensure room_id_fk is set
                             delete item.id;        // Remove the original 'id' field to avoid conflicts
                             store.put(item);
                         }
@@ -200,6 +202,8 @@ async function getProductsForRoom(roomId) {
     const tx = db.transaction("products", "readonly");
     const store = tx.objectStore("products");
     const index = store.index("room_id_fk"); // Assumes you have an index on room_id_fk
+    // cast roomId to string
+    roomId = String(roomId);
     return await index.getAll(roomId);
 }
 
@@ -281,7 +285,32 @@ const updateProductRef = async (room_id, sku, ref) => {
     }
 }
 
+const getRoomMeta = async (roomId) => {
+    roomId = String(roomId);
 
+    const db = await initDB();
+    const tx = db.transaction("rooms", "readonly");
+    const store = tx.objectStore("rooms");
+    const index = store.index("room_id_fk");
+    const room = await index.get(roomId);    
+    if (!room) {
+        throw new Error(`Room with id ${roomId} not found`);
+    }
+
+    const floorStore = db.transaction("floors", "readonly").objectStore("floors");
+    const floor = await floorStore.get(room.floor_id_fk);
+    const buildingStore = db.transaction("buildings", "readonly").objectStore("buildings");
+    const building = await buildingStore.get(floor.building_id_fk);
+    const locationStore = db.transaction("locations", "readonly").objectStore("locations");
+    const location = await locationStore.get(building.location_id_fk);
+    return {
+        location: { name: location.name, uuid: location.uuid },
+        building: { name: building.name, uuid: building.uuid },
+        floor: { name: floor.name, uuid: floor.uuid },
+        room: { name: room.name, uuid: room.uuid }
+    };
+
+};
 
 async function isDatabaseEmpty() {
     const db = await initDB();
@@ -378,6 +407,7 @@ module.exports = {
     deleteProductFromRoom,
     setSkuQtyForRoom,
     updateProductRef,
-    getProjectStructure
+    getProjectStructure,
+    getRoomMeta
     // Add other database-related functions here
 };

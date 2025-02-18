@@ -58,7 +58,7 @@ module.exports = function(grunt) {
           preservePipes: true,
         },
         files: {
-          "app/index.html": "app/main.html"  // Changed from app.html to index.html
+          //"app/index.html": "app/main.html"  // Changed from app.html to index.html
         }
       }
     },

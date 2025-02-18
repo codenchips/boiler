@@ -47,8 +47,27 @@ async function tablesFunctions() {
     $('a.room-link').on('click', async function(e) {
         e.preventDefault();
         console.log('Room clicked: ', $(this).data('id'));
+        loadRoomData($(this).data('id'));
+       
 
     });    
+
+    async function loadRoomData(roomId) {
+        $('#m_room_id').val(roomId);
+
+        // get the names for the location, building, floor and room based on this roomId.
+        const roomMeta = await db.getRoomMeta(roomId);
+        console.log('Room Meta:', roomMeta);
+        $('.name.location_name').html(roomMeta.location.name).attr('data-id', roomMeta.location.uuid);
+        $('.name.building_name').html(roomMeta.building.name).attr('data-id', roomMeta.building.uuid);
+        $('.name.floor_name').html(roomMeta.floor.name).attr('data-id', roomMeta.floor.uuid);
+        $('.name.room_name').html(roomMeta.room.name).attr('data-id', roomMeta.room.uuid);
+
+        await tables.refreshTableData(roomId);
+
+
+
+    }
 
 
 
