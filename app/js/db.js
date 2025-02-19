@@ -312,6 +312,31 @@ const getRoomMeta = async (roomId) => {
     };
 };
 
+async function addRoom(floorUuid, roomName) {
+    const db = await initDB();
+    const tx = db.transaction("rooms", "readwrite");
+    const store = tx.objectStore("rooms");
+    const newRoomID = generateUUID();
+
+    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    const roomSlug = await utils.slugify(roomName);
+    const room = {
+        created_on: now,
+        floor_id_fk: String(floorUuid),
+        last_updated: now,
+        name: roomName,
+        owner_id: 8,  // Assuming owner_id 8
+        room_id_fk: newRoomID,
+        slug: roomSlug,
+        uuid: newRoomID,
+        version: "1"
+    };
+
+    await store.add(room);
+    await tx.done;
+    return room.uuid;
+}
+
 async function updateName(store, uuid, newName) {
     const db = await initDB();
     const tx = db.transaction(store, "readwrite");
@@ -421,6 +446,7 @@ module.exports = {
     updateProductRef,
     getProjectStructure,
     getRoomMeta,
-    updateName
+    updateName,
+    addRoom
     // Add other database-related functions here
 };

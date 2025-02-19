@@ -26,7 +26,6 @@ class TablesModule {
             return;
         }
 
-
         let optionsHtml = '<option value="">Select SKU</option>';
         skus.forEach(sku => {
             optionsHtml += `<option value="${sku.slug}">${sku.name}</option>`;

@@ -46,6 +46,7 @@ async function tablesFunctions() {
     await loadRoomData(firstRoomId);
 
 
+    
     $('span.name').on('click', function() {
         console.log('Name clicked:', $(this).data('id'));    
         const store = $(this).data('tbl');
@@ -69,18 +70,36 @@ async function tablesFunctions() {
         const sidemenuHtml = await sidebar.generateNavMenu(projectStructure);   
     
         $('#locations').html(sidemenuHtml);
-    
+
+        /* Room Click - load room data */
         $('a.room-link').on('click', async function(e) {
             e.preventDefault();
             console.log('Room clicked: ', $(this).data('id'));
             loadRoomData($(this).data('id'));
         });    
+
+        /* Room Click - load room data */
+        $('span.add-room a').on('click', async function(e) {
+            e.preventDefault();
+            console.log('Add Room to floor: ', $(this).data('id'));
+            // add a room to this floor where floor uuid = $(this).data('id')
+            const floorUuid = $(this).data('id');   
+            const roomName = await UIkit.modal.prompt('Enter the room name');
+            if (roomName) {
+                const roomUuid = await db.addRoom(floorUuid, roomName);
+                console.log('Room added:', roomUuid);
+                // show a message to say room addded
+                UIkit.notification('Room added', {status:'success'});
+                renderSidebar('26'); // project_id
+            }   
+        });            
     
     }
 
     async function loadRoomData(roomId) {
         $('#m_room_id').val(roomId);
-
+        // ensure toomID is a string
+        roomId = roomId.toString();
         // get the names for the location, building, floor and room based on this roomId.
         const roomMeta = await db.getRoomMeta(roomId);
         console.log('Room Meta:', roomMeta);
