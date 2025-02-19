@@ -404,6 +404,31 @@ async function addRoom(floorUuid, roomName) {
     return room.uuid;
 }
 
+async function addFloor(buildingUuid, floorName) {
+    const db = await initDB();
+    const tx = db.transaction("floors", "readwrite");
+    const store = tx.objectStore("floors");
+    const newFloorID = generateUUID();
+
+    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    const floorSlug = await utils.slugify(floorName);
+    const floor = {
+        created_on: now,
+        building_id_fk: String(buildingUuid),
+        last_updated: now,
+        name: floorName,
+        owner_id: 8,  // Assuming owner_id 8
+        room_id_fk: newFloorID,
+        slug: floorSlug,
+        uuid: newFloorID,
+        version: "1"
+    };
+
+    await store.add(floor);
+    await tx.done;
+    return floor.uuid;
+}
+
 async function updateName(store, uuid, newName) {
     const db = await initDB();
     const tx = db.transaction(store, "readwrite");
@@ -514,7 +539,8 @@ module.exports = {
     getProjectStructure,
     getRoomMeta,
     updateName,
-    addRoom
+    addRoom,
+    addFloor
     // Add other database-related functions here
 };
 
@@ -694,7 +720,6 @@ class TablesModule {
             console.error('No sku data provided');
             return;
         }
-
 
         let optionsHtml = '<option value="">Select SKU</option>';
         skus.forEach(sku => {
@@ -1243,7 +1268,7 @@ async function tablesFunctions() {
             loadRoomData($(this).data('id'));
         });    
 
-        /* Room Click - load room data */
+        /* Add Room Click - add a new room */
         $('span.add-room a').on('click', async function(e) {
             e.preventDefault();
             console.log('Add Room to floor: ', $(this).data('id'));
@@ -1257,7 +1282,26 @@ async function tablesFunctions() {
                 UIkit.notification('Room added', {status:'success'});
                 renderSidebar('26'); // project_id
             }   
-        });            
+        });
+
+        /* Add FLoor Click - add a new floor */
+        $('span.add-floor a').on('click', async function(e) {
+            e.preventDefault();
+            console.log('Add Floor to Building: ', $(this).data('id'));
+            
+            const buildingUuid = $(this).data('id');   
+            const floorName = await UIkit.modal.prompt('Enter the floor name');
+            if (floorName) {
+                const floorUuid = await db.addFloor(buildingUuid, floorName);
+                console.log('Floor added:', floorUuid);
+                // show a message to say room addded
+                UIkit.notification('Floor added', {status:'success'});
+                renderSidebar('26'); // project_id
+            }   
+        });
+
+
+
     
     }
 

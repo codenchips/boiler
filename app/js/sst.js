@@ -78,7 +78,7 @@ async function tablesFunctions() {
             loadRoomData($(this).data('id'));
         });    
 
-        /* Room Click - load room data */
+        /* Add Room Click - add a new room */
         $('span.add-room a').on('click', async function(e) {
             e.preventDefault();
             console.log('Add Room to floor: ', $(this).data('id'));
@@ -92,7 +92,26 @@ async function tablesFunctions() {
                 UIkit.notification('Room added', {status:'success'});
                 renderSidebar('26'); // project_id
             }   
-        });            
+        });
+
+        /* Add FLoor Click - add a new floor */
+        $('span.add-floor a').on('click', async function(e) {
+            e.preventDefault();
+            console.log('Add Floor to Building: ', $(this).data('id'));
+            
+            const buildingUuid = $(this).data('id');   
+            const floorName = await UIkit.modal.prompt('Enter the floor name');
+            if (floorName) {
+                const floorUuid = await db.addFloor(buildingUuid, floorName);
+                console.log('Floor added:', floorUuid);
+                // show a message to say room addded
+                UIkit.notification('Floor added', {status:'success'});
+                renderSidebar('26'); // project_id
+            }   
+        });
+
+
+
     
     }
 

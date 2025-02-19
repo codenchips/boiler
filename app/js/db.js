@@ -337,6 +337,31 @@ async function addRoom(floorUuid, roomName) {
     return room.uuid;
 }
 
+async function addFloor(buildingUuid, floorName) {
+    const db = await initDB();
+    const tx = db.transaction("floors", "readwrite");
+    const store = tx.objectStore("floors");
+    const newFloorID = generateUUID();
+
+    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    const floorSlug = await utils.slugify(floorName);
+    const floor = {
+        created_on: now,
+        building_id_fk: String(buildingUuid),
+        last_updated: now,
+        name: floorName,
+        owner_id: 8,  // Assuming owner_id 8
+        room_id_fk: newFloorID,
+        slug: floorSlug,
+        uuid: newFloorID,
+        version: "1"
+    };
+
+    await store.add(floor);
+    await tx.done;
+    return floor.uuid;
+}
+
 async function updateName(store, uuid, newName) {
     const db = await initDB();
     const tx = db.transaction(store, "readwrite");
@@ -447,6 +472,7 @@ module.exports = {
     getProjectStructure,
     getRoomMeta,
     updateName,
-    addRoom
+    addRoom,
+    addFloor
     // Add other database-related functions here
 };
