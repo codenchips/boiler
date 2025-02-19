@@ -351,7 +351,7 @@ async function addFloor(buildingUuid, floorName) {
         last_updated: now,
         name: floorName,
         owner_id: 8,  // Assuming owner_id 8
-        room_id_fk: newFloorID,
+        floor_id_fk: newFloorID,
         slug: floorSlug,
         uuid: newFloorID,
         version: "1"
@@ -360,6 +360,31 @@ async function addFloor(buildingUuid, floorName) {
     await store.add(floor);
     await tx.done;
     return floor.uuid;
+}
+
+async function addBuilding(locationUuid, buildingName) {
+    const db = await initDB();
+    const tx = db.transaction("buildings", "readwrite");
+    const store = tx.objectStore("buildings");
+    const newBuildingID = generateUUID();
+
+    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    const buildingSlug = await utils.slugify(buildingName);
+    const building = {
+        created_on: now,
+        location_id_fk: String(locationUuid),
+        last_updated: now,
+        name: buildingName,
+        owner_id: 8,  // Assuming owner_id 8
+        building_id_fk: newBuildingID,
+        slug: buildingSlug,
+        uuid: newBuildingID,
+        version: "1"
+    };
+
+    await store.add(building);
+    await tx.done;
+    return building.uuid;
 }
 
 async function updateName(store, uuid, newName) {
@@ -473,6 +498,7 @@ module.exports = {
     getRoomMeta,
     updateName,
     addRoom,
-    addFloor
+    addFloor,
+    addBuilding
     // Add other database-related functions here
 };

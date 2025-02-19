@@ -104,11 +104,27 @@ async function tablesFunctions() {
             if (floorName) {
                 const floorUuid = await db.addFloor(buildingUuid, floorName);
                 console.log('Floor added:', floorUuid);
-                // show a message to say room addded
+                // show a message to say floor addded
                 UIkit.notification('Floor added', {status:'success'});
                 renderSidebar('26'); // project_id
             }   
         });
+
+        /* Add building Click - add a new building */
+        $('span.add-building a').on('click', async function(e) {
+            e.preventDefault();
+            console.log('Add Building to Location: ', $(this).data('id'));
+            
+            const locationUuid = $(this).data('id');   
+            const buildingName = await UIkit.modal.prompt('Enter the building name');
+            if (buildingName) {
+                const buildingUuid = await db.addBuilding(locationUuid, buildingName);
+                console.log('building added:', buildingUuid);
+                // show a message to say building addded
+                UIkit.notification('building added', {status:'success'});
+                renderSidebar('26'); // project_id
+            }   
+        });        
 
 
 

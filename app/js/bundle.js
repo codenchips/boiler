@@ -418,7 +418,7 @@ async function addFloor(buildingUuid, floorName) {
         last_updated: now,
         name: floorName,
         owner_id: 8,  // Assuming owner_id 8
-        room_id_fk: newFloorID,
+        floor_id_fk: newFloorID,
         slug: floorSlug,
         uuid: newFloorID,
         version: "1"
@@ -427,6 +427,31 @@ async function addFloor(buildingUuid, floorName) {
     await store.add(floor);
     await tx.done;
     return floor.uuid;
+}
+
+async function addBuilding(locationUuid, buildingName) {
+    const db = await initDB();
+    const tx = db.transaction("buildings", "readwrite");
+    const store = tx.objectStore("buildings");
+    const newBuildingID = generateUUID();
+
+    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    const buildingSlug = await utils.slugify(buildingName);
+    const building = {
+        created_on: now,
+        location_id_fk: String(locationUuid),
+        last_updated: now,
+        name: buildingName,
+        owner_id: 8,  // Assuming owner_id 8
+        building_id_fk: newBuildingID,
+        slug: buildingSlug,
+        uuid: newBuildingID,
+        version: "1"
+    };
+
+    await store.add(building);
+    await tx.done;
+    return building.uuid;
 }
 
 async function updateName(store, uuid, newName) {
@@ -540,7 +565,8 @@ module.exports = {
     getRoomMeta,
     updateName,
     addRoom,
-    addFloor
+    addFloor,
+    addBuilding
     // Add other database-related functions here
 };
 
@@ -1294,11 +1320,27 @@ async function tablesFunctions() {
             if (floorName) {
                 const floorUuid = await db.addFloor(buildingUuid, floorName);
                 console.log('Floor added:', floorUuid);
-                // show a message to say room addded
+                // show a message to say floor addded
                 UIkit.notification('Floor added', {status:'success'});
                 renderSidebar('26'); // project_id
             }   
         });
+
+        /* Add building Click - add a new building */
+        $('span.add-building a').on('click', async function(e) {
+            e.preventDefault();
+            console.log('Add Building to Location: ', $(this).data('id'));
+            
+            const locationUuid = $(this).data('id');   
+            const buildingName = await UIkit.modal.prompt('Enter the building name');
+            if (buildingName) {
+                const buildingUuid = await db.addBuilding(locationUuid, buildingName);
+                console.log('building added:', buildingUuid);
+                // show a message to say building addded
+                UIkit.notification('building added', {status:'success'});
+                renderSidebar('26'); // project_id
+            }   
+        });        
 
 
 
