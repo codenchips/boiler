@@ -30,9 +30,11 @@ async function tablesFunctions() {
         await tables.updateSkusDropdown($(this).val());
     });    
 
+    // add prodcut to room
     $('#btn_add_product').on('click', async function() {
         await tables.addProductToRoomClick();       
     });
+
 
 
     await tables.renderProdctsTable();
@@ -153,7 +155,17 @@ async function tablesFunctions() {
             });        
         });  
 
+        // add special to room
+        $('#form-submit-special').submit(async function(e) {
+            e.preventDefault();
+            await tables.addSpecialToRoomClick();      
+            UIkit.modal('#add-special').hide(); 
+        });        
+
     }
+    // 
+    // End renderSidebar
+    // 
 
     async function loadRoomData(roomId) {
         $('#m_room_id').val(roomId);        

@@ -129,23 +129,49 @@ class TablesModule {
     }
 
 
-    async addProductToRoomClick() {
 
+    async addSpecialToRoomClick() {
+        // to save duplication just build the product data object and call the addProductToRoomClick method
         const productData = {
-            brand: $('#form_brand').val(),
-            type: $('#form_type').val(),
-            product_slug: $('#form_product').val(),
-            product_name: $('#form_product option:selected').text(),
-            sku: $('#form_sku').val(),            
+            brand: $('#form_custom_brand').val(),
+            type: $('#form_custom_type').val(),
+            product_slug: await utils.slugify($('#form_custom_product').val()),
+            product_name: $('#form_custom_product').val(),
+            sku: $('#form_custom_sku').val(),            
             room_id_fk: $('#m_room_id').val(),
             owner_id: '8', // Hardcoded for now
-            custom: 0,
+            custom: $('#form_custom_flag').val(),,
             ref: "",
             created_on: await utils.formatDateTime(new Date()),
             last_updated: await utils.formatDateTime(new Date()),
             order: null,
             range: null
         };
+        UIkit.modal('#add-special').hide();
+        this.addProductToRoomClick(productData);      
+    }
+
+    async addProductToRoomClick(productData) {
+
+        // only set this if no productData passed in
+        if (!productData) {
+            // build the product data object    
+            const productData = {
+                brand: $('#form_brand').val(),
+                type: $('#form_type').val(),
+                product_slug: $('#form_product').val(),
+                product_name: $('#form_product option:selected').text(),
+                sku: $('#form_sku').val(),            
+                room_id_fk: $('#m_room_id').val(),
+                owner_id: '8', // Hardcoded for now
+                custom: 0,
+                ref: "",
+                created_on: await utils.formatDateTime(new Date()),
+                last_updated: await utils.formatDateTime(new Date()),
+                order: null,
+                range: null
+            };
+        }
 
         console.log('Add product, data:', productData);
 
@@ -172,6 +198,7 @@ class TablesModule {
                 pos: 'top-center',
                 timeout: 5000
             });
+
             utils.hideSpin();
         } catch (err) {
             console.error('Error saving product to room:', err);
@@ -180,7 +207,7 @@ class TablesModule {
                 status: 'danger',
                 pos: 'top-center',
                 timeout: 5000
-            });
+            });            
             utils.hideSpin();
         }
     }

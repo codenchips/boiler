@@ -310,7 +310,7 @@
 
             <div class="uk-width-1-1 uk-text-left">
                 <label>Brand</label>
-                <select required id="form_brand"
+                <select required id="form_custom_brand"
                         name="form_custom_brand"
                         class="uk-select"
                         oninvalid="this.setCustomValidity('You must select a brand')"
@@ -324,7 +324,7 @@
 
             <div class="uk-width-1-1 uk-text-left">
                 <label>Product Code or SKU</label>
-                <input id="form_custom"
+                <input id="form_custom_sku"
                        name="form_custom_sku"
                        class="uk-input free-type"
                        placeholder="A product code or identifier is required"
@@ -336,7 +336,7 @@
 
             <div class="uk-width-1-1 uk-text-left">
                 <label>Product Name</label>
-                <input id="form_custom"
+                <input id="form_custom_product"
                        name="form_custom_product_name"
                        class="uk-input free-type"
                        placeholder="Free type a product name"
@@ -347,8 +347,8 @@
             </div>
 
             <div class="uk-width-1-1">
-                <input type="hidden" name="form_custom" value="1" />
-                <input type="hidden" name="add_product_room_id" id="add_product_room_id" value="" />
+                <input type="hidden" id="form_custom_type" name="form_custom_type" value="special" />                
+                <input type="hidden" id="form_custom_flag" name="form_custom_flag" value="1" />                
                 <button  id="form-submit-special" type="submit" class="uk-button uk-button-primary">Add</button>
                 <button  class="uk-modal-close uk-button uk-button-default">Cancel</button>
             </div>
