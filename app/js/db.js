@@ -388,10 +388,12 @@ async function addBuilding(locationUuid, buildingName) {
 }
 
 async function removeRoom(roomUuid) {
+    roomUuid.toString();
     const db = await initDB();
     const tx = db.transaction(["rooms", "products"], "readwrite");
 
     // Remove the room
+    console.log('removing room uuid: ' + roomUuid);
     const roomStore = tx.objectStore("rooms");
     await roomStore.delete(roomUuid);
 

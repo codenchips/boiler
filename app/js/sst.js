@@ -127,25 +127,19 @@ async function tablesFunctions() {
         });     
         
         $('li.room-item span.action-icon').on('click', async function(e) {
-            e.preventDefault();
-            console.log('Remove Room: ', $(this).data('id'));
-            // can we have a confirm dialog here?
+            e.preventDefault();            
+            const that = this;
             const msg = '<h4 class="red">Warning</h4><p>This will remove the room and <b>ALL products</b> in the room!</p';
-            const confirmed = await UIkit.modal.confirm(msg);
-            if (!confirmed) {
-                return;
-            }
-            // remove a room where room uuid = $(this).data('id')
-            const roomUuid = $(this).data('id');   
-            const roomName = await db.removeRoom(roomUuid);
-            console.log('Room removed:', roomName);
-            // show a message to say room removed
-            UIkit.notification('Room removed', {status:'success'});
-            renderSidebar('26'); // project_id            
+            UIkit.modal.confirm(msg).then( async function() {
+                const roomUuid = $(that).data('id');   
+                const roomName = await db.removeRoom(roomUuid);                                
+                UIkit.notification('Room removed', {status:'success'});
+                renderSidebar('26'); // project_id                    
+            }, function () {
+                console.log('Cancelled.')
+            });
+        
         });
-
-
-
     
     }
 
