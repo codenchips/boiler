@@ -408,6 +408,82 @@ async function removeRoom(roomUuid) {
     await tx.done;
 }
 
+async function removeFloor(floorUuid) {
+    floorUuid.toString();
+    const db = await initDB();
+    const tx = db.transaction(["floors", "rooms", "products"], "readwrite");
+
+    // Remove the floor
+    console.log('removing floor uuid: ' + floorUuid);
+    const floorStore = tx.objectStore("floors");
+    await floorStore.delete(floorUuid);
+
+    // remove all products associated with all rooms within this floor first
+    const productsStore = tx.objectStore("products");
+    const roomStore = tx.objectStore("rooms");
+    const roomIndex = productsStore.index("room_id_fk");
+    const index = roomStore.index("floor_id_fk");
+    const rooms = await index.getAll(floorUuid);
+
+    for (const room of rooms) {
+        const products = await roomIndex.getAll(room.uuid);
+        for (const product of products) {
+            await productsStore.delete(product.uuid);
+        }
+    }
+
+    // remove all rooms associated with this floor
+    for (const room of rooms) {
+        await roomStore.delete(room.uuid);
+    }
+
+    await tx.done;
+}
+
+
+async function removeBuilding(buildingUuid) {
+    buildingUuid = String(buildingUuid);
+    const db = await initDB();
+    const tx = db.transaction(["buildings", "floors", "rooms", "products"], "readwrite");
+
+    // Remove the building
+    console.log('removing building uuid: ' + buildingUuid);
+    const buildingStore = tx.objectStore("buildings");
+    await buildingStore.delete(buildingUuid);
+
+    // remove all floors associated with this building
+    const floorStore = tx.objectStore("floors");
+    const floors = await floorStore.getAll();
+    const buildingFloors = floors.filter(floor => floor.building_id_fk === buildingUuid);
+
+    for (const floor of buildingFloors) {
+        // remove all products associated with all rooms within this floor first
+        const productsStore = tx.objectStore("products");
+        const roomStore = tx.objectStore("rooms");
+        const roomIndex = productsStore.index("room_id_fk");
+        const index = roomStore.index("floor_id_fk");
+        const rooms = await index.getAll(floor.uuid);
+
+        for (const room of rooms) {
+            const products = await roomIndex.getAll(room.uuid);
+            for (const product of products) {
+                await productsStore.delete(product.uuid);
+            }
+        }
+
+        // remove all rooms associated with this floor
+        for (const room of rooms) {
+            await roomStore.delete(room.uuid);
+        }
+
+        // remove the floor itself
+        await floorStore.delete(floor.uuid);
+    }
+
+    await tx.done;
+}
+
+
 async function updateName(store, uuid, newName) {
     const db = await initDB();
     const tx = db.transaction(store, "readwrite");
@@ -521,6 +597,8 @@ module.exports = {
     addRoom,
     addFloor,
     addBuilding,
-    removeRoom
+    removeRoom,
+    removeFloor,
+    removeBuilding
     // Add other database-related functions here
 };

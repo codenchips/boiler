@@ -69,7 +69,7 @@ class SidebarModule {
                     <span uk-icon="icon: home;"></span> ${building.building_name}
                 </span>
                 <div class="action-icons building">
-                    <span uk-icon="minus-circle" class="action-icon" data-id="${building.building_id}" data-action="remove"></span>
+                    <span uk-icon="minus-circle" class="action-icon building" data-id="${building.building_id}" data-action="remove"></span>
                 </div>
             </h4>
             <ul class="floor-list">`;
@@ -105,7 +105,7 @@ class SidebarModule {
                     </span>
                 </a>
                 <div class="action-icons floor">
-                    <span uk-icon="minus-circle" class="action-icon" data-id="${floor.floor_id}" data-action="remove"></span>
+                    <span uk-icon="minus-circle" class="action-icon floor" data-id="${floor.floor_id}" data-action="remove"></span>
                 </div>
             </div>
             <ul class="room-list">`;
@@ -139,7 +139,7 @@ class SidebarModule {
                     <span uk-icon="icon: move;"></span> ${room.room_name}
                 </a>
             </span>
-            <span uk-icon="minus-circle" class="action-icon" data-id="${room.room_id}" data-action="remove"></span>
+            <span uk-icon="minus-circle" class="action-icon room" data-id="${room.room_id}" data-action="remove"></span>
         </li>`;
     }
 }

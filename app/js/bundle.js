@@ -475,6 +475,82 @@ async function removeRoom(roomUuid) {
     await tx.done;
 }
 
+async function removeFloor(floorUuid) {
+    floorUuid.toString();
+    const db = await initDB();
+    const tx = db.transaction(["floors", "rooms", "products"], "readwrite");
+
+    // Remove the floor
+    console.log('removing floor uuid: ' + floorUuid);
+    const floorStore = tx.objectStore("floors");
+    await floorStore.delete(floorUuid);
+
+    // remove all products associated with all rooms within this floor first
+    const productsStore = tx.objectStore("products");
+    const roomStore = tx.objectStore("rooms");
+    const roomIndex = productsStore.index("room_id_fk");
+    const index = roomStore.index("floor_id_fk");
+    const rooms = await index.getAll(floorUuid);
+
+    for (const room of rooms) {
+        const products = await roomIndex.getAll(room.uuid);
+        for (const product of products) {
+            await productsStore.delete(product.uuid);
+        }
+    }
+
+    // remove all rooms associated with this floor
+    for (const room of rooms) {
+        await roomStore.delete(room.uuid);
+    }
+
+    await tx.done;
+}
+
+
+async function removeBuilding(buildingUuid) {
+    buildingUuid = String(buildingUuid);
+    const db = await initDB();
+    const tx = db.transaction(["buildings", "floors", "rooms", "products"], "readwrite");
+
+    // Remove the building
+    console.log('removing building uuid: ' + buildingUuid);
+    const buildingStore = tx.objectStore("buildings");
+    await buildingStore.delete(buildingUuid);
+
+    // remove all floors associated with this building
+    const floorStore = tx.objectStore("floors");
+    const floors = await floorStore.getAll();
+    const buildingFloors = floors.filter(floor => floor.building_id_fk === buildingUuid);
+
+    for (const floor of buildingFloors) {
+        // remove all products associated with all rooms within this floor first
+        const productsStore = tx.objectStore("products");
+        const roomStore = tx.objectStore("rooms");
+        const roomIndex = productsStore.index("room_id_fk");
+        const index = roomStore.index("floor_id_fk");
+        const rooms = await index.getAll(floor.uuid);
+
+        for (const room of rooms) {
+            const products = await roomIndex.getAll(room.uuid);
+            for (const product of products) {
+                await productsStore.delete(product.uuid);
+            }
+        }
+
+        // remove all rooms associated with this floor
+        for (const room of rooms) {
+            await roomStore.delete(room.uuid);
+        }
+
+        // remove the floor itself
+        await floorStore.delete(floor.uuid);
+    }
+
+    await tx.done;
+}
+
+
 async function updateName(store, uuid, newName) {
     const db = await initDB();
     const tx = db.transaction(store, "readwrite");
@@ -588,7 +664,9 @@ module.exports = {
     addRoom,
     addFloor,
     addBuilding,
-    removeRoom
+    removeRoom,
+    removeFloor,
+    removeBuilding
     // Add other database-related functions here
 };
 
@@ -664,7 +742,7 @@ class SidebarModule {
                     <span uk-icon="icon: home;"></span> ${building.building_name}
                 </span>
                 <div class="action-icons building">
-                    <span uk-icon="minus-circle" class="action-icon" data-id="${building.building_id}" data-action="remove"></span>
+                    <span uk-icon="minus-circle" class="action-icon building" data-id="${building.building_id}" data-action="remove"></span>
                 </div>
             </h4>
             <ul class="floor-list">`;
@@ -700,7 +778,7 @@ class SidebarModule {
                     </span>
                 </a>
                 <div class="action-icons floor">
-                    <span uk-icon="minus-circle" class="action-icon" data-id="${floor.floor_id}" data-action="remove"></span>
+                    <span uk-icon="minus-circle" class="action-icon floor" data-id="${floor.floor_id}" data-action="remove"></span>
                 </div>
             </div>
             <ul class="room-list">`;
@@ -734,7 +812,7 @@ class SidebarModule {
                     <span uk-icon="icon: move;"></span> ${room.room_name}
                 </a>
             </span>
-            <span uk-icon="minus-circle" class="action-icon" data-id="${room.room_id}" data-action="remove"></span>
+            <span uk-icon="minus-circle" class="action-icon room" data-id="${room.room_id}" data-action="remove"></span>
         </li>`;
     }
 }
@@ -1242,9 +1320,7 @@ const tables = require('./modules/tables');
 const utils = require('./modules/utils');
 const sidebar = require('./modules/sidebar');
 
-
 UIkit.modal('#add-special', { stack : true });
-
 
 
 /*
@@ -1283,7 +1359,6 @@ async function tablesFunctions() {
     const firstRoomId = $('#locations .room-link').first().data('id');    
     await loadRoomData(firstRoomId);
 
-
     
     $('span.name').on('click', function() {
         console.log('Name clicked:', $(this).data('id'));    
@@ -1297,7 +1372,7 @@ async function tablesFunctions() {
                 await db.updateName(store, uuid, newName);
                 $(that).text(newName);
                 
-                renderSidebar('26'); // project_id           
+                await renderSidebar('26'); // project_id           
             }
         });
     });
@@ -1310,94 +1385,103 @@ async function tablesFunctions() {
         $('#locations').html(sidemenuHtml);
 
         /* Room Click - load room data */
-        $('a.room-link').on('click', async function(e) {
+        $('a.room-link').off('click').on('click', async function(e) {
             e.preventDefault();
-            console.log('Room clicked: ', $(this).data('id'));
-            loadRoomData($(this).data('id'));
+            await loadRoomData($(this).data('id'));
         });    
 
         /* Add Room Click - add a new room */
-        $('span.add-room a').on('click', async function(e) {
+        $('span.add-room a').off('click').on('click', async function(e) {
             e.preventDefault();
-            console.log('Add Room to floor: ', $(this).data('id'));
-            // add a room to this floor where floor uuid = $(this).data('id')
             const floorUuid = $(this).data('id');   
             const roomName = await UIkit.modal.prompt('<h4>Enter the room name</h4>');
             if (roomName) {
                 const roomUuid = await db.addRoom(floorUuid, roomName);
-                console.log('Room added:', roomUuid);
-                // show a message to say room addded
                 UIkit.notification('Room added', {status:'success'});
-                renderSidebar('26'); // project_id
+                await renderSidebar('26'); // project_id
             }   
         });
 
         /* Add FLoor Click - add a new floor */
-        $('span.add-floor a').on('click', async function(e) {
+        $('span.add-floor a').off('click').on('click', async function(e) {
             e.preventDefault();
-            console.log('Add Floor to Building: ', $(this).data('id'));
-            
             const buildingUuid = $(this).data('id');   
             const floorName = await UIkit.modal.prompt('<h4>Enter the floor name</h4>');
             if (floorName) {
                 const floorUuid = await db.addFloor(buildingUuid, floorName);
-                console.log('Floor added:', floorUuid);
-                // show a message to say floor addded
                 UIkit.notification('Floor added', {status:'success'});
-                renderSidebar('26'); // project_id
+                await renderSidebar('26'); // project_id
             }   
         });
 
         /* Add building Click - add a new building */
-        $('span.add-building a').on('click', async function(e) {
+        $('span.add-building a').off('click').on('click', async function(e) {
             e.preventDefault();
-            console.log('Add Building to Location: ', $(this).data('id'));
-            
+           
             const locationUuid = $(this).data('id');   
             const buildingName = await UIkit.modal.prompt('<h4>Enter the building name</h4>');
             if (buildingName) {
-                const buildingUuid = await db.addBuilding(locationUuid, buildingName);
-                console.log('building added:', buildingUuid);
-                // show a message to say building addded
+                const buildingUuid = await db.addBuilding(locationUuid, buildingName);                                
                 UIkit.notification('building added', {status:'success'});
-                renderSidebar('26'); // project_id
+                await renderSidebar('26'); // project_id
             }   
         });     
         
-        $('li.room-item span.action-icon').on('click', async function(e) {
-            e.preventDefault();
-            
+        $('li.room-item span.action-icon.room').off('click').on('click', async function(e) {
+            e.preventDefault();            
             const that = this;
             const msg = '<h4 class="red">Warning</h4><p>This will remove the room and <b>ALL products</b> in the room!</p';
             UIkit.modal.confirm(msg).then( async function() {
                 const roomUuid = $(that).data('id');   
                 const roomName = await db.removeRoom(roomUuid);                                
                 UIkit.notification('Room removed', {status:'success'});
-                renderSidebar('26'); // project_id                    
+                await renderSidebar('26'); // project_id                    
             }, function () {
                 console.log('Cancelled.')
-            });
+            });        
+        });   
         
-        });
-    
+        $('li.floor-item span.action-icon.floor').off('click').on('click', async function(e) {
+            e.preventDefault();            
+            const that = this;
+            const msg = '<h4 class="red">Warning</h4><p>This will remove the floor, rooms and <b>ALL products</b> in those rooms!</p';
+            UIkit.modal.confirm(msg).then( async function() {
+                const floorUuid = $(that).data('id');   
+                const floorName = await db.removeFloor(floorUuid);                                
+                UIkit.notification('Floor and rooms removed', {status:'success'});
+                await renderSidebar('26'); // project_id                    
+            }, function () {
+                console.log('Cancelled.')
+            });        
+        });          
+
+        $('li.building-item span.action-icon.building').off('click').on('click', async function(e) {
+            e.preventDefault();            
+            const that = this;
+            const msg = '<h4 class="red">Warning</h4><p>This will remove the building, all floor, rooms and <b>ALL products</b> in those rooms!</p';
+            UIkit.modal.confirm(msg).then( async function() {
+                const buildingUuid = $(that).data('id');   
+                const buildingName = await db.removeBuilding(buildingUuid);                                
+                UIkit.notification('building, floors and rooms removed', {status:'success'});
+                await renderSidebar('26'); // project_id                    
+            }, function () {
+                console.log('Cancelled.')
+            });        
+        });  
+
     }
 
     async function loadRoomData(roomId) {
-        $('#m_room_id').val(roomId);
-        // ensure toomID is a string
+        $('#m_room_id').val(roomId);        
         roomId = roomId.toString();
         // get the names for the location, building, floor and room based on this roomId.
-        const roomMeta = await db.getRoomMeta(roomId);
-        console.log('Room Meta:', roomMeta);
+        const roomMeta = await db.getRoomMeta(roomId);        
         $('.name.location_name').html(roomMeta.location.name).attr('data-id', roomMeta.location.uuid);
         $('.name.building_name').html(roomMeta.building.name).attr('data-id', roomMeta.building.uuid);
         $('.name.floor_name').html(roomMeta.floor.name).attr('data-id', roomMeta.floor.uuid);
         $('.name.room_name').html(roomMeta.room.name).attr('data-id', roomMeta.room.uuid);
 
         await tables.refreshTableData(roomId);
-
-
-
     }
 
 
