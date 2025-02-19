@@ -78,7 +78,7 @@ class TablesModule {
                 if (!acc.some(item => item.slug === product.product_slug)) {
                     acc.push({ 
                         slug: product.product_slug, 
-                        name: product.product_name 
+                        name: product.product_slug.toString().toUpperCase().trim().replace(/-/g, ' ')
                     });
                 }
                 return acc;
