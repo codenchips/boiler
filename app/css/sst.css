@@ -45,6 +45,18 @@ body {
   color: #C8102E;
 }
 
+:focus-visible {
+  outline: none;
+}
+
+.red {
+  color: #C8102E;
+}
+
+.uk-modal-body {
+  text-align: center;
+}
+
 .uk-input:focus, .uk-select:focus, .uk-textarea:focus {
   outline: 0;
   background-color: #fff;

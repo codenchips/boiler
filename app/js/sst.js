@@ -84,7 +84,7 @@ async function tablesFunctions() {
             console.log('Add Room to floor: ', $(this).data('id'));
             // add a room to this floor where floor uuid = $(this).data('id')
             const floorUuid = $(this).data('id');   
-            const roomName = await UIkit.modal.prompt('Enter the room name');
+            const roomName = await UIkit.modal.prompt('<h4>Enter the room name</h4>');
             if (roomName) {
                 const roomUuid = await db.addRoom(floorUuid, roomName);
                 console.log('Room added:', roomUuid);
@@ -100,7 +100,7 @@ async function tablesFunctions() {
             console.log('Add Floor to Building: ', $(this).data('id'));
             
             const buildingUuid = $(this).data('id');   
-            const floorName = await UIkit.modal.prompt('Enter the floor name');
+            const floorName = await UIkit.modal.prompt('<h4>Enter the floor name</h4>');
             if (floorName) {
                 const floorUuid = await db.addFloor(buildingUuid, floorName);
                 console.log('Floor added:', floorUuid);
@@ -116,7 +116,7 @@ async function tablesFunctions() {
             console.log('Add Building to Location: ', $(this).data('id'));
             
             const locationUuid = $(this).data('id');   
-            const buildingName = await UIkit.modal.prompt('Enter the building name');
+            const buildingName = await UIkit.modal.prompt('<h4>Enter the building name</h4>');
             if (buildingName) {
                 const buildingUuid = await db.addBuilding(locationUuid, buildingName);
                 console.log('building added:', buildingUuid);
@@ -124,7 +124,25 @@ async function tablesFunctions() {
                 UIkit.notification('building added', {status:'success'});
                 renderSidebar('26'); // project_id
             }   
-        });        
+        });     
+        
+        $('li.room-item span.action-icon').on('click', async function(e) {
+            e.preventDefault();
+            console.log('Remove Room: ', $(this).data('id'));
+            // can we have a confirm dialog here?
+            const msg = '<h4 class="red">Warning</h4><p>This will remove the room and <b>ALL products</b> in the room!</p';
+            const confirmed = await UIkit.modal.confirm(msg);
+            if (!confirmed) {
+                return;
+            }
+            // remove a room where room uuid = $(this).data('id')
+            const roomUuid = $(this).data('id');   
+            const roomName = await db.removeRoom(roomUuid);
+            console.log('Room removed:', roomName);
+            // show a message to say room removed
+            UIkit.notification('Room removed', {status:'success'});
+            renderSidebar('26'); // project_id            
+        });
 
 
 

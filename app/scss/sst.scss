@@ -64,6 +64,17 @@ body {
   }
 }
 
+:focus-visible {
+  outline: none
+}
+
+.red {
+  color: $xcred;
+}
+.uk-modal-body {
+  text-align: center;
+}
+
 .uk-input:focus, .uk-select:focus, .uk-textarea:focus {
   outline: 0;
   background-color: #fff;

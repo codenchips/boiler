@@ -387,6 +387,25 @@ async function addBuilding(locationUuid, buildingName) {
     return building.uuid;
 }
 
+async function removeRoom(roomUuid) {
+    const db = await initDB();
+    const tx = db.transaction(["rooms", "products"], "readwrite");
+
+    // Remove the room
+    const roomStore = tx.objectStore("rooms");
+    await roomStore.delete(roomUuid);
+
+    // Remove all products associated with this room
+    const productsStore = tx.objectStore("products");
+    const index = productsStore.index("room_id_fk");
+    const products = await index.getAll(roomUuid);
+    for (const product of products) {
+        await productsStore.delete(product.uuid);
+    }
+
+    await tx.done;
+}
+
 async function updateName(store, uuid, newName) {
     const db = await initDB();
     const tx = db.transaction(store, "readwrite");
@@ -499,6 +518,7 @@ module.exports = {
     updateName,
     addRoom,
     addFloor,
-    addBuilding
+    addBuilding,
+    removeRoom
     // Add other database-related functions here
 };
