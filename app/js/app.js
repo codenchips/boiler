@@ -8,8 +8,15 @@ $(document).ready(function() {
     $('a[href^="/"]').on('click', function(e) {
         e.preventDefault();
         const path = $(this).attr('href').substring(1);        
-        router(path);
+        window.router(path);
     });
+
+    const currentProject = JSON.parse(localStorage.getItem('currentProject') || '{}');
+    if (!currentProject.project_id) {
+        $('.tables_link,.schedule_link').hide();
+    } else {
+        $('.tables_link,.schedule_link').show();
+    }
     
 
     // Register Service Worker

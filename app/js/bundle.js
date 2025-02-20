@@ -9,8 +9,15 @@ $(document).ready(function() {
     $('a[href^="/"]').on('click', function(e) {
         e.preventDefault();
         const path = $(this).attr('href').substring(1);        
-        router(path);
+        window.router(path);
     });
+
+    const currentProject = JSON.parse(localStorage.getItem('currentProject') || '{}');
+    if (!currentProject.project_id) {
+        $('.tables_link,.schedule_link').hide();
+    } else {
+        $('.tables_link,.schedule_link').show();
+    }
     
 
     // Register Service Worker
@@ -1354,10 +1361,15 @@ UIkit.modal('#add-special', { stack : true });
 */
 async function tablesFunctions(project_id) {
     tables.init();        
-    console.log('Running tables functions for project:', project_id);
-    const currentProject = JSON.parse(localStorage.getItem('currentProject') || '{}');
     
+    const currentProject = JSON.parse(localStorage.getItem('currentProject') || '{}');
+    if (currentProject.project_id) {
+        project_id = currentProject.project_id;
+    }        
+
+    console.log('Running tables functions for project:', project_id);
     //$('#debug').html(currentProject.project_name);
+    $('.tables_link').show();
 
     // Initial load with default brand
     await tables.updateTypesDropdown('1');
@@ -1618,7 +1630,8 @@ const homeFunctions = async () => {
                 },
                 cellClick: function(e, cell) {                    
                     const projectData = cell.getRow().getData();                    
-                    localStorage.setItem('currentProject', JSON.stringify(projectData));                                 
+                    localStorage.setItem('currentProject', JSON.stringify(projectData));
+                    $('#m_project_id').val(projectData.project_id);
                     window.router('tables', projectData.project_id);                    
                 }
             },

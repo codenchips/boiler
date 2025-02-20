@@ -14,10 +14,15 @@ UIkit.modal('#add-special', { stack : true });
 */
 async function tablesFunctions(project_id) {
     tables.init();        
-    console.log('Running tables functions for project:', project_id);
-    const currentProject = JSON.parse(localStorage.getItem('currentProject') || '{}');
     
+    const currentProject = JSON.parse(localStorage.getItem('currentProject') || '{}');
+    if (currentProject.project_id) {
+        project_id = currentProject.project_id;
+    }        
+
+    console.log('Running tables functions for project:', project_id);
     //$('#debug').html(currentProject.project_name);
+    $('.tables_link').show();
 
     // Initial load with default brand
     await tables.updateTypesDropdown('1');
@@ -278,7 +283,8 @@ const homeFunctions = async () => {
                 },
                 cellClick: function(e, cell) {                    
                     const projectData = cell.getRow().getData();                    
-                    localStorage.setItem('currentProject', JSON.stringify(projectData));                                 
+                    localStorage.setItem('currentProject', JSON.stringify(projectData));
+                    $('#m_project_id').val(projectData.project_id);
                     window.router('tables', projectData.project_id);                    
                 }
             },
