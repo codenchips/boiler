@@ -4,6 +4,7 @@ const sst = require('./sst');
 
 
 
+
 async function loadTemplate(path) {
     try {
         const response = await fetch(`/views/${path}.html`);
@@ -20,21 +21,26 @@ async function loadTemplate(path) {
     }
 }
 
+
 async function router(path, project_id) {
     // Update browser URL without reload
-    window.history.pushState({}, '', `/${path}`);
+    window.history.pushState({}, '', `/${path}${project_id ? '/' + project_id : ''}`);
     
     try {
         let template;
         switch(path) {
             case 'tables':
-                template = await loadTemplate('tables');                
+                template = await loadTemplate('tables');
+                // Get stored project data
+                const projectData = JSON.parse(localStorage.getItem('currentProject') || '{}');
+                
                 const rendered = Mustache.render(template, { 
-                    title: 'Tables Page huh',
-                    content: 'This is the tables page content'
+                    title: 'Tables Page',
+                    project: projectData,
+                    project_id: project_id
                 });
                 $('#page').html(rendered);
-                await sst.tablesFunctions();
+                sst.tablesFunctions(project_id);
                 break;
             case 'schedule':
                 template = await loadTemplate('schedule');
@@ -51,7 +57,7 @@ async function router(path, project_id) {
                     content: 'Your projects are listed below'
                 });
                 $('#page').html(renderedHome);
-                await sst.homeFunctions();
+                sst.homeFunctions();
         }
     } catch (error) {
         console.error('Routing error:', error);
@@ -68,3 +74,4 @@ window.addEventListener('popstate', () => {
 });
 
 module.exports = router;
+window.router = router;

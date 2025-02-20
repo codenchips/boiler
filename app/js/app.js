@@ -3,8 +3,10 @@ $(document).ready(function() {
     const db = require('./db'); // Import the db module
     const router = require('./router'); // Import the router module
     const sst = require('./sst'); // Import the db module
+    
+    
 
-
+    console.log("Mounted App...");
 
     $('a[href^="/"]').on('click', function(e) {
         e.preventDefault();
@@ -24,8 +26,7 @@ $(document).ready(function() {
                 console.log('ServiceWorker registration failed:', err);
             });
     }
-    
-    console.log("Mounted ...");
+        
 
     // Handle online/offline status
     window.addEventListener('online', function() {

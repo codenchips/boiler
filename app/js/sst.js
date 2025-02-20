@@ -1,8 +1,10 @@
 const Mustache = require('mustache');
 const db = require('./db'); // Import the db module
+const sst = require('./sst'); 
 const tables = require('./modules/tables');
 const utils = require('./modules/utils');
 const sidebar = require('./modules/sidebar');
+
 
 UIkit.modal('#add-special', { stack : true });
 
@@ -10,9 +12,9 @@ UIkit.modal('#add-special', { stack : true });
 /*
 *   Tables page functions
 */
-async function tablesFunctions() {
+async function tablesFunctions(project_id) {
     tables.init();        
-    console.log('Running tables functions');
+    console.log('Running tables functions for project:', project_id);
 
     // Initial load with default brand
     await tables.updateTypesDropdown('1');
@@ -39,7 +41,7 @@ async function tablesFunctions() {
 
     await tables.renderProdctsTable();
 
-    await renderSidebar('26'); // project_id
+    await renderSidebar(project_id); // project_id
 
     // loadRoomData for the first mentioned room id in the sidebar
     const firstRoomId = $('#locations .room-link').first().data('id');    
@@ -58,7 +60,7 @@ async function tablesFunctions() {
                 await db.updateName(store, uuid, newName);
                 $(that).text(newName);
                 
-                await renderSidebar('26'); // project_id           
+                await renderSidebar(project_id); // project_id           
             }
         });
     });
@@ -84,7 +86,7 @@ async function tablesFunctions() {
             if (roomName) {
                 const roomUuid = await db.addRoom(floorUuid, roomName);
                 UIkit.notification('Room added', {status:'success'});
-                await renderSidebar('26'); // project_id
+                await renderSidebar(project_id); // project_id
             }   
         });
 
@@ -96,7 +98,7 @@ async function tablesFunctions() {
             if (floorName) {
                 const floorUuid = await db.addFloor(buildingUuid, floorName);
                 UIkit.notification('Floor added', {status:'success'});
-                await renderSidebar('26'); // project_id
+                await renderSidebar(project_id); // project_id
             }   
         });
 
@@ -109,7 +111,7 @@ async function tablesFunctions() {
             if (buildingName) {
                 const buildingUuid = await db.addBuilding(locationUuid, buildingName);                                
                 UIkit.notification('building added', {status:'success'});
-                await renderSidebar('26'); // project_id
+                await renderSidebar(project_id); // project_id
             }   
         });     
         
@@ -121,7 +123,7 @@ async function tablesFunctions() {
                 const roomUuid = $(that).data('id');   
                 const roomName = await db.removeRoom(roomUuid);                                
                 UIkit.notification('Room removed', {status:'success'});
-                await renderSidebar('26'); // project_id                    
+                await renderSidebar(project_id); // project_id                    
             }, function () {
                 console.log('Cancelled.')
             });        
@@ -135,7 +137,7 @@ async function tablesFunctions() {
                 const floorUuid = $(that).data('id');   
                 const floorName = await db.removeFloor(floorUuid);                                
                 UIkit.notification('Floor and rooms removed', {status:'success'});
-                await renderSidebar('26'); // project_id                    
+                await renderSidebar(project_id); // project_id                    
             }, function () {
                 console.log('Cancelled.')
             });        
@@ -149,7 +151,7 @@ async function tablesFunctions() {
                 const buildingUuid = $(that).data('id');   
                 const buildingName = await db.removeBuilding(buildingUuid);                                
                 UIkit.notification('building, floors and rooms removed', {status:'success'});
-                await renderSidebar('26'); // project_id                    
+                await renderSidebar(project_id); // project_id                    
             }, function () {
                 console.log('Cancelled.')
             });        
@@ -192,9 +194,8 @@ async function tablesFunctions() {
 /*
 *   Home page functions
 */
-async function homeFunctions() {
-    console.log('Running home functions');
-
+const homeFunctions = async () => {
+    console.log('Running home functions v2');
 
     let deferredPrompt;
     const installButton = $('#installButton');
@@ -228,104 +229,94 @@ async function homeFunctions() {
         installButton.hide();
     });
 
-
-    if ($('#product-list').length) {
-        db.getProducts().then(products => {
-            console.log('Products:', products);
-            const template = $('#product-list').html();
-            const rendered = Mustache.render(template, { products });
-        });
+    db.getProjects().then(projects => {
+        console.log('Projects:', projects);
+        // const template = $('#project-list').html();
+        // const rendered = Mustache.render(template, { projects });
+    });
 
 
-        db.getProjects().then(projects => {
-            console.log('Projects:', projects);
-            // const template = $('#project-list').html();
-            // const rendered = Mustache.render(template, { projects });
-        });
-    }
+    const tabledata = [
+        {
+            project_name: "My Project",
+            project_slug: "my-project",
+            version: "1",
+            project_id: "23",
+            created: "27/1/25",
+            products: "10"
+        }
+    ];
 
-
-    if ($('#dashboard_projects').length) {
-
-        const tabledata = [
+    var dashTable = new Tabulator("#dashboard_projects", {
+        data: tabledata,            
+        loader: false,
+        layout: "fitColumns",
+        dataLoaderError: "There was an error loading the data",
+        initialSort:[
+            {column:"project_name", dir:"asc"}, //sort by this first
+        ],
+        columns: [{
+                title: "project_id",
+                field: "id",
+                visible: false
+            },
             {
-                project_name: "My Project",
-                project_slug: "my-project",
-                version: "1",
-                project_id: "23",
-                created: "27/1/25",
-                products: "10"
-            }
-        ];
-
-        var dashTable = new Tabulator("#dashboard_projects", {
-            data: tabledata,            
-            loader: false,
-            layout: "fitColumns",
-            dataLoaderError: "There was an error loading the data",
-            initialSort:[
-                {column:"project_name", dir:"asc"}, //sort by this first
-            ],
-            columns: [{
-                    title: "project_id",
-                    field: "id",
-                    visible: false
+                title: "project_slug",
+                field: "project_slug",
+                visible: false
+            },
+            {
+                title: "Project Name",
+                field: "project_name",
+                formatter: "link",
+                sorter:"string",
+                visible: true,
+                headerSortStartingDir:"desc",
+                formatterParams:{
+                    labelField: "project_name",
+                    target: "_self",
+                    url: "#",
                 },
-                {
-                    title: "project_slug",
-                    field: "project_slug",
-                    visible: false
-                },
-                {
-                    title: "Project Name",
-                    field: "project_name",
-                    formatter: "link",
-                    sorter:"string",
-                    visible: true,
-                    headerSortStartingDir:"desc",
-                    formatterParams:{
-                        labelField: "project_name",
-                        target: "_self",
-                        url: "#",
-                    },
-                    cellClick: function(e, cell) {
-                        location = "/tables/"+cell.getRow().getData().project_id;
-                    }
-                },
-                {
-                    title: "Products",
-                    field: "products",
-                    width: 120
-                },
-                {
-                    title: "Rev",
-                    field: "version",
-                    width: 80,
-                    visible: false
-                },
-                {
-                    title: "Created",
-                    field: "created",
-                    width: 110,
-                    visible: false
-                },
-                {                    
-                    visible: true,
-                    headerSort: false,
-                    formatter: utils.iconX,
-                    width: 80,
-                    hozAlign: "center",
-                    cellClick: function (e, cell) {
-                        deleteProject(cell.getRow().getData().project_id);
-                    }
-                },
-            ],
-        });
-        //dashTable.setData(data);
-
-    }
-
-}
+                cellClick: function(e, cell) {
+                    //location = "/tables/"+cell.getRow().getData().project_id;
+                    const projectData = cell.getRow().getData();
+                    // Store project data for the tables route
+                    localStorage.setItem('currentProject', JSON.stringify(projectData));
+                    // Navigate to tables with project ID
+                    window.router('tables', projectData.project_id);                    
+                }
+            },
+            {
+                title: "Products",
+                field: "products",
+                width: 120
+            },
+            {
+                title: "Rev",
+                field: "version",
+                width: 80,
+                visible: false
+            },
+            {
+                title: "Created",
+                field: "created",
+                width: 110,
+                visible: false
+            },
+            {                    
+                visible: true,
+                headerSort: false,
+                formatter: utils.iconX,
+                width: 80,
+                hozAlign: "center",
+                cellClick: function (e, cell) {
+                    deleteProject(cell.getRow().getData().project_id);
+                }
+            },
+        ],
+    });
+    //dashTable.setData(data);
+};
 /* 
     // END homeFunctions 
 */

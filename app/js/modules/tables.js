@@ -140,7 +140,7 @@ class TablesModule {
             sku: $('#form_custom_sku').val(),            
             room_id_fk: $('#m_room_id').val(),
             owner_id: '8', // Hardcoded for now
-            custom: $('#form_custom_flag').val(),,
+            custom: $('#form_custom_flag').val(),
             ref: "",
             created_on: await utils.formatDateTime(new Date()),
             last_updated: await utils.formatDateTime(new Date()),
@@ -148,30 +148,31 @@ class TablesModule {
             range: null
         };
         UIkit.modal('#add-special').hide();
-        this.addProductToRoomClick(productData);      
+        this.doAddProduct(productData);   
     }
 
-    async addProductToRoomClick(productData) {
+    async addProductToRoomClick() {
 
-        // only set this if no productData passed in
-        if (!productData) {
-            // build the product data object    
-            const productData = {
-                brand: $('#form_brand').val(),
-                type: $('#form_type').val(),
-                product_slug: $('#form_product').val(),
-                product_name: $('#form_product option:selected').text(),
-                sku: $('#form_sku').val(),            
-                room_id_fk: $('#m_room_id').val(),
-                owner_id: '8', // Hardcoded for now
-                custom: 0,
-                ref: "",
-                created_on: await utils.formatDateTime(new Date()),
-                last_updated: await utils.formatDateTime(new Date()),
-                order: null,
-                range: null
-            };
-        }
+        // build the product data object    
+        const productData = {
+            brand: $('#form_brand').val(),
+            type: $('#form_type').val(),
+            product_slug: $('#form_product').val(),
+            product_name: $('#form_product option:selected').text(),
+            sku: $('#form_sku').val(),            
+            room_id_fk: $('#m_room_id').val(),
+            owner_id: '8', // Hardcoded for now
+            custom: 0,
+            ref: "",
+            created_on: await utils.formatDateTime(new Date()),
+            last_updated: await utils.formatDateTime(new Date()),
+            order: null,
+            range: null
+        };
+        this.doAddProduct(productData);
+    }
+
+    async doAddProduct(productData) {
 
         console.log('Add product, data:', productData);
 

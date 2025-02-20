@@ -4,8 +4,10 @@ $(document).ready(function() {
     const db = require('./db'); // Import the db module
     const router = require('./router'); // Import the router module
     const sst = require('./sst'); // Import the db module
+    
+    
 
-
+    console.log("Mounted App...");
 
     $('a[href^="/"]').on('click', function(e) {
         e.preventDefault();
@@ -25,8 +27,7 @@ $(document).ready(function() {
                 console.log('ServiceWorker registration failed:', err);
             });
     }
-    
-    console.log("Mounted ...");
+        
 
     // Handle online/offline status
     window.addEventListener('online', function() {
@@ -961,38 +962,39 @@ class TablesModule {
             sku: $('#form_custom_sku').val(),            
             room_id_fk: $('#m_room_id').val(),
             owner_id: '8', // Hardcoded for now
-            custom: 1,
+            custom: $('#form_custom_flag').val(),
             ref: "",
             created_on: await utils.formatDateTime(new Date()),
             last_updated: await utils.formatDateTime(new Date()),
             order: null,
             range: null
         };
-        this.addProductToRoomClick(productData);
-
+        UIkit.modal('#add-special').hide();
+        this.doAddProduct(productData);   
     }
 
-    async addProductToRoomClick(productData) {
+    async addProductToRoomClick() {
 
-        // only set this if no productData passed in
-        if (!productData) {
-            // build the product data object    
-            const productData = {
-                brand: $('#form_brand').val(),
-                type: $('#form_type').val(),
-                product_slug: $('#form_product').val(),
-                product_name: $('#form_product option:selected').text(),
-                sku: $('#form_sku').val(),            
-                room_id_fk: $('#m_room_id').val(),
-                owner_id: '8', // Hardcoded for now
-                custom: 0,
-                ref: "",
-                created_on: await utils.formatDateTime(new Date()),
-                last_updated: await utils.formatDateTime(new Date()),
-                order: null,
-                range: null
-            };
-        }
+        // build the product data object    
+        const productData = {
+            brand: $('#form_brand').val(),
+            type: $('#form_type').val(),
+            product_slug: $('#form_product').val(),
+            product_name: $('#form_product option:selected').text(),
+            sku: $('#form_sku').val(),            
+            room_id_fk: $('#m_room_id').val(),
+            owner_id: '8', // Hardcoded for now
+            custom: 0,
+            ref: "",
+            created_on: await utils.formatDateTime(new Date()),
+            last_updated: await utils.formatDateTime(new Date()),
+            order: null,
+            range: null
+        };
+        this.doAddProduct(productData);
+    }
+
+    async doAddProduct(productData) {
 
         console.log('Add product, data:', productData);
 
@@ -1019,6 +1021,7 @@ class TablesModule {
                 pos: 'top-center',
                 timeout: 5000
             });
+
             utils.hideSpin();
         } catch (err) {
             console.error('Error saving product to room:', err);
@@ -1027,7 +1030,7 @@ class TablesModule {
                 status: 'danger',
                 pos: 'top-center',
                 timeout: 5000
-            });
+            });            
             utils.hideSpin();
         }
     }
@@ -1274,6 +1277,7 @@ const sst = require('./sst');
 
 
 
+
 async function loadTemplate(path) {
     try {
         const response = await fetch(`/views/${path}.html`);
@@ -1290,21 +1294,26 @@ async function loadTemplate(path) {
     }
 }
 
+
 async function router(path, project_id) {
     // Update browser URL without reload
-    window.history.pushState({}, '', `/${path}`);
+    window.history.pushState({}, '', `/${path}${project_id ? '/' + project_id : ''}`);
     
     try {
         let template;
         switch(path) {
             case 'tables':
-                template = await loadTemplate('tables');                
+                template = await loadTemplate('tables');
+                // Get stored project data
+                const projectData = JSON.parse(localStorage.getItem('currentProject') || '{}');
+                
                 const rendered = Mustache.render(template, { 
-                    title: 'Tables Page huh',
-                    content: 'This is the tables page content'
+                    title: 'Tables Page',
+                    project: projectData,
+                    project_id: project_id
                 });
                 $('#page').html(rendered);
-                await sst.tablesFunctions();
+                sst.tablesFunctions(project_id);
                 break;
             case 'schedule':
                 template = await loadTemplate('schedule');
@@ -1321,7 +1330,7 @@ async function router(path, project_id) {
                     content: 'Your projects are listed below'
                 });
                 $('#page').html(renderedHome);
-                await sst.homeFunctions();
+                sst.homeFunctions();
         }
     } catch (error) {
         console.error('Routing error:', error);
@@ -1338,13 +1347,16 @@ window.addEventListener('popstate', () => {
 });
 
 module.exports = router;
+window.router = router;
 
 },{"./db":2,"./sst":7,"mustache":9}],7:[function(require,module,exports){
 const Mustache = require('mustache');
 const db = require('./db'); // Import the db module
+const sst = require('./sst'); 
 const tables = require('./modules/tables');
 const utils = require('./modules/utils');
 const sidebar = require('./modules/sidebar');
+
 
 UIkit.modal('#add-special', { stack : true });
 
@@ -1352,9 +1364,9 @@ UIkit.modal('#add-special', { stack : true });
 /*
 *   Tables page functions
 */
-async function tablesFunctions() {
+async function tablesFunctions(project_id) {
     tables.init();        
-    console.log('Running tables functions');
+    console.log('Running tables functions for project:', project_id);
 
     // Initial load with default brand
     await tables.updateTypesDropdown('1');
@@ -1376,16 +1388,12 @@ async function tablesFunctions() {
     $('#btn_add_product').on('click', async function() {
         await tables.addProductToRoomClick();       
     });
-    // add special to room
-    $('#form-submit-special').submit(async function(e) {
-        e.preventDefault();
-        await tables.addSpecialToRoomClick();       
-    });
+
 
 
     await tables.renderProdctsTable();
 
-    await renderSidebar('26'); // project_id
+    await renderSidebar(project_id); // project_id
 
     // loadRoomData for the first mentioned room id in the sidebar
     const firstRoomId = $('#locations .room-link').first().data('id');    
@@ -1404,7 +1412,7 @@ async function tablesFunctions() {
                 await db.updateName(store, uuid, newName);
                 $(that).text(newName);
                 
-                await renderSidebar('26'); // project_id           
+                await renderSidebar(project_id); // project_id           
             }
         });
     });
@@ -1430,7 +1438,7 @@ async function tablesFunctions() {
             if (roomName) {
                 const roomUuid = await db.addRoom(floorUuid, roomName);
                 UIkit.notification('Room added', {status:'success'});
-                await renderSidebar('26'); // project_id
+                await renderSidebar(project_id); // project_id
             }   
         });
 
@@ -1442,7 +1450,7 @@ async function tablesFunctions() {
             if (floorName) {
                 const floorUuid = await db.addFloor(buildingUuid, floorName);
                 UIkit.notification('Floor added', {status:'success'});
-                await renderSidebar('26'); // project_id
+                await renderSidebar(project_id); // project_id
             }   
         });
 
@@ -1455,7 +1463,7 @@ async function tablesFunctions() {
             if (buildingName) {
                 const buildingUuid = await db.addBuilding(locationUuid, buildingName);                                
                 UIkit.notification('building added', {status:'success'});
-                await renderSidebar('26'); // project_id
+                await renderSidebar(project_id); // project_id
             }   
         });     
         
@@ -1467,7 +1475,7 @@ async function tablesFunctions() {
                 const roomUuid = $(that).data('id');   
                 const roomName = await db.removeRoom(roomUuid);                                
                 UIkit.notification('Room removed', {status:'success'});
-                await renderSidebar('26'); // project_id                    
+                await renderSidebar(project_id); // project_id                    
             }, function () {
                 console.log('Cancelled.')
             });        
@@ -1481,7 +1489,7 @@ async function tablesFunctions() {
                 const floorUuid = $(that).data('id');   
                 const floorName = await db.removeFloor(floorUuid);                                
                 UIkit.notification('Floor and rooms removed', {status:'success'});
-                await renderSidebar('26'); // project_id                    
+                await renderSidebar(project_id); // project_id                    
             }, function () {
                 console.log('Cancelled.')
             });        
@@ -1495,13 +1503,23 @@ async function tablesFunctions() {
                 const buildingUuid = $(that).data('id');   
                 const buildingName = await db.removeBuilding(buildingUuid);                                
                 UIkit.notification('building, floors and rooms removed', {status:'success'});
-                await renderSidebar('26'); // project_id                    
+                await renderSidebar(project_id); // project_id                    
             }, function () {
                 console.log('Cancelled.')
             });        
         });  
 
+        // add special to room
+        $('#form-submit-special').submit(async function(e) {
+            e.preventDefault();
+            await tables.addSpecialToRoomClick();      
+            UIkit.modal('#add-special').hide(); 
+        });        
+
     }
+    // 
+    // End renderSidebar
+    // 
 
     async function loadRoomData(roomId) {
         $('#m_room_id').val(roomId);        
@@ -1528,9 +1546,8 @@ async function tablesFunctions() {
 /*
 *   Home page functions
 */
-async function homeFunctions() {
-    console.log('Running home functions');
-
+const homeFunctions = async () => {
+    console.log('Running home functions v2');
 
     let deferredPrompt;
     const installButton = $('#installButton');
@@ -1564,104 +1581,94 @@ async function homeFunctions() {
         installButton.hide();
     });
 
-
-    if ($('#product-list').length) {
-        db.getProducts().then(products => {
-            console.log('Products:', products);
-            const template = $('#product-list').html();
-            const rendered = Mustache.render(template, { products });
-        });
+    db.getProjects().then(projects => {
+        console.log('Projects:', projects);
+        // const template = $('#project-list').html();
+        // const rendered = Mustache.render(template, { projects });
+    });
 
 
-        db.getProjects().then(projects => {
-            console.log('Projects:', projects);
-            // const template = $('#project-list').html();
-            // const rendered = Mustache.render(template, { projects });
-        });
-    }
+    const tabledata = [
+        {
+            project_name: "My Project",
+            project_slug: "my-project",
+            version: "1",
+            project_id: "23",
+            created: "27/1/25",
+            products: "10"
+        }
+    ];
 
-
-    if ($('#dashboard_projects').length) {
-
-        const tabledata = [
+    var dashTable = new Tabulator("#dashboard_projects", {
+        data: tabledata,            
+        loader: false,
+        layout: "fitColumns",
+        dataLoaderError: "There was an error loading the data",
+        initialSort:[
+            {column:"project_name", dir:"asc"}, //sort by this first
+        ],
+        columns: [{
+                title: "project_id",
+                field: "id",
+                visible: false
+            },
             {
-                project_name: "My Project",
-                project_slug: "my-project",
-                version: "1",
-                project_id: "23",
-                created: "27/1/25",
-                products: "10"
-            }
-        ];
-
-        var dashTable = new Tabulator("#dashboard_projects", {
-            data: tabledata,            
-            loader: false,
-            layout: "fitColumns",
-            dataLoaderError: "There was an error loading the data",
-            initialSort:[
-                {column:"project_name", dir:"asc"}, //sort by this first
-            ],
-            columns: [{
-                    title: "project_id",
-                    field: "id",
-                    visible: false
+                title: "project_slug",
+                field: "project_slug",
+                visible: false
+            },
+            {
+                title: "Project Name",
+                field: "project_name",
+                formatter: "link",
+                sorter:"string",
+                visible: true,
+                headerSortStartingDir:"desc",
+                formatterParams:{
+                    labelField: "project_name",
+                    target: "_self",
+                    url: "#",
                 },
-                {
-                    title: "project_slug",
-                    field: "project_slug",
-                    visible: false
-                },
-                {
-                    title: "Project Name",
-                    field: "project_name",
-                    formatter: "link",
-                    sorter:"string",
-                    visible: true,
-                    headerSortStartingDir:"desc",
-                    formatterParams:{
-                        labelField: "project_name",
-                        target: "_self",
-                        url: "#",
-                    },
-                    cellClick: function(e, cell) {
-                        location = "/tables/"+cell.getRow().getData().project_id;
-                    }
-                },
-                {
-                    title: "Products",
-                    field: "products",
-                    width: 120
-                },
-                {
-                    title: "Rev",
-                    field: "version",
-                    width: 80,
-                    visible: false
-                },
-                {
-                    title: "Created",
-                    field: "created",
-                    width: 110,
-                    visible: false
-                },
-                {                    
-                    visible: true,
-                    headerSort: false,
-                    formatter: utils.iconX,
-                    width: 80,
-                    hozAlign: "center",
-                    cellClick: function (e, cell) {
-                        deleteProject(cell.getRow().getData().project_id);
-                    }
-                },
-            ],
-        });
-        //dashTable.setData(data);
-
-    }
-
-}
+                cellClick: function(e, cell) {
+                    //location = "/tables/"+cell.getRow().getData().project_id;
+                    const projectData = cell.getRow().getData();
+                    // Store project data for the tables route
+                    localStorage.setItem('currentProject', JSON.stringify(projectData));
+                    // Navigate to tables with project ID
+                    window.router('tables', projectData.project_id);                    
+                }
+            },
+            {
+                title: "Products",
+                field: "products",
+                width: 120
+            },
+            {
+                title: "Rev",
+                field: "version",
+                width: 80,
+                visible: false
+            },
+            {
+                title: "Created",
+                field: "created",
+                width: 110,
+                visible: false
+            },
+            {                    
+                visible: true,
+                headerSort: false,
+                formatter: utils.iconX,
+                width: 80,
+                hozAlign: "center",
+                cellClick: function (e, cell) {
+                    deleteProject(cell.getRow().getData().project_id);
+                }
+            },
+        ],
+    });
+    //dashTable.setData(data);
+};
 /* 
     // END homeFunctions 
 */
@@ -1673,7 +1680,7 @@ module.exports = {
     tablesFunctions    
 };
 
-},{"./db":2,"./modules/sidebar":3,"./modules/tables":4,"./modules/utils":5,"mustache":9}],8:[function(require,module,exports){
+},{"./db":2,"./modules/sidebar":3,"./modules/tables":4,"./modules/utils":5,"./sst":7,"mustache":9}],8:[function(require,module,exports){
 'use strict';
 
 const instanceOfAny = (object, constructors) => constructors.some((c) => object instanceof c);
@@ -2759,4 +2766,4 @@ exports.wrap = wrap;
 
 })));
 
-},{}]},{},[1,6,2,3,4,5,7]);
+},{}]},{},[3,4,5,2,7,6,1]);

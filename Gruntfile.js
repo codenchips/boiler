@@ -12,12 +12,12 @@ module.exports = function(grunt) {
       dist: {
         files: {
           'app/js/bundle.js': [
-            'app/js/app.js',
-            'app/js/router.js',
-            'app/js/db.js',
-            'app/js/modules/*.js',
-            'app/js/sst.js'
-          ]
+            'app/js/modules/*.js',  
+            'app/js/db.js',         
+            'app/js/sst.js',
+            'app/js/router.js',                 
+            'app/js/app.js'         
+          ]      
         }
       }
     },
@@ -44,7 +44,7 @@ module.exports = function(grunt) {
       },
       bake: {
         files: ['app/main.html', 'app/views/*.html'],
-        tasks: ['bake']
+        tasks: ['bake:build']  
       },
       sass: {
         files: ['app/scss/**/*.scss'],
@@ -58,7 +58,7 @@ module.exports = function(grunt) {
           preservePipes: true,
         },
         files: {
-          //"app/index.html": "app/main.html"  // Changed from app.html to index.html
+          "app/index.html": "app/main.html"  // Changed from app.html to index.html
         }
       }
     },

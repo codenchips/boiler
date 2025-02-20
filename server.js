@@ -12,7 +12,7 @@ app.get('/sw.js', (req, res) => {
 
 // Route for index page
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'app', 'app.html'));
+    res.sendFile(path.join(__dirname, 'app', 'index.html'));
 });
 
 // Start server
