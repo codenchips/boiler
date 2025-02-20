@@ -1275,9 +1275,6 @@ const Mustache = require('mustache');
 const db = require('./db');
 const sst = require('./sst');
 
-
-
-
 async function loadTemplate(path) {
     try {
         const response = await fetch(`/views/${path}.html`);
@@ -1367,6 +1364,9 @@ UIkit.modal('#add-special', { stack : true });
 async function tablesFunctions(project_id) {
     tables.init();        
     console.log('Running tables functions for project:', project_id);
+    const currentProject = JSON.parse(localStorage.getItem('currentProject') || '{}');
+    
+    //$('#debug').html(currentProject.project_name);
 
     // Initial load with default brand
     await tables.updateTypesDropdown('1');

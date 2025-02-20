@@ -2,9 +2,6 @@ const Mustache = require('mustache');
 const db = require('./db');
 const sst = require('./sst');
 
-
-
-
 async function loadTemplate(path) {
     try {
         const response = await fetch(`/views/${path}.html`);
