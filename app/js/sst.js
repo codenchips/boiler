@@ -69,8 +69,12 @@ async function tablesFunctions(project_id) {
     });
 
     async function renderSidebar(project_id) {
-        
-        const projectStructure = await db.getProjectStructure('26'); // project_id            
+        project_id.toString();
+        console.log('Rendering sidebar for project:', project_id);
+
+        const projectStructure = await db.getProjectStructure(project_id); // project_id      
+
+        console.log('Project structure:', projectStructure);          
         const sidemenuHtml = await sidebar.generateNavMenu(projectStructure);   
     
         $('#locations').html(sidemenuHtml);
@@ -173,7 +177,8 @@ async function tablesFunctions(project_id) {
     // 
 
     async function loadRoomData(roomId) {
-        $('#m_room_id').val(roomId);        
+        $('#m_room_id').val(roomId);   
+        if (!roomId) return;     
         roomId = roomId.toString();
         // get the names for the location, building, floor and room based on this roomId.
         const roomMeta = await db.getRoomMeta(roomId);        
@@ -232,23 +237,16 @@ const homeFunctions = async () => {
         installButton.hide();
     });
 
-    db.getProjects().then(projects => {
-        console.log('Projects:', projects);
-        // const template = $('#project-list').html();
-        // const rendered = Mustache.render(template, { projects });
-    });
-
-
-    const tabledata = [
-        {
-            project_name: "My Project",
-            project_slug: "my-project",
-            version: "1",
-            project_id: "23",
-            created: "27/1/25",
-            products: "10"
-        }
-    ];
+    
+    const projects = await db.getProjects();
+    let tabledata = projects.map(project => ({
+        project_name: project.name,
+        project_slug: project.slug,
+        version: project.version,
+        project_id: project.uuid,
+        created: new Date(project.created_on).toLocaleDateString('en-GB'),
+        products: project.products_count
+    }));    
 
     var dashTable = new Tabulator("#dashboard_projects", {
         data: tabledata,            
@@ -256,11 +254,11 @@ const homeFunctions = async () => {
         layout: "fitColumns",
         dataLoaderError: "There was an error loading the data",
         initialSort:[
-            {column:"project_name", dir:"asc"}, //sort by this first
+            {column:"project_name", dir:"asc"}, 
         ],
         columns: [{
                 title: "project_id",
-                field: "id",
+                field: "project_id",
                 visible: false
             },
             {
@@ -286,13 +284,15 @@ const homeFunctions = async () => {
                     // Store project data for the tables route
                     localStorage.setItem('currentProject', JSON.stringify(projectData));
                     // Navigate to tables with project ID
+                    console.log('project table click');
                     window.router('tables', projectData.project_id);                    
                 }
             },
             {
                 title: "Products",
                 field: "products",
-                width: 120
+                width: 120,
+                visible: false
             },
             {
                 title: "Rev",
@@ -304,7 +304,7 @@ const homeFunctions = async () => {
                 title: "Created",
                 field: "created",
                 width: 110,
-                visible: false
+                visible: true
             },
             {                    
                 visible: true,

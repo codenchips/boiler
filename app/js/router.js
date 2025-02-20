@@ -13,13 +13,20 @@ async function loadTemplate(path) {
         const cachedResponse = await cache.match(`/views/${path}.html`);
         if (cachedResponse) {
             return await cachedResponse.text();
+            isRouting = false;
         }
         throw error;
     }
 }
 
+let isRouting = false;
 
 async function router(path, project_id) {
+    if (isRouting) return;
+    isRouting = true;
+
+    console.log('in router: ', path, project_id);
+
     // Update browser URL without reload
     window.history.pushState({}, '', `/${path}${project_id ? '/' + project_id : ''}`);
     
@@ -27,6 +34,7 @@ async function router(path, project_id) {
         let template;
         switch(path) {
             case 'tables':
+                console.log('Get Template for Tables page');
                 template = await loadTemplate('tables');
                 // Get stored project data
                 const projectData = JSON.parse(localStorage.getItem('currentProject') || '{}');
@@ -59,6 +67,8 @@ async function router(path, project_id) {
     } catch (error) {
         console.error('Routing error:', error);
         $('#page').html('<div class="error">Unable to load page content</div>');
+    } finally {
+        isRouting = false;
     }
 }
 
@@ -70,5 +80,5 @@ window.addEventListener('popstate', () => {
     router(pathParts[0] || 'home', pathParts[1]);
 });
 
-module.exports = router;
+//module.exports = router;
 window.router = router;

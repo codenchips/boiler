@@ -175,7 +175,7 @@ async function getProjects() {
 }
 
 async function getProjectHierarchy(owner_id, project_id) {
-    console.log("Fetching from IndexedDB...");
+    console.log("Fetching from IndexedDB for project_id:", project_id);
     const db = await initDB();
 
     let projects = await db.getAllFromIndex('projects', 'owner_id', owner_id);

@@ -1,7 +1,6 @@
 $(document).ready(function() {
     const Mustache = require('mustache');
-    const db = require('./db'); // Import the db module
-    const router = require('./router'); // Import the router module
+    const db = require('./db'); // Import the db module    
     const sst = require('./sst'); // Import the db module
     
     
@@ -54,7 +53,7 @@ $(document).ready(function() {
             .filter(part => part.length > 0);
         
         const projectId = pathParts[1] || '';
-        router(pathParts[0] || 'home', projectId);
+        window.router(pathParts[0] || 'home', projectId);
 
         // Set the project id in the hidden input
         if (projectId) {

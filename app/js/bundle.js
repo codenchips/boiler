@@ -1,8 +1,7 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 $(document).ready(function() {
     const Mustache = require('mustache');
-    const db = require('./db'); // Import the db module
-    const router = require('./router'); // Import the router module
+    const db = require('./db'); // Import the db module    
     const sst = require('./sst'); // Import the db module
     
     
@@ -55,7 +54,7 @@ $(document).ready(function() {
             .filter(part => part.length > 0);
         
         const projectId = pathParts[1] || '';
-        router(pathParts[0] || 'home', projectId);
+        window.router(pathParts[0] || 'home', projectId);
 
         // Set the project id in the hidden input
         if (projectId) {
@@ -65,7 +64,7 @@ $(document).ready(function() {
 
     initApp();
 });
-},{"./db":2,"./router":6,"./sst":7,"mustache":9}],2:[function(require,module,exports){
+},{"./db":2,"./sst":7,"mustache":9}],2:[function(require,module,exports){
 const { openDB } = require('idb');
 const utils = require('./modules/utils');
 
@@ -243,7 +242,7 @@ async function getProjects() {
 }
 
 async function getProjectHierarchy(owner_id, project_id) {
-    console.log("Fetching from IndexedDB...");
+    console.log("Fetching from IndexedDB for project_id:", project_id);
     const db = await initDB();
 
     let projects = await db.getAllFromIndex('projects', 'owner_id', owner_id);
@@ -1286,13 +1285,20 @@ async function loadTemplate(path) {
         const cachedResponse = await cache.match(`/views/${path}.html`);
         if (cachedResponse) {
             return await cachedResponse.text();
+            isRouting = false;
         }
         throw error;
     }
 }
 
+let isRouting = false;
 
 async function router(path, project_id) {
+    if (isRouting) return;
+    isRouting = true;
+
+    console.log('in router: ', path, project_id);
+
     // Update browser URL without reload
     window.history.pushState({}, '', `/${path}${project_id ? '/' + project_id : ''}`);
     
@@ -1300,6 +1306,7 @@ async function router(path, project_id) {
         let template;
         switch(path) {
             case 'tables':
+                console.log('Get Template for Tables page');
                 template = await loadTemplate('tables');
                 // Get stored project data
                 const projectData = JSON.parse(localStorage.getItem('currentProject') || '{}');
@@ -1332,6 +1339,8 @@ async function router(path, project_id) {
     } catch (error) {
         console.error('Routing error:', error);
         $('#page').html('<div class="error">Unable to load page content</div>');
+    } finally {
+        isRouting = false;
     }
 }
 
@@ -1343,7 +1352,7 @@ window.addEventListener('popstate', () => {
     router(pathParts[0] || 'home', pathParts[1]);
 });
 
-module.exports = router;
+//module.exports = router;
 window.router = router;
 
 },{"./db":2,"./sst":7,"mustache":9}],7:[function(require,module,exports){
@@ -1418,8 +1427,12 @@ async function tablesFunctions(project_id) {
     });
 
     async function renderSidebar(project_id) {
-        
-        const projectStructure = await db.getProjectStructure('26'); // project_id            
+        project_id.toString();
+        console.log('Rendering sidebar for project:', project_id);
+
+        const projectStructure = await db.getProjectStructure(project_id); // project_id      
+
+        console.log('Project structure:', projectStructure);          
         const sidemenuHtml = await sidebar.generateNavMenu(projectStructure);   
     
         $('#locations').html(sidemenuHtml);
@@ -1522,7 +1535,8 @@ async function tablesFunctions(project_id) {
     // 
 
     async function loadRoomData(roomId) {
-        $('#m_room_id').val(roomId);        
+        $('#m_room_id').val(roomId);   
+        if (!roomId) return;     
         roomId = roomId.toString();
         // get the names for the location, building, floor and room based on this roomId.
         const roomMeta = await db.getRoomMeta(roomId);        
@@ -1581,23 +1595,16 @@ const homeFunctions = async () => {
         installButton.hide();
     });
 
-    db.getProjects().then(projects => {
-        console.log('Projects:', projects);
-        // const template = $('#project-list').html();
-        // const rendered = Mustache.render(template, { projects });
-    });
-
-
-    const tabledata = [
-        {
-            project_name: "My Project",
-            project_slug: "my-project",
-            version: "1",
-            project_id: "23",
-            created: "27/1/25",
-            products: "10"
-        }
-    ];
+    
+    const projects = await db.getProjects();
+    let tabledata = projects.map(project => ({
+        project_name: project.name,
+        project_slug: project.slug,
+        version: project.version,
+        project_id: project.uuid,
+        created: new Date(project.created_on).toLocaleDateString('en-GB'),
+        products: project.products_count
+    }));    
 
     var dashTable = new Tabulator("#dashboard_projects", {
         data: tabledata,            
@@ -1605,11 +1612,11 @@ const homeFunctions = async () => {
         layout: "fitColumns",
         dataLoaderError: "There was an error loading the data",
         initialSort:[
-            {column:"project_name", dir:"asc"}, //sort by this first
+            {column:"project_name", dir:"asc"}, 
         ],
         columns: [{
                 title: "project_id",
-                field: "id",
+                field: "project_id",
                 visible: false
             },
             {
@@ -1635,13 +1642,15 @@ const homeFunctions = async () => {
                     // Store project data for the tables route
                     localStorage.setItem('currentProject', JSON.stringify(projectData));
                     // Navigate to tables with project ID
+                    console.log('project table click');
                     window.router('tables', projectData.project_id);                    
                 }
             },
             {
                 title: "Products",
                 field: "products",
-                width: 120
+                width: 120,
+                visible: false
             },
             {
                 title: "Rev",
@@ -1653,7 +1662,7 @@ const homeFunctions = async () => {
                 title: "Created",
                 field: "created",
                 width: 110,
-                visible: false
+                visible: true
             },
             {                    
                 visible: true,
