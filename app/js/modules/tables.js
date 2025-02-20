@@ -174,8 +174,6 @@ class TablesModule {
 
     async doAddProduct(productData) {
 
-        console.log('Add product, data:', productData);
-
         if ( !productData.sku ) {
             UIkit.notification({
                 message: 'All fields are required',
@@ -234,15 +232,12 @@ class TablesModule {
         $('span.place_sku').html(sku);
         $('input#del_sku').val(sku);
 
-        UIkit.modal('#del-sku').show();
-        console.log('Remove SKU: ', sku);
+        UIkit.modal('#del-sku').show();        
 
         $('#form-submit-del-sku').off('submit').on('submit', async (e) => {
             e.preventDefault();
             const sku = $('#del_sku').val();
-            const room_id = $('#m_room_id').val();
-            
-            console.log('Delete SKU:', sku);
+            const room_id = $('#m_room_id').val();                        
             await db.deleteProductFromRoom(sku, room_id);
             this.refreshTableData();
             UIkit.modal('#del-sku').hide();
@@ -263,8 +258,7 @@ class TablesModule {
             const qty = $('#set_qty_qty').val();
             const sku = $('#set_qty_sku').val();
             const room_id = $('#m_room_id').val();
-            
-            console.log('setqty for  SKU:', sku);
+                        
             await db.setSkuQtyForRoom(qty, sku, room_id);
             this.refreshTableData();
             UIkit.modal('#set-qty').hide();            
@@ -274,10 +268,8 @@ class TablesModule {
 
     async refreshTableData(roomID) {
         console.log('Refreshing table data for room:', roomID);
-        let roomIDToUse = roomID || $('#m_room_id').val();
-        console.log('Room ID to use:', roomIDToUse);
-        const allProductsInRoom = await db.getProductsForRoom(roomIDToUse);
-        console.log('All products in room:', allProductsInRoom);
+        let roomIDToUse = roomID || $('#m_room_id').val();        
+        const allProductsInRoom = await db.getProductsForRoom(roomIDToUse);        
         const groupedProducts = await this.groupProductsBySKU(allProductsInRoom);
         this.pTable.setData(groupedProducts);
     }

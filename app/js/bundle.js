@@ -3,15 +3,12 @@ $(document).ready(function() {
     const Mustache = require('mustache');
     const db = require('./db'); // Import the db module    
     const sst = require('./sst'); // Import the db module
-    
-    
-
+        
     console.log("Mounted App...");
 
     $('a[href^="/"]').on('click', function(e) {
         e.preventDefault();
-        const path = $(this).attr('href').substring(1);
-        console.log('link intercepted:', path);
+        const path = $(this).attr('href').substring(1);        
         router(path);
     });
     
@@ -246,7 +243,6 @@ async function getProjectHierarchy(owner_id, project_id) {
     const db = await initDB();
 
     let projects = await db.getAllFromIndex('projects', 'owner_id', owner_id);
-    console.log("Projects loaded:", projects);
 
     // Filter projects by project_id
     if (project_id) {
@@ -269,8 +265,7 @@ async function getProductsForRoom(roomId) {
     const db = await initDB();
     const tx = db.transaction("products", "readonly");
     const store = tx.objectStore("products");
-    const index = store.index("room_id_fk"); // Assumes you have an index on room_id_fk
-    // cast roomId to string
+    const index = store.index("room_id_fk");     
     roomId = String(roomId);
     return await index.getAll(roomId);
 }
@@ -279,8 +274,6 @@ const saveProductToRoom = async (product) => {
     const db = await initDB();
     const tx = db.transaction("products", "readwrite");
     const store = tx.objectStore("products");
-
-    console.log("Adding product to room:", product);
 
     // Ensure the product has a uuid and room_id_fk
     if (!product.uuid) {
@@ -995,8 +988,6 @@ class TablesModule {
 
     async doAddProduct(productData) {
 
-        console.log('Add product, data:', productData);
-
         if ( !productData.sku ) {
             UIkit.notification({
                 message: 'All fields are required',
@@ -1055,15 +1046,12 @@ class TablesModule {
         $('span.place_sku').html(sku);
         $('input#del_sku').val(sku);
 
-        UIkit.modal('#del-sku').show();
-        console.log('Remove SKU: ', sku);
+        UIkit.modal('#del-sku').show();        
 
         $('#form-submit-del-sku').off('submit').on('submit', async (e) => {
             e.preventDefault();
             const sku = $('#del_sku').val();
-            const room_id = $('#m_room_id').val();
-            
-            console.log('Delete SKU:', sku);
+            const room_id = $('#m_room_id').val();                        
             await db.deleteProductFromRoom(sku, room_id);
             this.refreshTableData();
             UIkit.modal('#del-sku').hide();
@@ -1084,8 +1072,7 @@ class TablesModule {
             const qty = $('#set_qty_qty').val();
             const sku = $('#set_qty_sku').val();
             const room_id = $('#m_room_id').val();
-            
-            console.log('setqty for  SKU:', sku);
+                        
             await db.setSkuQtyForRoom(qty, sku, room_id);
             this.refreshTableData();
             UIkit.modal('#set-qty').hide();            
@@ -1095,10 +1082,8 @@ class TablesModule {
 
     async refreshTableData(roomID) {
         console.log('Refreshing table data for room:', roomID);
-        let roomIDToUse = roomID || $('#m_room_id').val();
-        console.log('Room ID to use:', roomIDToUse);
-        const allProductsInRoom = await db.getProductsForRoom(roomIDToUse);
-        console.log('All products in room:', allProductsInRoom);
+        let roomIDToUse = roomID || $('#m_room_id').val();        
+        const allProductsInRoom = await db.getProductsForRoom(roomIDToUse);        
         const groupedProducts = await this.groupProductsBySKU(allProductsInRoom);
         this.pTable.setData(groupedProducts);
     }
@@ -1296,17 +1281,14 @@ let isRouting = false;
 async function router(path, project_id) {
     if (isRouting) return;
     isRouting = true;
-
-    console.log('in router: ', path, project_id);
-
     // Update browser URL without reload
-    window.history.pushState({}, '', `/${path}${project_id ? '/' + project_id : ''}`);
+    //window.history.pushState({}, '', `/${path}${project_id ? '/' + project_id : ''}`);
+    window.history.pushState({}, '', `/${path}`);
     
     try {
         let template;
         switch(path) {
-            case 'tables':
-                console.log('Get Template for Tables page');
+            case 'tables':                
                 template = await loadTemplate('tables');
                 // Get stored project data
                 const projectData = JSON.parse(localStorage.getItem('currentProject') || '{}');
@@ -1430,9 +1412,7 @@ async function tablesFunctions(project_id) {
         project_id.toString();
         console.log('Rendering sidebar for project:', project_id);
 
-        const projectStructure = await db.getProjectStructure(project_id); // project_id      
-
-        console.log('Project structure:', projectStructure);          
+        const projectStructure = await db.getProjectStructure(project_id); // project_id              
         const sidemenuHtml = await sidebar.generateNavMenu(projectStructure);   
     
         $('#locations').html(sidemenuHtml);
@@ -1636,13 +1616,9 @@ const homeFunctions = async () => {
                     target: "_self",
                     url: "#",
                 },
-                cellClick: function(e, cell) {
-                    //location = "/tables/"+cell.getRow().getData().project_id;
-                    const projectData = cell.getRow().getData();
-                    // Store project data for the tables route
-                    localStorage.setItem('currentProject', JSON.stringify(projectData));
-                    // Navigate to tables with project ID
-                    console.log('project table click');
+                cellClick: function(e, cell) {                    
+                    const projectData = cell.getRow().getData();                    
+                    localStorage.setItem('currentProject', JSON.stringify(projectData));                                 
                     window.router('tables', projectData.project_id);                    
                 }
             },

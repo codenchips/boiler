@@ -2,15 +2,12 @@ $(document).ready(function() {
     const Mustache = require('mustache');
     const db = require('./db'); // Import the db module    
     const sst = require('./sst'); // Import the db module
-    
-    
-
+        
     console.log("Mounted App...");
 
     $('a[href^="/"]').on('click', function(e) {
         e.preventDefault();
-        const path = $(this).attr('href').substring(1);
-        console.log('link intercepted:', path);
+        const path = $(this).attr('href').substring(1);        
         router(path);
     });
     

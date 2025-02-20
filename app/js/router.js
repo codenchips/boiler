@@ -24,17 +24,14 @@ let isRouting = false;
 async function router(path, project_id) {
     if (isRouting) return;
     isRouting = true;
-
-    console.log('in router: ', path, project_id);
-
     // Update browser URL without reload
-    window.history.pushState({}, '', `/${path}${project_id ? '/' + project_id : ''}`);
+    //window.history.pushState({}, '', `/${path}${project_id ? '/' + project_id : ''}`);
+    window.history.pushState({}, '', `/${path}`);
     
     try {
         let template;
         switch(path) {
-            case 'tables':
-                console.log('Get Template for Tables page');
+            case 'tables':                
                 template = await loadTemplate('tables');
                 // Get stored project data
                 const projectData = JSON.parse(localStorage.getItem('currentProject') || '{}');

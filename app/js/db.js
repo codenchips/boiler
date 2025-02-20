@@ -179,7 +179,6 @@ async function getProjectHierarchy(owner_id, project_id) {
     const db = await initDB();
 
     let projects = await db.getAllFromIndex('projects', 'owner_id', owner_id);
-    console.log("Projects loaded:", projects);
 
     // Filter projects by project_id
     if (project_id) {
@@ -202,8 +201,7 @@ async function getProductsForRoom(roomId) {
     const db = await initDB();
     const tx = db.transaction("products", "readonly");
     const store = tx.objectStore("products");
-    const index = store.index("room_id_fk"); // Assumes you have an index on room_id_fk
-    // cast roomId to string
+    const index = store.index("room_id_fk");     
     roomId = String(roomId);
     return await index.getAll(roomId);
 }
@@ -212,8 +210,6 @@ const saveProductToRoom = async (product) => {
     const db = await initDB();
     const tx = db.transaction("products", "readwrite");
     const store = tx.objectStore("products");
-
-    console.log("Adding product to room:", product);
 
     // Ensure the product has a uuid and room_id_fk
     if (!product.uuid) {

@@ -72,9 +72,7 @@ async function tablesFunctions(project_id) {
         project_id.toString();
         console.log('Rendering sidebar for project:', project_id);
 
-        const projectStructure = await db.getProjectStructure(project_id); // project_id      
-
-        console.log('Project structure:', projectStructure);          
+        const projectStructure = await db.getProjectStructure(project_id); // project_id              
         const sidemenuHtml = await sidebar.generateNavMenu(projectStructure);   
     
         $('#locations').html(sidemenuHtml);
@@ -278,13 +276,9 @@ const homeFunctions = async () => {
                     target: "_self",
                     url: "#",
                 },
-                cellClick: function(e, cell) {
-                    //location = "/tables/"+cell.getRow().getData().project_id;
-                    const projectData = cell.getRow().getData();
-                    // Store project data for the tables route
-                    localStorage.setItem('currentProject', JSON.stringify(projectData));
-                    // Navigate to tables with project ID
-                    console.log('project table click');
+                cellClick: function(e, cell) {                    
+                    const projectData = cell.getRow().getData();                    
+                    localStorage.setItem('currentProject', JSON.stringify(projectData));                                 
                     window.router('tables', projectData.project_id);                    
                 }
             },
