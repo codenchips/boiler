@@ -57,7 +57,7 @@
                                         <small>Table Mode</small>
                                     </a>
                                 </li>
-                                <li class="schedule_link">
+                                <li class="schedule_link">  
                                     <a href="/schedule">
                                         <span class="uk-icon" uk-icon="icon: file-pdf; ratio: 2"></span>
                                         <small>Schedule</small>
@@ -77,9 +77,7 @@
                 </div>
             </nav>
 
-
-            <input type="hidden" id="site_uid" name="site_uid" value="" />
-
+            <input type="hidden" id="site_uid" name="site_uid" value="" />                    
             <input type="hidden" id="m_project_id" name="m_project_id" value="" />    
             <input type="hidden" id="m_project_slug" name="m_project_slug" value="" />
             <input type="hidden" id="m_project_version" name="m_project_version" value="" />
@@ -88,8 +86,7 @@
             <input type="hidden" id="m_room_id" name="m_room_id" value="" />    
             <input type="hidden" id="m_floor_id" name="m_floor_id" value="" />
             <input type="hidden" id="m_building_id" name="m_building_id" value="" />
-            <input type="hidden" id="m_location_id" name="m_location_id" value="" />
-
+            <input type="hidden" id="m_location_id" name="m_location_id" value="" /> 
 
             <!-- Login modal -->
             <div id="login" class="loginmodal" uk-modal>
@@ -139,147 +136,25 @@
 
             <div id="sidebar"></div>
 
-
             <!-- rooms nav -->
             <div class="uk-offcanvas-bar uk-visible@xl tables-side" id="desktop-sidebar">
                 <div class="uk-visible@m uk-flex uk-flex-column">
-
-                    <h4>Manage Project 1.1</h4>
-
+                    <h4>Manage Project</h4>    
                     <div id="locations" class="locations nav-menu"></div>
-
                 </div>
-            </div>
+            </div> 
             <!-- end rooms nav -->
-
-
-
 
             <!-- rooms nav offcanvas-sidebar -->
-            <div id="offcanvas-sidebar" class="tables-side" uk-offcanvas="mode: slide; overlay: true">
-
-
-                <div class="uk-offcanvas-bar uk-flex uk-flex-column">
-
-                    <h4>Manage Project 2</h4>
-
-                    <div id="locations" class="locations nav-menu"></div>
-
+            <div id="offcanvas-sidebar" class="tables-side" uk-offcanvas="mode: slide; overlay: true">   
+                <div class="uk-offcanvas-bar uk-flex uk-flex-column">    
+                    <h4>Manage Project</h4>    
+                    <div id="locations" class="locations nav-menu"></div>    
                 </div>
             </div>
             <!-- end rooms nav -->
 
-
-            <div id="page"></div>    
-
-
-            <!-- remove floor/ room modal -->
-            <div id="remove-location" uk-modal>
-                <div class="uk-modal-dialog uk-margin-auto-vertical uk-modal-body">
-                    <button class="uk-modal-close-default" type="button" uk-close></button>
-                    <form id="form-remove-location">
-                        <div class="uk-text-center" uk-grid>
-                            <div class="uk-width-1-1">
-                                <h3>Remove Location</h3>
-                            </div>
-
-                            <div class="uk-width-1-1">
-                                <h4>This will delete this location.</h4>
-                                <p>This will remove all rooms on this location and all products assigned to those rooms.</p>
-                            </div>
-
-                            <div class="uk-width-1-1">
-                                <input type="hidden" name="modal_form_project_slug" value="<?php echo $project_slug; ?>" />
-                                <input type="hidden" name="modal_form_uid" value="" />
-
-                                <button id="btn-remove-location" type="submit" class="uk-button uk-button-danger">Remove</button>
-                                <button class="uk-modal-close uk-button uk-button-default">Cancel</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <!-- remove floor/ room modal -->
-            <div id="remove-building" uk-modal>
-                <div class="uk-modal-dialog uk-margin-auto-vertical uk-modal-body">
-                    <button class="uk-modal-close-default" type="button" uk-close></button>
-                    <form id="form-remove-building">
-                        <div class="uk-text-center" uk-grid>
-                            <div class="uk-width-1-1">
-                                <h3>Remove Building</h3>
-                            </div>
-
-                            <div class="uk-width-1-1">
-                                <h4>This will delete this building.</h4>
-                                <p>This will remove all rooms on this building and all products assigned to those rooms.</p>
-                            </div>
-
-                            <div class="uk-width-1-1">
-                                <input type="hidden" name="modal_form_project_slug" value="<?php echo $project_slug; ?>" />
-                                <input type="hidden" name="modal_form_uid" value="" />
-
-                                <button id="btn-remove-location" type="submit" class="uk-button uk-button-danger">Remove</button>
-                                <button class="uk-modal-close uk-button uk-button-default">Cancel</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <!-- remove floor modal -->
-            <div id="remove-floor" uk-modal>
-                <div class="uk-modal-dialog uk-margin-auto-vertical uk-modal-body">
-                    <button class="uk-modal-close-default" type="button" uk-close></button>
-                    <form id="form-remove-floor">
-                        <div class="uk-text-center" uk-grid>
-                            <div class="uk-width-1-1">
-                                <h3>Remove Floor</h3>
-                            </div>
-
-                            <div class="uk-width-1-1">
-                                <h4>This will delete this floor.</h4>
-                                <p>This will remove all rooms on this floor and all products assigned to those rooms.</p>
-                            </div>
-
-                            <div class="uk-width-1-1">
-                                <input type="hidden" name="modal_form_project_slug" value="<?php echo $project_slug; ?>" />
-                                <input type="hidden" name="modal_form_uid" value="" />
-
-                                <button type="submit" class="uk-button uk-button-danger">Remove</button>
-                                <button class="uk-modal-close uk-button uk-button-default">Cancel</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-            <!-- remove room modal -->
-            <div id="remove-room" uk-modal>
-                <div class="uk-modal-dialog uk-margin-auto-vertical uk-modal-body">
-                    <button class="uk-modal-close-default" type="button" uk-close></button>
-                    <form id="form-remove-room">
-                        <div class="uk-text-center" uk-grid>
-                            <div class="uk-width-1-1">
-                                <h3>Remove Room</h3>
-                            </div>
-
-                            <div class="uk-width-1-1">
-                                <h4>This will delete this room.</h4>
-                                <p>This will remove all rooms and all products assigned to this room.</p>
-                            </div>
-
-                            <div class="uk-width-1-1">
-                                <input type="hidden" name="modal_form_project_slug" value="<?php echo $project_slug; ?>" />
-                                <input type="hidden" name="modal_form_uid" value="" />
-                                <button type="submit" class="uk-button uk-button-danger">Remove</button>
-                                <button class="uk-modal-close uk-button uk-button-default">Cancel</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-
+            <div id="page"></div>        
 
         </div>        
         <script src="js/bundle.js" type="text/javascript"></script>      

@@ -23,6 +23,7 @@ async function tablesFunctions(project_id) {
     console.log('Running tables functions for project:', project_id);
     //$('#debug').html(currentProject.project_name);
     $('.tables_link').show();
+    UIkit.offcanvas('.tables-side').show();
 
     // Initial load with default brand
     await tables.updateTypesDropdown('1');
@@ -80,7 +81,7 @@ async function tablesFunctions(project_id) {
         const projectStructure = await db.getProjectStructure(project_id); // project_id              
         const sidemenuHtml = await sidebar.generateNavMenu(projectStructure);   
     
-        $('#locations').html(sidemenuHtml);
+        $('.locations').html(sidemenuHtml);
 
         /* Room Click - load room data */
         $('a.room-link').off('click').on('click', async function(e) {
@@ -240,7 +241,8 @@ const homeFunctions = async () => {
         installButton.hide();
     });
 
-    
+    UIkit.offcanvas('.tables-side').hide();
+
     const projects = await db.getProjects();
     let tabledata = projects.map(project => ({
         project_name: project.name,
