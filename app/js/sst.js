@@ -74,111 +74,6 @@ async function tablesFunctions(project_id) {
         });
     });
 
-    async function renderSidebar(project_id) {
-        project_id.toString();
-        console.log('Rendering sidebar for project:', project_id);
-
-        const projectStructure = await db.getProjectStructure(project_id); // project_id              
-        const sidemenuHtml = await sidebar.generateNavMenu(projectStructure);   
-    
-        $('.locations').html(sidemenuHtml);
-
-        /* Room Click - load room data */
-        $('a.room-link').off('click').on('click', async function(e) {
-            e.preventDefault();
-            await loadRoomData($(this).data('id'));
-        });    
-
-        /* Add Room Click - add a new room */
-        $('span.add-room a').off('click').on('click', async function(e) {
-            e.preventDefault();
-            const floorUuid = $(this).data('id');   
-            const roomName = await UIkit.modal.prompt('<h4>Enter the room name</h4>');
-            if (roomName) {
-                const roomUuid = await db.addRoom(floorUuid, roomName);
-                UIkit.notification('Room added', {status:'success'});
-                await renderSidebar(project_id); // project_id
-            }   
-        });
-
-        /* Add FLoor Click - add a new floor */
-        $('span.add-floor a').off('click').on('click', async function(e) {
-            e.preventDefault();
-            const buildingUuid = $(this).data('id');   
-            const floorName = await UIkit.modal.prompt('<h4>Enter the floor name</h4>');
-            if (floorName) {
-                const floorUuid = await db.addFloor(buildingUuid, floorName);
-                UIkit.notification('Floor added', {status:'success'});
-                await renderSidebar(project_id); // project_id
-            }   
-        });
-
-        /* Add building Click - add a new building */
-        $('span.add-building a').off('click').on('click', async function(e) {
-            e.preventDefault();
-           
-            const locationUuid = $(this).data('id');   
-            const buildingName = await UIkit.modal.prompt('<h4>Enter the building name</h4>');
-            if (buildingName) {
-                const buildingUuid = await db.addBuilding(locationUuid, buildingName);                                
-                UIkit.notification('building added', {status:'success'});
-                await renderSidebar(project_id); // project_id
-            }   
-        });     
-        
-        $('li.room-item span.action-icon.room').off('click').on('click', async function(e) {
-            e.preventDefault();            
-            const that = this;
-            const msg = '<h4 class="red">Warning</h4><p>This will remove the room and <b>ALL products</b> in the room!</p';
-            UIkit.modal.confirm(msg).then( async function() {
-                const roomUuid = $(that).data('id');   
-                const roomName = await db.removeRoom(roomUuid);                                
-                UIkit.notification('Room removed', {status:'success'});
-                await renderSidebar(project_id); // project_id                    
-            }, function () {
-                console.log('Cancelled.')
-            });        
-        });   
-        
-        $('li.floor-item span.action-icon.floor').off('click').on('click', async function(e) {
-            e.preventDefault();            
-            const that = this;
-            const msg = '<h4 class="red">Warning</h4><p>This will remove the floor, rooms and <b>ALL products</b> in those rooms!</p';
-            UIkit.modal.confirm(msg).then( async function() {
-                const floorUuid = $(that).data('id');   
-                const floorName = await db.removeFloor(floorUuid);                                
-                UIkit.notification('Floor and rooms removed', {status:'success'});
-                await renderSidebar(project_id); // project_id                    
-            }, function () {
-                console.log('Cancelled.')
-            });        
-        });          
-
-        $('li.building-item span.action-icon.building').off('click').on('click', async function(e) {
-            e.preventDefault();            
-            const that = this;
-            const msg = '<h4 class="red">Warning</h4><p>This will remove the building, all floor, rooms and <b>ALL products</b> in those rooms!</p';
-            UIkit.modal.confirm(msg).then( async function() {
-                const buildingUuid = $(that).data('id');   
-                const buildingName = await db.removeBuilding(buildingUuid);                                
-                UIkit.notification('building, floors and rooms removed', {status:'success'});
-                await renderSidebar(project_id); // project_id                    
-            }, function () {
-                console.log('Cancelled.')
-            });        
-        });  
-
-        // add special to room
-        $('#form-submit-special').submit(async function(e) {
-            e.preventDefault();
-            await tables.addSpecialToRoomClick();      
-            UIkit.modal('#add-special').hide(); 
-        });        
-
-    }
-    // 
-    // End renderSidebar
-    // 
 
     async function loadRoomData(roomId) {
         $('#m_room_id').val(roomId);   
@@ -243,6 +138,49 @@ const homeFunctions = async () => {
 
     UIkit.offcanvas('.tables-side').hide();
 
+   
+
+    var dashTable = renderProjectsTable();
+    //dashTable.setData(data);
+
+    /* Add project related binds */
+    $('#form_project_name').off('focus').on('focus', function(e) {
+        $('#form_location').attr({'disabled':'disabled'});
+        $('#form_building').attr({'disabled':'disabled'});
+    });
+    $('#form_project_name').off('blur').on('blur', function(e) {
+        if ($(this).val() != "") {
+            $('#form_location').removeAttr('disabled').focus();
+        }
+    });
+    $('#form_location').off('blur').on('blur', function(e) {
+        if ($(this).val() != "") {
+            $('#form_building').removeAttr('disabled').focus();
+        }
+    });
+    $('#form_building').off('blur').on('blur', function(e) {
+        if ($(this).val() != "") {
+            $('#form_floor').removeAttr('disabled').focus();
+        }
+    });    
+    // add special to room
+    $('#form-create-project').submit(async function(e) {
+        e.preventDefault();
+        await createProject();              
+    });        
+
+
+};
+/* 
+    // END homeFunctions 
+*/
+
+
+/*
+* Get all projects (for this user) and render the table
+*/
+async function renderProjectsTable() {
+
     const projects = await db.getProjects();
     let tabledata = projects.map(project => ({
         project_name: project.name,
@@ -251,7 +189,7 @@ const homeFunctions = async () => {
         project_id: project.uuid,
         created: new Date(project.created_on).toLocaleDateString('en-GB'),
         products: project.products_count
-    }));    
+    }));     
 
     var dashTable = new Tabulator("#dashboard_projects", {
         data: tabledata,            
@@ -319,12 +257,132 @@ const homeFunctions = async () => {
                 }
             },
         ],
+    });    
+}
+
+// 
+// renderSidebar
+// 
+async function renderSidebar(project_id) {
+    project_id.toString();
+    console.log('Rendering sidebar for project:', project_id);
+
+    const projectStructure = await db.getProjectStructure(project_id); // project_id              
+    const sidemenuHtml = await sidebar.generateNavMenu(projectStructure);   
+
+    $('.locations').html(sidemenuHtml);
+
+    /* Room Click - load room data */
+    $('a.room-link').off('click').on('click', async function(e) {
+        e.preventDefault();
+        await loadRoomData($(this).data('id'));
+    });    
+
+    /* Add Room Click - add a new room */
+    $('span.add-room a').off('click').on('click', async function(e) {
+        e.preventDefault();
+        const floorUuid = $(this).data('id');   
+        const roomName = await UIkit.modal.prompt('<h4>Enter the room name</h4>');
+        if (roomName) {
+            const roomUuid = await db.addRoom(floorUuid, roomName);
+            UIkit.notification('Room added', {status:'success'});
+            await renderSidebar(project_id); // project_id
+        }   
     });
-    //dashTable.setData(data);
-};
+
+    /* Add FLoor Click - add a new floor */
+    $('span.add-floor a').off('click').on('click', async function(e) {
+        e.preventDefault();
+        const buildingUuid = $(this).data('id');   
+        const floorName = await UIkit.modal.prompt('<h4>Enter the floor name</h4>');
+        if (floorName) {
+            const floorUuid = await db.addFloor(buildingUuid, floorName);
+            UIkit.notification('Floor added', {status:'success'});
+            await renderSidebar(project_id); // project_id
+        }   
+    });
+
+    /* Add building Click - add a new building */
+    $('span.add-building a').off('click').on('click', async function(e) {
+        e.preventDefault();
+       
+        const locationUuid = $(this).data('id');   
+        const buildingName = await UIkit.modal.prompt('<h4>Enter the building name</h4>');
+        if (buildingName) {
+            const buildingUuid = await db.addBuilding(locationUuid, buildingName);                                
+            UIkit.notification('building added', {status:'success'});
+            await renderSidebar(project_id); // project_id
+        }   
+    });     
+    
+    $('li.room-item span.action-icon.room').off('click').on('click', async function(e) {
+        e.preventDefault();            
+        const that = this;
+        const msg = '<h4 class="red">Warning</h4><p>This will remove the room and <b>ALL products</b> in the room!</p';
+        UIkit.modal.confirm(msg).then( async function() {
+            const roomUuid = $(that).data('id');   
+            const roomName = await db.removeRoom(roomUuid);                                
+            UIkit.notification('Room removed', {status:'success'});
+            await renderSidebar(project_id); // project_id                    
+        }, function () {
+            console.log('Cancelled.')
+        });        
+    });   
+    
+    $('li.floor-item span.action-icon.floor').off('click').on('click', async function(e) {
+        e.preventDefault();            
+        const that = this;
+        const msg = '<h4 class="red">Warning</h4><p>This will remove the floor, rooms and <b>ALL products</b> in those rooms!</p';
+        UIkit.modal.confirm(msg).then( async function() {
+            const floorUuid = $(that).data('id');   
+            const floorName = await db.removeFloor(floorUuid);                                
+            UIkit.notification('Floor and rooms removed', {status:'success'});
+            await renderSidebar(project_id); // project_id                    
+        }, function () {
+            console.log('Cancelled.')
+        });        
+    });          
+
+    $('li.building-item span.action-icon.building').off('click').on('click', async function(e) {
+        e.preventDefault();            
+        const that = this;
+        const msg = '<h4 class="red">Warning</h4><p>This will remove the building, all floor, rooms and <b>ALL products</b> in those rooms!</p';
+        UIkit.modal.confirm(msg).then( async function() {
+            const buildingUuid = $(that).data('id');   
+            const buildingName = await db.removeBuilding(buildingUuid);                                
+            UIkit.notification('building, floors and rooms removed', {status:'success'});
+            await renderSidebar(project_id); // project_id                    
+        }, function () {
+            console.log('Cancelled.')
+        });        
+    });  
+
+    // add special to room
+    $('#form-submit-special').submit(async function(e) {
+        e.preventDefault();
+        await tables.addSpecialToRoomClick();      
+        UIkit.modal('#add-special').hide(); 
+    });        
+
+}
+// 
+// End renderSidebar
+// 
+
+
 /* 
-    // END homeFunctions 
+* Create Project
 */
+async function createProject() {
+    const project_name = $('#form_project_name').val();
+    const location = $('#form_location').val();
+    const building = $('#form_building').val();
+    const floor = $('#form_floor').val();
+    const project_id = await db.createProject(project_name, location, building, floor);    
+    await renderSidebar(project_id); 
+    await renderProjectsTable();
+    UIkit.modal('#create-project').hide();
+}
 
 
 

@@ -167,12 +167,42 @@ async function getProducts() {
     return await store.getAll();
 }
 
+
+async function createProject(project_name, location, building, floor) {
+    const db = await initDB();
+    const tx = db.transaction("projects", "readwrite");
+    const store = tx.objectStore("projects");
+    const newProjectID = generateUUID();
+
+    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    const projectSlug = await utils.slugify(project_name);
+    const project = {
+        created_on: now,
+        last_updated: now,
+        name: project_name,
+        owner_id: 8,  // Assuming owner_id 8
+        project_id_fk: newProjectID,
+        slug: projectSlug,
+        uuid: newProjectID,
+        version: "1"
+    };
+
+    await store.add(project);
+    await tx.done;
+
+    const locationID = await addLocation(newProjectID, location);
+    const buildingID = await addBuilding(locationID, building);
+    const floorID = await addFloor(buildingID, floor);
+
+    return project.uuid;
+}
+
 async function getProjects() {
     const db = await initDB();
     const transaction = db.transaction('projects', 'readonly');
     const store = transaction.objectStore('projects');
     return await store.getAll();
-}
+}``
 
 async function getProjectHierarchy(owner_id, project_id) {
     console.log("Fetching from IndexedDB for project_id:", project_id);
@@ -356,6 +386,31 @@ async function addFloor(buildingUuid, floorName) {
     await store.add(floor);
     await tx.done;
     return floor.uuid;
+}
+
+async function addLocation(projectUuid, locationName) {
+    const db = await initDB();
+    const tx = db.transaction("locations", "readwrite");
+    const store = tx.objectStore("locations");
+    const newLocationID = generateUUID();
+
+    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    const locationSlug = await utils.slugify(locationName);
+    const location = {
+        created_on: now,
+        last_updated: now,
+        name: locationName,
+        owner_id: 8,  // Assuming owner_id 8
+        location_id_fk: newLocationID,
+        project_id_fk: projectUuid,
+        slug: locationSlug,
+        uuid: newLocationID,
+        version: "1"
+    };
+
+    await store.add(location);
+    await tx.done;
+    return location.uuid;
 }
 
 async function addBuilding(locationUuid, buildingName) {
@@ -593,8 +648,10 @@ module.exports = {
     addRoom,
     addFloor,
     addBuilding,
+    addLocation,
     removeRoom,
     removeFloor,
-    removeBuilding
+    removeBuilding,
+    createProject
     // Add other database-related functions here
 };
