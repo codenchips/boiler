@@ -700,6 +700,15 @@ async function getProjectStructure(projectId) {
     return result;
 }
 
+async function getProjectData(projectId) {
+    // get the data for this projectId (uuid) from the projects data store and return it
+    const db = await initDB();
+    const tx = db.transaction("projects", "readonly");
+    const store = tx.objectStore("projects");
+    const project = await store.get(projectId);
+    return project;
+}
+
 // Export the functions
 module.exports = {
     generateUUID, 
@@ -707,6 +716,7 @@ module.exports = {
     fetchAndStoreProducts,
     getProducts,
     getProjects,
+    getProjectData,
     syncData,
     saveProductToRoom,
     getProductsForRoom,
@@ -723,7 +733,7 @@ module.exports = {
     removeRoom,
     removeFloor,
     removeBuilding,
-    createProject
+    createProject    
     // Add other database-related functions here
 };
 
@@ -745,6 +755,14 @@ class SidebarModule {
     async generateNavMenu(data) {
         if (!data) return '<div>No project structure available</div>';                
         let html = '';
+
+        // Manage project link
+        html += `
+        <li class="project-item">
+            <a href="#" class="edit-project-link" data-id="${data.project_id}">
+                <span class="project-name" uk-icon="icon: folder;"></span> ${data.project_name}
+            </a>
+        </li>`;
 
         // Process locations
         Object.keys(data).forEach(key => {
@@ -1410,9 +1428,6 @@ const utils = require('./modules/utils');
 const sidebar = require('./modules/sidebar');
 
 
-UIkit.modal('#add-special', { stack : true });
-
-
 /*
 *   Tables page functions
 */
@@ -1450,6 +1465,11 @@ async function tablesFunctions(project_id) {
         await tables.addProductToRoomClick();       
     });
 
+    // Add Special to room
+    $('#btn_add_special').on('click', async function() {
+        UIkit.modal('#add-special', { stack : true }).show();
+    });
+
 
 
     await tables.renderProdctsTable();
@@ -1479,26 +1499,11 @@ async function tablesFunctions(project_id) {
     });
 
 
-    async function loadRoomData(roomId) {
-        $('#m_room_id').val(roomId);   
-        if (!roomId) return;     
-        roomId = roomId.toString();
-        // get the names for the location, building, floor and room based on this roomId.
-        const roomMeta = await db.getRoomMeta(roomId);        
-        $('.name.location_name').html(roomMeta.location.name).attr('data-id', roomMeta.location.uuid);
-        $('.name.building_name').html(roomMeta.building.name).attr('data-id', roomMeta.building.uuid);
-        $('.name.floor_name').html(roomMeta.floor.name).attr('data-id', roomMeta.floor.uuid);
-        $('.name.room_name').html(roomMeta.room.name).attr('data-id', roomMeta.room.uuid);
-
-        await tables.refreshTableData(roomId);
-    }
-
-
-
 }
 /* 
     // End tablesFunctions 
 */
+
 
 
 
@@ -1676,6 +1681,14 @@ async function renderSidebar(project_id) {
 
     $('.locations').html(sidemenuHtml);
 
+    /* Project Click - load project data */
+    $('a.edit-project-link').off('click').on('click', async function(e) {
+        e.preventDefault();
+        await loadProjectData($(this).data('id'));
+    });    
+
+
+
     /* Room Click - load room data */
     $('a.room-link').off('click').on('click', async function(e) {
         e.preventDefault();
@@ -1768,6 +1781,14 @@ async function renderSidebar(project_id) {
         UIkit.modal('#add-special').hide(); 
     });        
 
+    // update project details
+    $('#form-submit-special').submit(async function(e) {
+        e.preventDefault();
+        await tables.addSpecialToRoomClick();      
+        UIkit.modal('#edit-project-modal').hide(); 
+
+    });     
+
 }
 // 
 // End renderSidebar
@@ -1786,6 +1807,37 @@ async function createProject() {
     await renderSidebar(project_id); 
     await renderProjectsTable();
     UIkit.modal('#create-project').hide();
+}
+
+async function loadProjectData(projectId) {    
+    $('#m_project_id').val(projectId);
+    if (!projectId) return;
+    projectId = projectId.toString();
+    const projectData = await db.getProjectData(projectId);
+    localStorage.setItem('currentProject', JSON.stringify(projectData));
+
+    $('#form_project_name').val(projectData.name);
+    $('#form_project_id').val(projectData.project_id);
+    $('#form_project_engineer').val(projectData.engineer);
+    $('#form_project_name').val(projectData.name);
+    $('#form_project_version').val(projectData.version);
+
+    UIkit.modal('#edit-project-modal', { stack : true }).show();
+}    
+
+
+async function loadRoomData(roomId) {
+    $('#m_room_id').val(roomId);   
+    if (!roomId) return;     
+    roomId = roomId.toString();
+    // get the names for the location, building, floor and room based on this roomId.
+    const roomMeta = await db.getRoomMeta(roomId);        
+    $('.name.location_name').html(roomMeta.location.name).attr('data-id', roomMeta.location.uuid);
+    $('.name.building_name').html(roomMeta.building.name).attr('data-id', roomMeta.building.uuid);
+    $('.name.floor_name').html(roomMeta.floor.name).attr('data-id', roomMeta.floor.uuid);
+    $('.name.room_name').html(roomMeta.room.name).attr('data-id', roomMeta.room.uuid);
+
+    await tables.refreshTableData(roomId);
 }
 
 

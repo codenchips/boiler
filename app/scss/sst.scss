@@ -132,8 +132,12 @@ body {
     top: -3px;
   }
 
-  .location-item {
+  .location-item, .project-item {
     font-size: 1.2em; // ~19px
+
+    .project-name {      
+      margin-bottom: 0.75em; // Spacing between room names
+    }
 
     .location-header {
       display: flex;

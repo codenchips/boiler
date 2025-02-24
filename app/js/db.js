@@ -629,6 +629,15 @@ async function getProjectStructure(projectId) {
     return result;
 }
 
+async function getProjectData(projectId) {
+    // get the data for this projectId (uuid) from the projects data store and return it
+    const db = await initDB();
+    const tx = db.transaction("projects", "readonly");
+    const store = tx.objectStore("projects");
+    const project = await store.get(projectId);
+    return project;
+}
+
 // Export the functions
 module.exports = {
     generateUUID, 
@@ -636,6 +645,7 @@ module.exports = {
     fetchAndStoreProducts,
     getProducts,
     getProjects,
+    getProjectData,
     syncData,
     saveProductToRoom,
     getProductsForRoom,
@@ -652,6 +662,6 @@ module.exports = {
     removeRoom,
     removeFloor,
     removeBuilding,
-    createProject
+    createProject    
     // Add other database-related functions here
 };

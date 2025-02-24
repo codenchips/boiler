@@ -16,6 +16,14 @@ class SidebarModule {
         if (!data) return '<div>No project structure available</div>';                
         let html = '';
 
+        // Manage project link
+        html += `
+        <li class="project-item">
+            <a href="#" class="edit-project-link" data-id="${data.project_id}">
+                <span class="project-name" uk-icon="icon: folder;"></span> ${data.project_name}
+            </a>
+        </li>`;
+
         // Process locations
         Object.keys(data).forEach(key => {
             if (key !== 'project_name' && key !== 'project_slug' && key !== 'project_id') {

@@ -111,15 +111,18 @@ body {
   position: relative;
   top: -3px;
 }
-.nav-menu .location-item {
+.nav-menu .location-item, .nav-menu .project-item {
   font-size: 1.2em;
 }
-.nav-menu .location-item .location-header {
+.nav-menu .location-item .project-name, .nav-menu .project-item .project-name {
+  margin-bottom: 0.75em;
+}
+.nav-menu .location-item .location-header, .nav-menu .project-item .location-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
-.nav-menu .location-item .location-header .location-name {
+.nav-menu .location-item .location-header .location-name, .nav-menu .project-item .location-header .location-name {
   font-weight: bold;
 }
 .nav-menu .building-list {
