@@ -695,6 +695,39 @@ async function copyRoom(roomUuid) {
     await tx2.done;
 }
 
+// get all floors in this project 
+async function getFloors(project_id) {
+    const db = await initDB();
+    const tx = db.transaction(["locations", "buildings", "floors"], "readonly");
+
+    // Get locations related to the project
+    const locationStore = tx.objectStore("locations");
+    const locations = await locationStore.index("project_id_fk").getAll(project_id);
+
+    // Get buildings related to those locations
+    const buildingStore = tx.objectStore("buildings");
+    let buildings = [];
+    for (const location of locations) {
+        const locationBuildings = await buildingStore.index("location_id_fk").getAll(location.uuid);
+        buildings = buildings.concat(locationBuildings);
+    }
+
+    // Get floors under those buildings
+    const floorStore = tx.objectStore("floors");
+    let floors = [];
+    for (const building of buildings) {
+        const buildingFloors = await floorStore.index("building_id_fk").getAll(building.uuid);
+        floors = floors.concat(buildingFloors);
+    }
+
+    const floorArray = [];
+    for (const floor of floors) {
+        floorArray.push({uuid: floor.uuid, name: floor.name});
+    }   
+    return floorArray;
+}
+
+
 
 // Export the functions
 module.exports = {
@@ -723,6 +756,7 @@ module.exports = {
     removeBuilding,
     createProject,
     updateRoomDimension,
-    copyRoom   
+    copyRoom,
+    getFloors   
     // Add other database-related functions here
 };
