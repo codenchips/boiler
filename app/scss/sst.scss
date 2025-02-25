@@ -124,6 +124,12 @@ body {
 
 }
 
+.location-heading {
+  .room_name {
+    font-size: 1.3em
+  }
+}
+
 .nav-menu {
   list-style: none;
   padding: 0;
@@ -260,5 +266,18 @@ body {
   .action-icons {
     display: flex;
     gap: 0.5em;
+  }
+}
+
+label.subheading {
+  margin-bottom: 10px;
+  display: block;
+  color: #777;
+  font-weight: bold;  
+}
+
+.dimensions {
+  label{
+    font-weight: normal;
   }
 }
