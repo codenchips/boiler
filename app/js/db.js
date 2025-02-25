@@ -666,7 +666,7 @@ async function updateRoomDimension(roomUuid, field, value) {
     await tx.done;
 }
 
-async function copyRoom(roomUuid) {
+async function copyRoom(roomUuid, newRoomName, newFloorUuid) {
     const db = await initDB();
     const tx1 = db.transaction("rooms", "readwrite");
     const store = tx1.objectStore("rooms");
@@ -675,9 +675,10 @@ async function copyRoom(roomUuid) {
     const newRoom = { ...room, uuid: newUuid };
     console.log('Copying room to new room', roomUuid, newRoom.uuid);
     // append  " - copy" to room name room slug 
-    newRoom.name = newRoom.name + " - copy";
-    newRoom.slug = newRoom.slug + "-copy";  
+    newRoom.name = newRoomName || newRoom.name + " - Copy";
+    newRoom.slug = await utils.slugify(newRoom.name);  
     newRoom.room_id_fk = newUuid;
+    newRoom.floor_id_fk = newFloorUuid || newRoom.floor_id_fk;
     delete newRoom.id;
     await store.add(newRoom);
     await tx1.done;

@@ -97,33 +97,28 @@ async function tablesFunctions(project_id) {
         UIkit.modal('#add-special').hide(); 
     });     
 
+    // copy room modal
     $('#copy_room').off('click').on('click', async function(e) {
-        e.preventDefault();
-        const roomUuid = $('#m_room_id').val();        
-        // get all floors in this project to build a select dropdown of floor uuid and names
+        e.preventDefault();    
         const floors = await db.getFloors(project_id);
-        console.log('Floors:', floors);
-
-
-
         let floorOptions = floors.map(floor => `<option value="${floor.uuid}">${floor.name}</option>`).join('');
-        console.log('Floor Options:', floorOptions);
-
         $('#copy-room-modal select#modal_form_floor').html(floorOptions);
 
-
-        UIkit.modal('#copy-room-modal', { stack : true }).show();
-
-        // const msg = '<h4>Copy Room</h4><p>This will copy the room and all products to a new room</p';   
-        // UIkit.modal.confirm(msg).then( async function() {
-        //     const newRoomUuid = await db.copyRoom(roomUuid);
-        //     await renderSidebar(project_id); // project_id
-        //     await loadRoomData(newRoomUuid);
-    
-        // }, function () {
-        //     console.log('Cancelled.')
-        // });         
+        UIkit.modal('#copy-room-modal', { stack : true }).show();       
     });
+
+    // copy room submitted
+    $('#form-copy-room').off('submit').on('submit', async function(e) {
+        e.preventDefault();
+        const roomUuid = $('#m_room_id').val();        
+        const newRoomName = $('#modal_form_new_name').val();
+        const newFloorUuid = $('#modal_form_floor').find(":selected").val();
+
+        const newRoomUuid = await db.copyRoom(roomUuid, newRoomName, newFloorUuid);
+        await renderSidebar(project_id); // project_id
+        await loadRoomData(newRoomUuid);
+        UIkit.modal('#copy-room-modal').hide(); 
+    });    
 
 
 
