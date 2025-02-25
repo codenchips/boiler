@@ -737,6 +737,24 @@ async function updateRoomDimension(roomUuid, field, value) {
     await tx.done;
 }
 
+async function copyRoom(roomUuid) {
+    const db = await initDB();
+    const tx = db.transaction("rooms", "readwrite");
+    const store = tx.objectStore("rooms");
+    const room = await store.get(roomUuid);
+    const newUuid = generateUUID();
+    const newRoom = { ...room, uuid: newUuid };
+    console.log('Copying room to new room', roomUuid, newRoom.uuid);
+    // append  " - copy" to room name room slug 
+    newRoom.name = newRoom.name + " - copy";
+    newRoom.slug = newRoom.slug + "-copy";  
+    newRoom.room_id_fk = newUuid;
+    delete newRoom.id;
+    await store.add(newRoom);
+    
+    await tx.done;
+}
+
 
 // Export the functions
 module.exports = {
@@ -764,7 +782,8 @@ module.exports = {
     removeFloor,
     removeBuilding,
     createProject,
-    updateRoomDimension   
+    updateRoomDimension,
+    copyRoom   
     // Add other database-related functions here
 };
 
@@ -1555,7 +1574,7 @@ async function tablesFunctions(project_id) {
     const firstRoomId = $('#locations .room-link').first().data('id');    
     await loadRoomData(firstRoomId);
 
-    
+    // name labels (rename)
     $('span.name').on('click', function() {
         console.log('Name clicked:', $(this).data('id'));    
         const store = $(this).data('tbl');
@@ -1572,6 +1591,38 @@ async function tablesFunctions(project_id) {
             }
         });
     });
+
+
+    // room dimension fields
+    $('.roomdim').off('blur').on('blur', async function(e) {
+        const roomUuid = $('#m_room_id').val();
+        const field = $(this).data('field');
+        const value = $(this).val();
+        await db.updateRoomDimension(roomUuid, field, value);
+    });
+
+    // add special to room
+    $('#form-add-special').off('submit').on('submit', async function(e) {
+        e.preventDefault();
+        await tables.addSpecialToRoomClick();         
+        $('#form-add-special').trigger("reset");
+        UIkit.modal('#add-special').hide(); 
+    });     
+
+    $('#copy_room').off('click').on('click', async function(e) {
+        e.preventDefault();
+        const roomUuid = $('#m_room_id').val();        
+        const msg = '<h4 class="red">Warning</h4><p>This will copy the room and <b>ALL products</b> in the room!</p';   
+        UIkit.modal.confirm(msg).then( async function() {
+            const newRoomUuid = await db.copyRoom(roomUuid);
+            await renderSidebar(project_id); // project_id
+            await loadRoomData(newRoomUuid);
+    
+        }, function () {
+            console.log('Cancelled.')
+        });         
+    });
+
 
 
 }
@@ -1848,23 +1899,7 @@ async function renderSidebar(project_id) {
             console.log('Cancelled.')
         });        
     });  
-
-
-    // room dimension fields
-    $('.roomdim').off('blur').on('blur', async function(e) {
-        const roomUuid = $('#m_room_id').val();
-        const field = $(this).data('field');
-        const value = $(this).val();
-        await db.updateRoomDimension(roomUuid, field, value);
-    });
-
-    // add special to room
-    $('#form-add-special').off('submit').on('submit', async function(e) {
-        e.preventDefault();
-        await tables.addSpecialToRoomClick();         
-        $('#form-add-special').trigger("reset");
-        UIkit.modal('#add-special').hide(); 
-    });        
+      
 
     // update project details
     $('#form-update-project').off('submit').on('submit', async function(e) {

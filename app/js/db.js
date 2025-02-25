@@ -666,6 +666,24 @@ async function updateRoomDimension(roomUuid, field, value) {
     await tx.done;
 }
 
+async function copyRoom(roomUuid) {
+    const db = await initDB();
+    const tx = db.transaction("rooms", "readwrite");
+    const store = tx.objectStore("rooms");
+    const room = await store.get(roomUuid);
+    const newUuid = generateUUID();
+    const newRoom = { ...room, uuid: newUuid };
+    console.log('Copying room to new room', roomUuid, newRoom.uuid);
+    // append  " - copy" to room name room slug 
+    newRoom.name = newRoom.name + " - copy";
+    newRoom.slug = newRoom.slug + "-copy";  
+    newRoom.room_id_fk = newUuid;
+    delete newRoom.id;
+    await store.add(newRoom);
+    
+    await tx.done;
+}
+
 
 // Export the functions
 module.exports = {
@@ -693,6 +711,7 @@ module.exports = {
     removeFloor,
     removeBuilding,
     createProject,
-    updateRoomDimension   
+    updateRoomDimension,
+    copyRoom   
     // Add other database-related functions here
 };
