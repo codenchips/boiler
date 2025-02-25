@@ -799,6 +799,66 @@ async function getFloors(project_id) {
     return floorArray;
 }
 
+async function copyProject(project_id, projectName) {
+    const db = await initDB();
+    const tx = db.transaction(["projects", "locations", "buildings", "floors", "rooms", "products"], "readwrite");
+
+    // Copy the project
+    const projectStore = tx.objectStore("projects");
+    const project = await projectStore.get(project_id);
+    const newProjectID = generateUUID();
+    const newProject = { ...project, uuid: newProjectID, name: projectName };
+    await projectStore.add(newProject);
+
+    // Copy the locations
+    const locationStore = tx.objectStore("locations");
+    const locations = await locationStore.index("project_id_fk").getAll(project_id);
+    for (const location of locations) {
+        const newLocationID = generateUUID();
+        const newLocation = { ...location, uuid: newLocationID, project_id_fk: newProjectID };
+        await locationStore.add(newLocation);
+
+        // Copy the buildings
+        const buildingStore = tx.objectStore("buildings");
+        const buildings = await buildingStore.index("location_id_fk").getAll(location.uuid);    
+        for (const building of buildings) {
+            const newBuildingID = generateUUID();
+            const newBuilding = { ...building, uuid: newBuildingID, location_id_fk: newLocationID };
+            await buildingStore.add(newBuilding);
+
+            // Copy the floors
+            const floorStore = tx.objectStore("floors");
+            const floors = await floorStore.index("building_id_fk").getAll(building.uuid);
+            for (const floor of floors) {
+                const newFloorID = generateUUID();
+                const newFloor = { ...floor, uuid: newFloorID, building_id_fk: newBuildingID };
+                await floorStore.add(newFloor);
+
+                // Copy the rooms
+                const roomStore = tx.objectStore("rooms");
+                const rooms = await roomStore.index("floor_id_fk").getAll(floor.uuid);
+                for (const room of rooms) {
+                    const newRoomID = generateUUID();
+                    const newRoom = { ...room, uuid: newRoomID, floor_id_fk: newFloorID };
+                    await roomStore.add(newRoom);
+
+                    // Copy the products
+                    const productStore = tx.objectStore("products");
+                    const products = await productStore.index("room_id_fk").getAll(room.uuid);
+                    for (const product of products) {
+                        const newProductID = generateUUID();
+                        const newProduct = { ...product, uuid: newProductID, room_id_fk: newRoomID };
+                        await productStore.add(newProduct);
+                    }
+                }
+            }
+        }
+    }
+
+    await tx.done;
+    return newProjectID;
+}
+
 
 
 // Export the functions
@@ -829,7 +889,8 @@ module.exports = {
     createProject,
     updateRoomDimension,
     copyRoom,
-    getFloors   
+    getFloors,
+    copyProject   
     // Add other database-related functions here
 };
 
@@ -1402,8 +1463,11 @@ class UtilsModule {
             return '<i class="fa-solid fa-circle-minus"></i>';
         };
         this.iconX = function(cell, formatterParams, onRendered) {
-            return '<span class="icon red" uk-icon="icon: trash; ratio: 1.3" title="Delete this project"></span>';
-        };        
+            return '<span class="icon red" uk-icon="icon: trash; ratio: 1.3" title="Delete"></span>';
+        };    
+        this.iconCopy = function(cell, formatterParams, onRendered) {
+            return '<span class="icon" uk-icon="icon: copy; ratio: 1.3" title="Duplicate"></span>';
+        };                
     }
 
     init() {
@@ -1628,7 +1692,7 @@ async function tablesFunctions(project_id) {
         const name = $(this).text();
         const that = this;
         // call the modal to update the name
-        UIkit.modal.prompt('New name:', name).then(async function(newName) {
+        UIkit.modal.prompt('<h4>New name</h4>', name).then(async function(newName) {
             if (newName) {                
                 await db.updateName(store, uuid, newName);
                 $(that).text(newName);
@@ -1839,6 +1903,16 @@ async function renderProjectsTable() {
             {                    
                 visible: true,
                 headerSort: false,
+                formatter: utils.iconCopy,
+                width: 80,
+                hozAlign: "center",
+                cellClick: function (e, cell) {
+                    copyProject(cell.getRow().getData().project_id);
+                }
+            },
+            {                    
+                visible: false,
+                headerSort: false,
                 formatter: utils.iconX,
                 width: 80,
                 hozAlign: "center",
@@ -1849,6 +1923,18 @@ async function renderProjectsTable() {
         ],
     });    
 }
+
+
+async function copyProject(project_id) {
+    const projectData = await db.getProjectByUUID(project_id);
+    const projectName = await UIkit.modal.prompt('<h4>Enter the new project name</h4>', projectData.name + ' - Copy');
+    if (projectName) {
+        const newProjectId = await db.copyProject(project_id, projectName);
+        await renderProjectsTable();
+        UIkit.notification('Project copied', {status:'success',pos: 'bottom-center',timeout: 1500});
+    }
+}
+
 
 // 
 // renderSidebar

@@ -10,8 +10,11 @@ class UtilsModule {
             return '<i class="fa-solid fa-circle-minus"></i>';
         };
         this.iconX = function(cell, formatterParams, onRendered) {
-            return '<span class="icon red" uk-icon="icon: trash; ratio: 1.3" title="Delete this project"></span>';
-        };        
+            return '<span class="icon red" uk-icon="icon: trash; ratio: 1.3" title="Delete"></span>';
+        };    
+        this.iconCopy = function(cell, formatterParams, onRendered) {
+            return '<span class="icon" uk-icon="icon: copy; ratio: 1.3" title="Duplicate"></span>';
+        };                
     }
 
     init() {

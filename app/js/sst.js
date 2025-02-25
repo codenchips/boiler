@@ -70,7 +70,7 @@ async function tablesFunctions(project_id) {
         const name = $(this).text();
         const that = this;
         // call the modal to update the name
-        UIkit.modal.prompt('New name:', name).then(async function(newName) {
+        UIkit.modal.prompt('<h4>New name</h4>', name).then(async function(newName) {
             if (newName) {                
                 await db.updateName(store, uuid, newName);
                 $(that).text(newName);
@@ -281,6 +281,16 @@ async function renderProjectsTable() {
             {                    
                 visible: true,
                 headerSort: false,
+                formatter: utils.iconCopy,
+                width: 80,
+                hozAlign: "center",
+                cellClick: function (e, cell) {
+                    copyProject(cell.getRow().getData().project_id);
+                }
+            },
+            {                    
+                visible: false,
+                headerSort: false,
                 formatter: utils.iconX,
                 width: 80,
                 hozAlign: "center",
@@ -291,6 +301,18 @@ async function renderProjectsTable() {
         ],
     });    
 }
+
+
+async function copyProject(project_id) {
+    const projectData = await db.getProjectByUUID(project_id);
+    const projectName = await UIkit.modal.prompt('<h4>Enter the new project name</h4>', projectData.name + ' - Copy');
+    if (projectName) {
+        const newProjectId = await db.copyProject(project_id, projectName);
+        await renderProjectsTable();
+        UIkit.notification('Project copied', {status:'success',pos: 'bottom-center',timeout: 1500});
+    }
+}
+
 
 // 
 // renderSidebar

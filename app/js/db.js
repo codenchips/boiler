@@ -728,6 +728,66 @@ async function getFloors(project_id) {
     return floorArray;
 }
 
+async function copyProject(project_id, projectName) {
+    const db = await initDB();
+    const tx = db.transaction(["projects", "locations", "buildings", "floors", "rooms", "products"], "readwrite");
+
+    // Copy the project
+    const projectStore = tx.objectStore("projects");
+    const project = await projectStore.get(project_id);
+    const newProjectID = generateUUID();
+    const newProject = { ...project, uuid: newProjectID, name: projectName };
+    await projectStore.add(newProject);
+
+    // Copy the locations
+    const locationStore = tx.objectStore("locations");
+    const locations = await locationStore.index("project_id_fk").getAll(project_id);
+    for (const location of locations) {
+        const newLocationID = generateUUID();
+        const newLocation = { ...location, uuid: newLocationID, project_id_fk: newProjectID };
+        await locationStore.add(newLocation);
+
+        // Copy the buildings
+        const buildingStore = tx.objectStore("buildings");
+        const buildings = await buildingStore.index("location_id_fk").getAll(location.uuid);    
+        for (const building of buildings) {
+            const newBuildingID = generateUUID();
+            const newBuilding = { ...building, uuid: newBuildingID, location_id_fk: newLocationID };
+            await buildingStore.add(newBuilding);
+
+            // Copy the floors
+            const floorStore = tx.objectStore("floors");
+            const floors = await floorStore.index("building_id_fk").getAll(building.uuid);
+            for (const floor of floors) {
+                const newFloorID = generateUUID();
+                const newFloor = { ...floor, uuid: newFloorID, building_id_fk: newBuildingID };
+                await floorStore.add(newFloor);
+
+                // Copy the rooms
+                const roomStore = tx.objectStore("rooms");
+                const rooms = await roomStore.index("floor_id_fk").getAll(floor.uuid);
+                for (const room of rooms) {
+                    const newRoomID = generateUUID();
+                    const newRoom = { ...room, uuid: newRoomID, floor_id_fk: newFloorID };
+                    await roomStore.add(newRoom);
+
+                    // Copy the products
+                    const productStore = tx.objectStore("products");
+                    const products = await productStore.index("room_id_fk").getAll(room.uuid);
+                    for (const product of products) {
+                        const newProductID = generateUUID();
+                        const newProduct = { ...product, uuid: newProductID, room_id_fk: newRoomID };
+                        await productStore.add(newProduct);
+                    }
+                }
+            }
+        }
+    }
+
+    await tx.done;
+    return newProjectID;
+}
+
 
 
 // Export the functions
@@ -758,6 +818,7 @@ module.exports = {
     createProject,
     updateRoomDimension,
     copyRoom,
-    getFloors   
+    getFloors,
+    copyProject   
     // Add other database-related functions here
 };
