@@ -709,14 +709,32 @@ async function getProjectData(projectId) {
     return project;
 }
 
+async function getProjectByUUID(uuid) {
+    const db = await initDB();
+    const tx = db.transaction("projects", "readonly");
+    const store = tx.objectStore("projects");
+    const project = await store.get(uuid);
+    return project;
+}
+
+async function updateProjectDetails(projectData) {
+    const db = await initDB();
+    const tx = db.transaction("projects", "readwrite");
+    const store = tx.objectStore("projects");
+
+    await store.put(projectData);
+    await tx.done;    
+}
+
 // Export the functions
 module.exports = {
     generateUUID, 
     initDB,
     fetchAndStoreProducts,
     getProducts,
-    getProjects,
-    getProjectData,
+    getProjects,    
+    getProjectByUUID,
+    updateProjectDetails,
     syncData,
     saveProductToRoom,
     getProductsForRoom,
@@ -1024,7 +1042,47 @@ class TablesModule {
         $('#form_type').html(optionsHtml);
     }
 
+    async updateProjectClick(uuid) {
 
+        console.log('updateProjectClick', uuid);
+
+        const existingProject = await db.getProjectByUUID(uuid);
+
+        console.log('existingProject', existingProject);
+
+        if (!existingProject) {
+            console.error('Project not found');
+            return;
+        }
+
+        const projectData = {
+            uuid: uuid,
+            project_id: $('#form_edit_project_id').val() || existingProject.project_id,
+            room_id_fk: existingProject.room_id_fk, // legacy
+            name: $('#form_edit_project_name').val() || existingProject.name,
+            slug: await utils.slugify($('#form_edit_project_name').val()) || existingProject.slug,
+            engineer: $('#form_edit_project_engineer').val() || existingProject.engineer,
+            project_version: $('#form_edit_project_version').val() || existingProject.project_version,
+            last_updated: await utils.formatDateTime(new Date()),
+            created_on: existingProject.created_on,
+            owner_id: existingProject.owner_id,
+            cef: existingProject.cef // unused
+        };
+
+        console.log('updateProjectClick', projectData);
+
+
+        await db.updateProjectDetails(projectData);
+
+        UIkit.notification({
+            message: 'Project Updated',
+            status: 'success',
+            pos: 'top-center',
+            timeout: 2000
+        });        
+      
+                
+    }
 
     async addSpecialToRoomClick() {
         // to save duplication just build the product data object and call the addProductToRoomClick method
@@ -1043,7 +1101,7 @@ class TablesModule {
             order: null,
             range: null
         };
-        UIkit.modal('#add-special').hide();
+        //UIkit.modal('#add-special').hide();
         this.doAddProduct(productData);   
     }
 
@@ -1128,7 +1186,7 @@ class TablesModule {
         $('span.place_sku').html(sku);
         $('input#del_sku').val(sku);
 
-        UIkit.modal('#del-sku').show();        
+        UIkit.modal('#del-sku', { stack : true }).show();        
 
         $('#form-submit-del-sku').off('submit').on('submit', async (e) => {
             e.preventDefault();
@@ -1147,7 +1205,7 @@ class TablesModule {
         $('input#set_qty_sku').val(sku);
         $('input#set_qty_qty').val(qty);
 
-        UIkit.modal('#set-qty').show();        
+        UIkit.modal('#set-qty', { stack : true }).show();        
 
         $('#form-submit-set-qty').off('submit').on('submit', async (e) => {
             e.preventDefault();
@@ -1440,6 +1498,9 @@ async function tablesFunctions(project_id) {
     }        
 
     console.log('Running tables functions for project:', project_id);
+
+    
+
     //$('#debug').html(currentProject.project_name);
     $('.tables_link').show();
     UIkit.offcanvas('.tables-side').show();
@@ -1466,7 +1527,8 @@ async function tablesFunctions(project_id) {
     });
 
     // Add Special to room
-    $('#btn_add_special').on('click', async function() {
+    $('#btn_add_special').off('click').on('click', async function() {
+        //UIkit.modal('#add-special').remove();
         UIkit.modal('#add-special', { stack : true }).show();
     });
 
@@ -1572,10 +1634,10 @@ const homeFunctions = async () => {
             $('#form_floor').removeAttr('disabled').focus();
         }
     });    
-    // add special to room
-    $('#form-create-project').submit(async function(e) {
+    
+    $('#form-create-project').off('submit').on('submit', function(e) {
         e.preventDefault();
-        await createProject();              
+        createProject();              
     });        
 
 
@@ -1684,7 +1746,7 @@ async function renderSidebar(project_id) {
     /* Project Click - load project data */
     $('a.edit-project-link').off('click').on('click', async function(e) {
         e.preventDefault();
-        await loadProjectData($(this).data('id'));
+        await loadProjectData(project_id);
     });    
 
 
@@ -1775,18 +1837,19 @@ async function renderSidebar(project_id) {
     });  
 
     // add special to room
-    $('#form-submit-special').submit(async function(e) {
+    $('#form-add-special').off('submit').on('submit', async function(e) {
         e.preventDefault();
-        await tables.addSpecialToRoomClick();      
+        await tables.addSpecialToRoomClick();         
+        $('#form-add-special').trigger("reset");
         UIkit.modal('#add-special').hide(); 
     });        
 
     // update project details
-    $('#form-submit-special').submit(async function(e) {
-        e.preventDefault();
-        await tables.addSpecialToRoomClick();      
+    $('#form-update-project').off('submit').on('submit', async function(e) {
+        e.preventDefault();        
+        const project_id = $('#m_project_id').val();
+        await tables.updateProjectClick(project_id);
         UIkit.modal('#edit-project-modal').hide(); 
-
     });     
 
 }
@@ -1813,14 +1876,13 @@ async function loadProjectData(projectId) {
     $('#m_project_id').val(projectId);
     if (!projectId) return;
     projectId = projectId.toString();
-    const projectData = await db.getProjectData(projectId);
+    const projectData = await db.getProjectByUUID(projectId);
     localStorage.setItem('currentProject', JSON.stringify(projectData));
 
-    $('#form_project_name').val(projectData.name);
-    $('#form_project_id').val(projectData.project_id);
-    $('#form_project_engineer').val(projectData.engineer);
-    $('#form_project_name').val(projectData.name);
-    $('#form_project_version').val(projectData.version);
+    $('#form_edit_project_name').val(projectData.name);
+    $('#form_edit_project_id').val(projectData.project_id);
+    $('#form_edit_project_engineer').val(projectData.engineer);    
+    $('#form_edit_project_version').val(projectData.version);
 
     UIkit.modal('#edit-project-modal', { stack : true }).show();
 }    

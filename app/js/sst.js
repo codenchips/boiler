@@ -18,6 +18,9 @@ async function tablesFunctions(project_id) {
     }        
 
     console.log('Running tables functions for project:', project_id);
+
+    
+
     //$('#debug').html(currentProject.project_name);
     $('.tables_link').show();
     UIkit.offcanvas('.tables-side').show();
@@ -44,7 +47,8 @@ async function tablesFunctions(project_id) {
     });
 
     // Add Special to room
-    $('#btn_add_special').on('click', async function() {
+    $('#btn_add_special').off('click').on('click', async function() {
+        //UIkit.modal('#add-special').remove();
         UIkit.modal('#add-special', { stack : true }).show();
     });
 
@@ -150,10 +154,10 @@ const homeFunctions = async () => {
             $('#form_floor').removeAttr('disabled').focus();
         }
     });    
-    // add special to room
-    $('#form-create-project').submit(async function(e) {
+    
+    $('#form-create-project').off('submit').on('submit', function(e) {
         e.preventDefault();
-        await createProject();              
+        createProject();              
     });        
 
 
@@ -262,7 +266,7 @@ async function renderSidebar(project_id) {
     /* Project Click - load project data */
     $('a.edit-project-link').off('click').on('click', async function(e) {
         e.preventDefault();
-        await loadProjectData($(this).data('id'));
+        await loadProjectData(project_id);
     });    
 
 
@@ -353,18 +357,19 @@ async function renderSidebar(project_id) {
     });  
 
     // add special to room
-    $('#form-submit-special').submit(async function(e) {
+    $('#form-add-special').off('submit').on('submit', async function(e) {
         e.preventDefault();
-        await tables.addSpecialToRoomClick();      
+        await tables.addSpecialToRoomClick();         
+        $('#form-add-special').trigger("reset");
         UIkit.modal('#add-special').hide(); 
     });        
 
     // update project details
-    $('#form-submit-special').submit(async function(e) {
-        e.preventDefault();
-        await tables.addSpecialToRoomClick();      
+    $('#form-update-project').off('submit').on('submit', async function(e) {
+        e.preventDefault();        
+        const project_id = $('#m_project_id').val();
+        await tables.updateProjectClick(project_id);
         UIkit.modal('#edit-project-modal').hide(); 
-
     });     
 
 }
@@ -391,14 +396,13 @@ async function loadProjectData(projectId) {
     $('#m_project_id').val(projectId);
     if (!projectId) return;
     projectId = projectId.toString();
-    const projectData = await db.getProjectData(projectId);
+    const projectData = await db.getProjectByUUID(projectId);
     localStorage.setItem('currentProject', JSON.stringify(projectData));
 
-    $('#form_project_name').val(projectData.name);
-    $('#form_project_id').val(projectData.project_id);
-    $('#form_project_engineer').val(projectData.engineer);
-    $('#form_project_name').val(projectData.name);
-    $('#form_project_version').val(projectData.version);
+    $('#form_edit_project_name').val(projectData.name);
+    $('#form_edit_project_id').val(projectData.project_id);
+    $('#form_edit_project_engineer').val(projectData.engineer);    
+    $('#form_edit_project_version').val(projectData.version);
 
     UIkit.modal('#edit-project-modal', { stack : true }).show();
 }    

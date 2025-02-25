@@ -638,14 +638,32 @@ async function getProjectData(projectId) {
     return project;
 }
 
+async function getProjectByUUID(uuid) {
+    const db = await initDB();
+    const tx = db.transaction("projects", "readonly");
+    const store = tx.objectStore("projects");
+    const project = await store.get(uuid);
+    return project;
+}
+
+async function updateProjectDetails(projectData) {
+    const db = await initDB();
+    const tx = db.transaction("projects", "readwrite");
+    const store = tx.objectStore("projects");
+
+    await store.put(projectData);
+    await tx.done;    
+}
+
 // Export the functions
 module.exports = {
     generateUUID, 
     initDB,
     fetchAndStoreProducts,
     getProducts,
-    getProjects,
-    getProjectData,
+    getProjects,    
+    getProjectByUUID,
+    updateProjectDetails,
     syncData,
     saveProductToRoom,
     getProductsForRoom,

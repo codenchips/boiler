@@ -128,7 +128,47 @@ class TablesModule {
         $('#form_type').html(optionsHtml);
     }
 
+    async updateProjectClick(uuid) {
 
+        console.log('updateProjectClick', uuid);
+
+        const existingProject = await db.getProjectByUUID(uuid);
+
+        console.log('existingProject', existingProject);
+
+        if (!existingProject) {
+            console.error('Project not found');
+            return;
+        }
+
+        const projectData = {
+            uuid: uuid,
+            project_id: $('#form_edit_project_id').val() || existingProject.project_id,
+            room_id_fk: existingProject.room_id_fk, // legacy
+            name: $('#form_edit_project_name').val() || existingProject.name,
+            slug: await utils.slugify($('#form_edit_project_name').val()) || existingProject.slug,
+            engineer: $('#form_edit_project_engineer').val() || existingProject.engineer,
+            project_version: $('#form_edit_project_version').val() || existingProject.project_version,
+            last_updated: await utils.formatDateTime(new Date()),
+            created_on: existingProject.created_on,
+            owner_id: existingProject.owner_id,
+            cef: existingProject.cef // unused
+        };
+
+        console.log('updateProjectClick', projectData);
+
+
+        await db.updateProjectDetails(projectData);
+
+        UIkit.notification({
+            message: 'Project Updated',
+            status: 'success',
+            pos: 'top-center',
+            timeout: 2000
+        });        
+      
+                
+    }
 
     async addSpecialToRoomClick() {
         // to save duplication just build the product data object and call the addProductToRoomClick method
@@ -147,7 +187,7 @@ class TablesModule {
             order: null,
             range: null
         };
-        UIkit.modal('#add-special').hide();
+        //UIkit.modal('#add-special').hide();
         this.doAddProduct(productData);   
     }
 
@@ -232,7 +272,7 @@ class TablesModule {
         $('span.place_sku').html(sku);
         $('input#del_sku').val(sku);
 
-        UIkit.modal('#del-sku').show();        
+        UIkit.modal('#del-sku', { stack : true }).show();        
 
         $('#form-submit-del-sku').off('submit').on('submit', async (e) => {
             e.preventDefault();
@@ -251,7 +291,7 @@ class TablesModule {
         $('input#set_qty_sku').val(sku);
         $('input#set_qty_qty').val(qty);
 
-        UIkit.modal('#set-qty').show();        
+        UIkit.modal('#set-qty', { stack : true }).show();        
 
         $('#form-submit-set-qty').off('submit').on('submit', async (e) => {
             e.preventDefault();
