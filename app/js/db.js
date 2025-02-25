@@ -736,7 +736,7 @@ async function copyProject(project_id, projectName) {
     const projectStore = tx.objectStore("projects");
     const project = await projectStore.get(project_id);
     const newProjectID = generateUUID();
-    const newProject = { ...project, uuid: newProjectID, name: projectName };
+    const newProject = { ...project, uuid: newProjectID, name: projectName, room_id_fk: newProjectID };
     await projectStore.add(newProject);
 
     // Copy the locations
@@ -744,7 +744,7 @@ async function copyProject(project_id, projectName) {
     const locations = await locationStore.index("project_id_fk").getAll(project_id);
     for (const location of locations) {
         const newLocationID = generateUUID();
-        const newLocation = { ...location, uuid: newLocationID, project_id_fk: newProjectID };
+        const newLocation = { ...location, uuid: newLocationID, project_id_fk: newProjectID, room_if_fk: newLocationID };
         await locationStore.add(newLocation);
 
         // Copy the buildings
@@ -752,7 +752,7 @@ async function copyProject(project_id, projectName) {
         const buildings = await buildingStore.index("location_id_fk").getAll(location.uuid);    
         for (const building of buildings) {
             const newBuildingID = generateUUID();
-            const newBuilding = { ...building, uuid: newBuildingID, location_id_fk: newLocationID };
+            const newBuilding = { ...building, uuid: newBuildingID, location_id_fk: newLocationID, room_id_fk: newBuildingID };
             await buildingStore.add(newBuilding);
 
             // Copy the floors
@@ -760,7 +760,7 @@ async function copyProject(project_id, projectName) {
             const floors = await floorStore.index("building_id_fk").getAll(building.uuid);
             for (const floor of floors) {
                 const newFloorID = generateUUID();
-                const newFloor = { ...floor, uuid: newFloorID, building_id_fk: newBuildingID };
+                const newFloor = { ...floor, uuid: newFloorID, building_id_fk: newBuildingID, room_id_fk: newFloorID };
                 await floorStore.add(newFloor);
 
                 // Copy the rooms
@@ -768,7 +768,7 @@ async function copyProject(project_id, projectName) {
                 const rooms = await roomStore.index("floor_id_fk").getAll(floor.uuid);
                 for (const room of rooms) {
                     const newRoomID = generateUUID();
-                    const newRoom = { ...room, uuid: newRoomID, floor_id_fk: newFloorID };
+                    const newRoom = { ...room, uuid: newRoomID, floor_id_fk: newFloorID, room_id_fk: newRoomID };
                     await roomStore.add(newRoom);
 
                     // Copy the products
