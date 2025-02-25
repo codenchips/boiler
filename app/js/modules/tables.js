@@ -163,9 +163,9 @@ class TablesModule {
         UIkit.notification({
             message: 'Project Updated',
             status: 'success',
-            pos: 'top-center',
-            timeout: 2000
-        });        
+            pos: 'bottom-center',
+            timeout: 1500
+    });        
       
                 
     }
@@ -218,8 +218,8 @@ class TablesModule {
             UIkit.notification({
                 message: 'All fields are required',
                 status: 'danger',
-                pos: 'top-center',
-                timeout: 5000
+                pos: 'bottom-center',
+                timeout: 1500
             });
             return;
         }
@@ -234,8 +234,8 @@ class TablesModule {
             UIkit.notification({
                 message: 'Product added to room',
                 status: 'success',
-                pos: 'top-center',
-                timeout: 5000
+                pos: 'bottom-center',
+                timeout: 1500
             });
 
             utils.hideSpin();
@@ -244,8 +244,8 @@ class TablesModule {
             UIkit.notification({
                 message: 'Error saving product to room',
                 status: 'danger',
-                pos: 'top-center',
-                timeout: 5000
+                pos: 'bottom-center',
+                timeout: 1500
             });            
             utils.hideSpin();
         }

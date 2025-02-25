@@ -1077,9 +1077,9 @@ class TablesModule {
         UIkit.notification({
             message: 'Project Updated',
             status: 'success',
-            pos: 'top-center',
-            timeout: 2000
-        });        
+            pos: 'bottom-center',
+            timeout: 1500
+    });        
       
                 
     }
@@ -1132,8 +1132,8 @@ class TablesModule {
             UIkit.notification({
                 message: 'All fields are required',
                 status: 'danger',
-                pos: 'top-center',
-                timeout: 5000
+                pos: 'bottom-center',
+                timeout: 1500
             });
             return;
         }
@@ -1148,8 +1148,8 @@ class TablesModule {
             UIkit.notification({
                 message: 'Product added to room',
                 status: 'success',
-                pos: 'top-center',
-                timeout: 5000
+                pos: 'bottom-center',
+                timeout: 1500
             });
 
             utils.hideSpin();
@@ -1158,8 +1158,8 @@ class TablesModule {
             UIkit.notification({
                 message: 'Error saving product to room',
                 status: 'danger',
-                pos: 'top-center',
-                timeout: 5000
+                pos: 'bottom-center',
+                timeout: 1500
             });            
             utils.hideSpin();
         }
@@ -1764,7 +1764,7 @@ async function renderSidebar(project_id) {
         const roomName = await UIkit.modal.prompt('<h4>Enter the room name</h4>');
         if (roomName) {
             const roomUuid = await db.addRoom(floorUuid, roomName);
-            UIkit.notification('Room added', {status:'success'});
+            UIkit.notification('Room added', {status:'success',pos: 'bottom-center',timeout: 1500});
             await renderSidebar(project_id); // project_id
         }   
     });
@@ -1776,7 +1776,7 @@ async function renderSidebar(project_id) {
         const floorName = await UIkit.modal.prompt('<h4>Enter the floor name</h4>');
         if (floorName) {
             const floorUuid = await db.addFloor(buildingUuid, floorName);
-            UIkit.notification('Floor added', {status:'success'});
+            UIkit.notification('Floor added', {status:'success',pos: 'bottom-center',timeout: 1500});
             await renderSidebar(project_id); // project_id
         }   
     });
@@ -1789,7 +1789,7 @@ async function renderSidebar(project_id) {
         const buildingName = await UIkit.modal.prompt('<h4>Enter the building name</h4>');
         if (buildingName) {
             const buildingUuid = await db.addBuilding(locationUuid, buildingName);                                
-            UIkit.notification('building added', {status:'success'});
+            UIkit.notification('building added', {status:'success',pos: 'bottom-center',timeout: 1500});
             await renderSidebar(project_id); // project_id
         }   
     });     
@@ -1801,7 +1801,7 @@ async function renderSidebar(project_id) {
         UIkit.modal.confirm(msg).then( async function() {
             const roomUuid = $(that).data('id');   
             const roomName = await db.removeRoom(roomUuid);                                
-            UIkit.notification('Room removed', {status:'success'});
+            UIkit.notification('Room removed', {status:'success',pos: 'bottom-center',timeout: 1500});
             await renderSidebar(project_id); // project_id                    
         }, function () {
             console.log('Cancelled.')
@@ -1815,7 +1815,7 @@ async function renderSidebar(project_id) {
         UIkit.modal.confirm(msg).then( async function() {
             const floorUuid = $(that).data('id');   
             const floorName = await db.removeFloor(floorUuid);                                
-            UIkit.notification('Floor and rooms removed', {status:'success'});
+            UIkit.notification('Floor and rooms removed', {status:'success',pos: 'bottom-center',timeout: 1500});
             await renderSidebar(project_id); // project_id                    
         }, function () {
             console.log('Cancelled.')
@@ -1829,7 +1829,7 @@ async function renderSidebar(project_id) {
         UIkit.modal.confirm(msg).then( async function() {
             const buildingUuid = $(that).data('id');   
             const buildingName = await db.removeBuilding(buildingUuid);                                
-            UIkit.notification('building, floors and rooms removed', {status:'success'});
+            UIkit.notification('building, floors and rooms removed', {status:'success',pos: 'bottom-center',timeout: 1500});
             await renderSidebar(project_id); // project_id                    
         }, function () {
             console.log('Cancelled.')
@@ -1849,6 +1849,7 @@ async function renderSidebar(project_id) {
         e.preventDefault();        
         const project_id = $('#m_project_id').val();
         await tables.updateProjectClick(project_id);
+        await renderSidebar(project_id);
         UIkit.modal('#edit-project-modal').hide(); 
     });     
 

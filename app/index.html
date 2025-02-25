@@ -88,51 +88,6 @@
             <input type="hidden" id="m_building_id" name="m_building_id" value="" />
             <input type="hidden" id="m_location_id" name="m_location_id" value="" /> 
 
-            <!-- Login modal -->
-            <div id="login" class="loginmodal" uk-modal>
-                <div class="uk-modal-dialog uk-margin-auto-vertical uk-modal-body">
-                    <button class="uk-modal-close-default" type="button" uk-close hidden></button>
-                    <form id="form-login">
-                        <div class="uk-text-center" uk-grid>
-                            <div class="uk-width-1-1">
-                                <h3>Login</h3>
-                            </div>
-                            <div class="uk-width-1-1 uk-text-left">
-                                <label>Email</label>
-                                <input id="modal_form_email"
-                                       name="modal_form_email"
-                                       class="uk-input free-type"
-                                       placeholder="name@tamlite.co.uk"
-                                       required
-                                       value=""
-                                       oninvalid="this.setCustomValidity('Enter your email address')"
-                                       oninput="this.setCustomValidity('')" />
-                            </div>
-                            <div class="uk-width-1-1 uk-text-left">
-                                <label>Password</label>
-                                <input id="modal_form_password"
-                                       name="modal_form_password"
-                                       class="uk-input free-type"
-                                       type="password"
-                                       placeholder=""
-                                       required
-                                       value=""
-                                       oninvalid="this.setCustomValidity('Enter your password')"
-                                       oninput="this.setCustomValidity('')" />
-                            </div>
-                            <div style="display:none;" class="uk-width-1-1 uk-text-left login-error">
-                                <p class=""></p>
-                            </div>
-                            <div class="uk-width-1-1">
-                                <input type="hidden" name="modal_form_uid" value="" />
-                                <div class="form-actions">
-                                    <button id="form-submit-login" type="submit" class="uk-button uk-button-primary">Login</button>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>    
 
             <div id="sidebar"></div>
 
@@ -508,6 +463,137 @@
                 </form>
             </div>
           </div>    
+
+              <!-- Login modal -->
+              <div id="login" class="loginmodal" uk-modal>
+                <div class="uk-modal-dialog uk-margin-auto-vertical uk-modal-body">
+                    <button class="uk-modal-close-default" type="button" uk-close hidden></button>
+                    <form id="form-login">
+                        <div class="uk-text-center" uk-grid>
+                            <div class="uk-width-1-1">
+                                <h3>Login</h3>
+                            </div>
+                            <div class="uk-width-1-1 uk-text-left">
+                                <label>Email</label>
+                                <input id="modal_form_email"
+                                       name="modal_form_email"
+                                       class="uk-input free-type"
+                                       placeholder="name@tamlite.co.uk"
+                                       required
+                                       value=""
+                                       oninvalid="this.setCustomValidity('Enter your email address')"
+                                       oninput="this.setCustomValidity('')" />
+                            </div>
+                            <div class="uk-width-1-1 uk-text-left">
+                                <label>Password</label>
+                                <input id="modal_form_password"
+                                       name="modal_form_password"
+                                       class="uk-input free-type"
+                                       type="password"
+                                       placeholder=""
+                                       required
+                                       value=""
+                                       oninvalid="this.setCustomValidity('Enter your password')"
+                                       oninput="this.setCustomValidity('')" />
+                            </div>
+                            <div style="display:none;" class="uk-width-1-1 uk-text-left login-error">
+                                <p class=""></p>
+                            </div>
+                            <div class="uk-width-1-1">
+                                <input type="hidden" name="modal_form_uid" value="" />
+                                <div class="form-actions">
+                                    <button id="form-submit-login" type="submit" class="uk-button uk-button-primary">Login</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>    
+
+                <!-- add project modal -->
+                <div id="create-project" uk-modal>
+                    <div class="uk-modal-dialog uk-margin-auto-vertical uk-modal-body">
+                        <button class="uk-modal-close-default" type="button" uk-close></button>
+                        <form id="form-create-project">
+                            <div class="uk-text-center" uk-grid>
+
+                                <div class="uk-width-1-1">
+                                    <h3>New Project</h3>
+                                </div>
+
+                                <div class="uk-width-1-1 uk-text-left">
+                                    <label>Project Name</label>
+                                    <input id="form_project_name"
+                                           name="form_project_name"
+                                           class="uk-input free-type"
+                                           placeholder="My Project"
+                                           autocomplete="off"
+                                           required
+                                           value=""
+                                           oninvalid="this.setCustomValidity('You must name this project')"
+                                           oninput="this.setCustomValidity('')" />
+                                </div>
+
+                                <div class="uk-width-1-1 uk-text-left">
+                                    <label>Location</label>
+                                    <input id="form_location"
+                                           name="form_location"
+                                           class="uk-input free-type"
+                                           placeholder="The town, city or area"
+                                           autocomplete="off"
+                                           required
+                                           disabled
+                                           value=""
+                                           oninvalid="this.setCustomValidity('You enter a location')"
+                                           oninput="this.setCustomValidity('')" />
+                                </div>
+
+                                <div class="uk-width-1-1 uk-text-left">
+                                    <label>Building</label>
+                                    <input id="form_building"
+                                           name="form_building"
+                                           class="uk-input free-type"
+                                           placeholder="Main warehouse"
+                                           autocomplete="off"
+                                           required
+                                           disabled
+                                           value=""
+                                           oninvalid="this.setCustomValidity('Enter a building name')"
+                                           oninput="this.setCustomValidity('')" />
+                                </div>
+
+                                <div class="uk-width-1-1 uk-text-left">
+                                    <label>Floor</label>
+                                    <input id="form_floor"
+                                           name="form_floor"
+                                           class="uk-input free-type"
+                                           placeholder="Ground Floor"
+                                           autocomplete="off"
+                                           list="floor_suggestions"
+                                           required
+                                           disabled
+                                           value=""
+                                           oninvalid="this.setCustomValidity('Enter a floor name')"
+                                           oninput="this.setCustomValidity('')" />
+                                    <datalist id="floor_suggestions">
+                                        <option value="Ground Floor"></option>
+                                        <option value="First Floor"></option>
+                                        <option value="Second Floor"></option>
+                                    </datalist>
+                                </div>
+
+                            </div>
+
+                            <div class="uk-width-1-1 uk-margin uk-text-right">
+                                <input type="hidden" name="uid" id="uid" value="1" />
+
+                                <button id="form-submit-createproject" type="submit" class="uk-button uk-button-primary">Create</button>
+                                <button class="uk-modal-close uk-button uk-button-default">Cancel</button>
+                            </div>
+
+                        </form>
+                    </div>
+                </div>
         
 
         <script src="js/bundle.js" type="text/javascript"></script>      
