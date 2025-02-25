@@ -100,7 +100,7 @@ async function tablesFunctions(project_id) {
     $('#copy_room').off('click').on('click', async function(e) {
         e.preventDefault();
         const roomUuid = $('#m_room_id').val();        
-        const msg = '<h4 class="red">Warning</h4><p>This will copy the room and <b>ALL products</b> in the room!</p';   
+        const msg = '<h4>Copy Room</h4><p>This will copy the room and all products to a new room</p';   
         UIkit.modal.confirm(msg).then( async function() {
             const newRoomUuid = await db.copyRoom(roomUuid);
             await renderSidebar(project_id); // project_id

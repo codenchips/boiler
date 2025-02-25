@@ -668,8 +668,8 @@ async function updateRoomDimension(roomUuid, field, value) {
 
 async function copyRoom(roomUuid) {
     const db = await initDB();
-    const tx = db.transaction("rooms", "readwrite");
-    const store = tx.objectStore("rooms");
+    const tx1 = db.transaction("rooms", "readwrite");
+    const store = tx1.objectStore("rooms");
     const room = await store.get(roomUuid);
     const newUuid = generateUUID();
     const newRoom = { ...room, uuid: newUuid };
@@ -680,8 +680,19 @@ async function copyRoom(roomUuid) {
     newRoom.room_id_fk = newUuid;
     delete newRoom.id;
     await store.add(newRoom);
-    
-    await tx.done;
+    await tx1.done;
+
+    // now also copy the products in the old room to the new room
+    const products = await getProductsForRoom(roomUuid);
+    const tx2 = db.transaction("products", "readwrite");
+    const productStore = tx2.objectStore("products");
+    for (const product of products) {
+        product.room_id_fk = newUuid;
+        product.uuid = generateUUID();
+        await productStore.add(product);
+    }
+
+    await tx2.done;
 }
 
 
