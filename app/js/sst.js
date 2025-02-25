@@ -356,6 +356,15 @@ async function renderSidebar(project_id) {
         });        
     });  
 
+
+    // room dimension fields
+    $('.roomdim').off('blur').on('blur', async function(e) {
+        const roomUuid = $('#m_room_id').val();
+        const field = $(this).data('field');
+        const value = $(this).val();
+        await db.updateRoomDimension(roomUuid, field, value);
+    });
+
     // add special to room
     $('#form-add-special').off('submit').on('submit', async function(e) {
         e.preventDefault();
@@ -419,6 +428,11 @@ async function loadRoomData(roomId) {
     $('.name.building_name').html(roomMeta.building.name).attr('data-id', roomMeta.building.uuid);
     $('.name.floor_name').html(roomMeta.floor.name).attr('data-id', roomMeta.floor.uuid);
     $('.name.room_name').html(roomMeta.room.name).attr('data-id', roomMeta.room.uuid);
+
+
+    $('#room_height').val(roomMeta.room.height);
+    $('#room_width').val(roomMeta.room.width);
+    $('#room_length').val(roomMeta.room.length);
 
     await tables.refreshTableData(roomId);
 }

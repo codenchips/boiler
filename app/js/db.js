@@ -334,7 +334,7 @@ const getRoomMeta = async (roomId) => {
         location: { name: location.name, uuid: location.uuid },
         building: { name: building.name, uuid: building.uuid },
         floor: { name: floor.name, uuid: floor.uuid },
-        room: { name: room.name, uuid: room.uuid }
+        room: { name: room.name, uuid: room.uuid, height: room.height, width: room.width, length: room.length }
     };
 };
 
@@ -655,6 +655,18 @@ async function updateProjectDetails(projectData) {
     await tx.done;    
 }
 
+
+async function updateRoomDimension(roomUuid, field, value) {
+    const db = await initDB();
+    const tx = db.transaction("rooms", "readwrite");
+    const store = tx.objectStore("rooms");
+    const room = await store.get(roomUuid);
+    room[field] = value;
+    await store.put(room);
+    await tx.done;
+}
+
+
 // Export the functions
 module.exports = {
     generateUUID, 
@@ -680,6 +692,7 @@ module.exports = {
     removeRoom,
     removeFloor,
     removeBuilding,
-    createProject    
+    createProject,
+    updateRoomDimension   
     // Add other database-related functions here
 };
