@@ -1329,7 +1329,7 @@ class TablesModule {
             type: $('#form_type').val(),
             product_slug: $('#form_product').val(),
             product_name: $('#form_product option:selected').text(),
-            sku: $('#form_sku').val(),            
+            sku: $('#form_sku').val() || $('#form_product').val(),
             room_id_fk: $('#m_room_id').val(),
             owner_id: '8', // Hardcoded for now
             custom: 0,
@@ -1344,7 +1344,7 @@ class TablesModule {
 
     async doAddProduct(productData) {
 
-        if ( !productData.sku ) {
+        if ( !productData.product_slug ) {
             UIkit.notification({
                 message: 'All fields are required',
                 status: 'danger',
@@ -1821,6 +1821,7 @@ async function tablesFunctions(project_id) {
         UIkit.modal('#copy-room-modal').hide(); 
     });    
 
+    // add note button click
     $('#add-note').off('click').on('click', async function(e) {
         e.preventDefault();
         $('#edit_note_uuid').val('');
@@ -1828,13 +1829,14 @@ async function tablesFunctions(project_id) {
         UIkit.modal('#add-note-modal', { stack : true }).show();
     });
 
-    // copy room modal submitted
+    // add note modal submitted
     $('#form-add-note').off('submit').on('submit', async function(e) {
         e.preventDefault();
         const editNoteUuid = $('#edit_note_uuid').val();        
         const roomUuid = $('#m_room_id').val();        
         const note = $('#modal_form_note').val();        
 
+        // editing, just delete the old one and recreate (does mean the created date will also be updated)
         if (editNoteUuid != "") {
             await db.removeNoteByUUID(editNoteUuid);
         }

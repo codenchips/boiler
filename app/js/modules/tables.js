@@ -199,7 +199,7 @@ class TablesModule {
             type: $('#form_type').val(),
             product_slug: $('#form_product').val(),
             product_name: $('#form_product option:selected').text(),
-            sku: $('#form_sku').val(),            
+            sku: $('#form_sku').val() || $('#form_product').val(),
             room_id_fk: $('#m_room_id').val(),
             owner_id: '8', // Hardcoded for now
             custom: 0,
@@ -214,7 +214,7 @@ class TablesModule {
 
     async doAddProduct(productData) {
 
-        if ( !productData.sku ) {
+        if ( !productData.product_slug ) {
             UIkit.notification({
                 message: 'All fields are required',
                 status: 'danger',

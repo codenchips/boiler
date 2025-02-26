@@ -122,6 +122,7 @@ async function tablesFunctions(project_id) {
         UIkit.modal('#copy-room-modal').hide(); 
     });    
 
+    // add note button click
     $('#add-note').off('click').on('click', async function(e) {
         e.preventDefault();
         $('#edit_note_uuid').val('');
@@ -129,13 +130,14 @@ async function tablesFunctions(project_id) {
         UIkit.modal('#add-note-modal', { stack : true }).show();
     });
 
-    // copy room modal submitted
+    // add note modal submitted
     $('#form-add-note').off('submit').on('submit', async function(e) {
         e.preventDefault();
         const editNoteUuid = $('#edit_note_uuid').val();        
         const roomUuid = $('#m_room_id').val();        
         const note = $('#modal_form_note').val();        
 
+        // editing, just delete the old one and recreate (does mean the created date will also be updated)
         if (editNoteUuid != "") {
             await db.removeNoteByUUID(editNoteUuid);
         }
