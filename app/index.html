@@ -355,6 +355,39 @@
             </div>
           </div>
 
+
+
+          <!-- add note -->
+          <div id="add-note-modal" uk-modal>
+            <div class="uk-modal-dialog uk-margin-auto-vertical uk-modal-body">
+                <button class="uk-modal-close-default" type="button" uk-close></button>
+                <form id="form-add-note">
+                    <div class="uk-text-center" uk-grid>
+                        <div class="uk-width-1-1">
+                            <h3>Note</h3>
+                        </div>
+
+                        <div class="uk-width-1-1 uk-text-left">                    
+                            <textarea id="modal_form_note"
+                                   name="modal_form_note"
+                                   class="uk-textarea note free-type"
+                                   rows="5"
+                                   placeholder="Enter free text">
+                                   </textarea>
+                        </div>
+
+                        <div class="uk-width-1-1"> 
+                            <div class="form-actions">
+                                <button type="submit" class="uk-button uk-button-primary">Save</button>
+                                <button class="uk-modal-close uk-button uk-button-default">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+          </div>  
+
+
           <!-- File upload progress -->
           <div id="upload-progress" uk-modal>
             <div class="uk-modal-dialog uk-margin-auto-vertical uk-modal-body">

@@ -2,7 +2,7 @@ const { openDB } = require('idb');
 const utils = require('./modules/utils');
 
 const DB_NAME = 'sst_database';
-const DB_VERSION = 9;
+const DB_VERSION = 10;
 const STORE_NAME = 'product_data';
 
 // Custom function to generate UUIDs
@@ -51,6 +51,19 @@ async function initDB() {
                 const store = db.createObjectStore("products", { keyPath: "uuid" });
                 store.createIndex("room_id_fk", "room_id_fk", { unique: false });
             }
+            if (!db.objectStoreNames.contains("notes")) {
+                const store = db.createObjectStore("notes", { keyPath: "uuid" });
+                store.createIndex("room_id_fk", "room_id_fk", { unique: false });
+            }            
+            if (!db.objectStoreNames.contains("images")) {
+                const store = db.createObjectStore("images", { keyPath: "uuid" });
+                store.createIndex("room_id_fk", "room_id_fk", { unique: false });
+            }   
+            if (!db.objectStoreNames.contains("users")) {
+                const store = db.createObjectStore("users", { keyPath: "uuid" });                
+            }            
+
+
             console.log("IndexedDB initialized with UUIDs and owner_id indexes.");
         },
     });
@@ -111,11 +124,11 @@ async function syncData(owner_id) {
         dbRequest.onsuccess = (event) => {
             const db = event.target.result;
             const transaction = db.transaction(
-                ["projects", "locations", "buildings", "floors", "rooms", "products"],
+                ["projects", "locations", "buildings", "floors", "rooms", "products", "notes", "images", "users"],
                 "readwrite"
             );
 
-            ["projects", "locations", "buildings", "floors", "rooms", "products"].forEach(
+            ["projects", "locations", "buildings", "floors", "rooms", "products", "notes", "images", "users"].forEach(
                 (storeName) => {
                     const store = transaction.objectStore(storeName);
                     store.clear();  // Clear existing data
@@ -789,6 +802,10 @@ async function copyProject(project_id, projectName) {
 
     await tx.done;
     return newProjectID;
+}
+
+async function addNote(roomUuid, note) {
+
 }
 
 

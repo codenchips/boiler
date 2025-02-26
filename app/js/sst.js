@@ -97,7 +97,7 @@ async function tablesFunctions(project_id) {
         UIkit.modal('#add-special').hide(); 
     });     
 
-    // copy room modal
+    // open copy room modal
     $('#copy_room').off('click').on('click', async function(e) {
         e.preventDefault();    
         const floors = await db.getFloors(project_id);
@@ -107,7 +107,7 @@ async function tablesFunctions(project_id) {
         UIkit.modal('#copy-room-modal', { stack : true }).show();       
     });
 
-    // copy room submitted
+    // copy room modal submitted
     $('#form-copy-room').off('submit').on('submit', async function(e) {
         e.preventDefault();
         const roomUuid = $('#m_room_id').val();        
@@ -118,6 +118,22 @@ async function tablesFunctions(project_id) {
         await renderSidebar(project_id); // project_id
         await loadRoomData(newRoomUuid);
         UIkit.modal('#copy-room-modal').hide(); 
+    });    
+
+    $('#add-note').off('click').on('click', async function(e) {
+        e.preventDefault();
+        UIkit.modal('#add-note-modal', { stack : true }).show();
+    });
+
+    // copy room modal submitted
+    $('#form-add-note').off('submit').on('submit', async function(e) {
+        e.preventDefault();
+        const roomUuid = $('#m_room_id').val();        
+        const note = $('#modal_form_note').val();        
+
+        await db.addNote(roomUuid, note);
+        await loadRoomData(newRoomUuid);
+        UIkit.modal('#add-note-modal').hide(); 
     });    
 
 
