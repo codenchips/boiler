@@ -210,7 +210,7 @@ async function syncData(owner_id) {
                         } else {
                             item.uuid = item.id;  // Map 'id' to 'uuid' for IndexedDB
                             item.owner_id = owner_id; // Add owner_id
-                            item.room_id_fk = item.uuid; // Ensure room_id_fk is set
+                            item.room_id_fk = item.room_id_fk || item.uuid; // todo: check if this is correct (different for products, notes, images)
                             delete item.id;        // Remove the original 'id' field to avoid conflicts
                             store.put(item);
                         }
