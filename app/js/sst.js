@@ -390,7 +390,9 @@ async function renderSidebar(project_id) {
         const msg = '<h4 class="red">Warning</h4><p>This will remove the room and <b>ALL products</b> in the room!</p';
         UIkit.modal.confirm(msg).then( async function() {
             const roomUuid = $(that).data('id');   
+            console.log('Removing room:', roomUuid);
             const roomName = await db.removeRoom(roomUuid);                                
+            console.log('Removed room:', roomName);
             UIkit.notification('Room removed', {status:'success',pos: 'bottom-center',timeout: 1500});
             await renderSidebar(project_id); // project_id                    
         }, function () {

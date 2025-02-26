@@ -438,14 +438,17 @@ async function addBuilding(locationUuid, buildingName) {
     return building.uuid;
 }
 
-async function removeRoom(roomUuid) {
-    roomUuid.toString();
+
+async function removeRoom(roomUuid) {    
+    roomUuid = "" + roomUuid;
     const db = await initDB();
     const tx = db.transaction(["rooms", "products"], "readwrite");
 
     // Remove the room
-    console.log('removing room uuid: ' + roomUuid);
+    console.log('removing room uuid: ', roomUuid);
     const roomStore = tx.objectStore("rooms");
+    roomUuid.toString();
+    console.log('typeof: ',typeof roomUuid);
     await roomStore.delete(roomUuid);
 
     // Remove all products associated with this room
@@ -459,8 +462,8 @@ async function removeRoom(roomUuid) {
     await tx.done;
 }
 
-async function removeFloor(floorUuid) {
-    floorUuid.toString();
+async function removeFloor(floorUuid) {    
+    floorUuid = "" + floorUuid;
     const db = await initDB();
     const tx = db.transaction(["floors", "rooms", "products"], "readwrite");
 
