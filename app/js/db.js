@@ -351,6 +351,26 @@ const getRoomMeta = async (roomId) => {
     };
 };
 
+async function getRoomNotes(roomId) {
+    roomId = String(roomId);
+
+    const db = await initDB();
+    const tx = db.transaction("notes", "readonly");
+    const store = tx.objectStore("notes");
+    const index = store.index("room_id_fk");
+    return await index.getAll(roomId);
+}
+
+async function getRoomImages(roomId) {
+    roomId = String(roomId);
+
+    const db = await initDB();
+    const tx = db.transaction("images", "readonly");
+    const store = tx.objectStore("images");
+    const index = store.index("room_id_fk");
+    return await index.getAll(roomId);
+}
+
 async function addRoom(floorUuid, roomName) {
     const db = await initDB();
     const tx = db.transaction("rooms", "readwrite");
@@ -839,6 +859,8 @@ module.exports = {
     updateRoomDimension,
     copyRoom,
     getFloors,
-    copyProject   
+    copyProject,
+    getRoomNotes,
+    getRoomImages
     // Add other database-related functions here
 };

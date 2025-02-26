@@ -61,6 +61,8 @@ async function tablesFunctions(project_id) {
     // loadRoomData for the first mentioned room id in the sidebar
     const firstRoomId = $('#locations .room-link').first().data('id');    
     await loadRoomData(firstRoomId);
+    await loadRoomNotes(firstRoomId);
+    await loadRoomImages(firstRoomId);
 
     // name labels (rename)
     $('span.name').on('click', function() {
@@ -133,6 +135,7 @@ async function tablesFunctions(project_id) {
 
         await db.addNote(roomUuid, note);
         await loadRoomData(newRoomUuid);
+        await loadRoomNotes(newRoomUuid);
         UIkit.modal('#add-note-modal').hide(); 
     });    
 
@@ -361,6 +364,8 @@ async function renderSidebar(project_id) {
     $('a.room-link').off('click').on('click', async function(e) {
         e.preventDefault();
         await loadRoomData($(this).data('id'));
+        await loadRoomNotes($(this).data('id'));
+        await loadRoomImages($(this).data('id'));
     });    
 
     /* Add Room Click - add a new room */
@@ -494,6 +499,7 @@ async function loadRoomData(roomId) {
     $('#m_room_id').val(roomId);   
     if (!roomId) return;     
     roomId = roomId.toString();
+    roomId = "" + roomId;
     // get the names for the location, building, floor and room based on this roomId.
     const roomMeta = await db.getRoomMeta(roomId);        
     $('.name.location_name').html(roomMeta.location.name).attr('data-id', roomMeta.location.uuid);
@@ -501,12 +507,31 @@ async function loadRoomData(roomId) {
     $('.name.floor_name').html(roomMeta.floor.name).attr('data-id', roomMeta.floor.uuid);
     $('.name.room_name').html(roomMeta.room.name).attr('data-id', roomMeta.room.uuid);
 
-
     $('#room_height').val(roomMeta.room.height);
     $('#room_width').val(roomMeta.room.width);
     $('#room_length').val(roomMeta.room.length);
 
     await tables.refreshTableData(roomId);
+}
+
+async function loadRoomNotes(roomId) {
+    $('#m_room_id').val(roomId);   
+    if (!roomId) return;         
+    roomId = "" + roomId;
+    
+    const roomNotes = await db.getRoomNotes(roomId);        
+
+    console.log('Room notes:', roomNotes);
+}
+
+async function loadRoomImages(roomId) {
+    $('#m_room_id').val(roomId);   
+    if (!roomId) return;         
+    roomId = "" + roomId;
+    
+    const roomImages = await db.getRoomImages(roomId);        
+
+    console.log('Room images:', roomImages);
 }
 
 
