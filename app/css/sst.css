@@ -259,6 +259,29 @@ label.subheading {
   border-top-style: solid;
   border-top-width: 2px;
 }
+.notes-images-area #room_notes {
+  list-style-type: none;
+  padding-left: 0;
+}
+.notes-images-area #room_notes .note {
+  padding: 20px 10px;
+  margin: 10px 0;
+  background-color: #eee;
+}
+.notes-images-area #room_notes .note .note-date {
+  float: left;
+  font-weight: bold;
+  color: #666;
+  font-size: 90%;
+  position: relative;
+  top: -10px;
+}
+.notes-images-area #room_notes .note .note-actions {
+  float: right;
+}
+.notes-images-area #room_notes .note .note-text {
+  clear: both;
+}
 .notes-images-area .uk-button-link {
   background: #717171;
   line-height: 38px;

@@ -312,8 +312,34 @@ label.subheading {
     border-top-right-radius: 5px;
     border-top-style: solid;
     border-top-width: 2px;
-
   }
+
+  #room_notes {
+    list-style-type: none;
+    padding-left: 0;
+    .note {
+      .note-date {
+        float:left;
+        font-weight: bold;
+        color: #666;
+        font-size: 90%;
+        position: relative;
+        top: -10px;        
+      }
+      .note-actions {
+        float:right;
+      }
+      .note-text {
+        clear:both;
+      }
+      
+      padding: 20px 10px;
+      margin: 10px 0;
+      background-color: #eee;      
+    }
+  }
+
+
   .uk-button-link {
     background: $btnGray;
     line-height: 38px;

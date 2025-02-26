@@ -124,29 +124,32 @@ async function tablesFunctions(project_id) {
 
     $('#add-note').off('click').on('click', async function(e) {
         e.preventDefault();
+        $('#edit_note_uuid').val('');
+        $('#modal_form_note').val('');
         UIkit.modal('#add-note-modal', { stack : true }).show();
     });
 
     // copy room modal submitted
     $('#form-add-note').off('submit').on('submit', async function(e) {
         e.preventDefault();
+        const editNoteUuid = $('#edit_note_uuid').val();        
         const roomUuid = $('#m_room_id').val();        
         const note = $('#modal_form_note').val();        
 
+        if (editNoteUuid != "") {
+            await db.removeNoteByUUID(editNoteUuid);
+        }
+
         await db.addNote(roomUuid, note);
-        await loadRoomData(newRoomUuid);
-        await loadRoomNotes(newRoomUuid);
+        await loadRoomData(roomUuid);
+        await loadRoomNotes(roomUuid);
         UIkit.modal('#add-note-modal').hide(); 
     });    
-
-
 
 }
 /* 
     // End tablesFunctions 
 */
-
-
 
 
 /*
@@ -519,9 +522,43 @@ async function loadRoomNotes(roomId) {
     if (!roomId) return;         
     roomId = "" + roomId;
     
-    const roomNotes = await db.getRoomNotes(roomId);        
+    const roomNotes = await db.getRoomNotes(roomId);  
+    // iterate the notes and build html to display them as a list. also add a delete icon to each note and shot the date created in dd-mm-yyy format
+    let notesHtml = roomNotes.map(note => 
+        `<li class="note">
+        <p class="note-date">${new Date(note.created_on).toLocaleDateString('en-GB')}</p>
+        <div class="note-actions">
+            <span data-uuid="${note.uuid}" class="icon edit_note" uk-icon="icon: file-edit; ratio: 1" title="Edit"></span>    
+            <span data-uuid="${note.uuid}" class="icon red delete_note" uk-icon="icon: trash; ratio: 1" title="Delete"></span>            
+        </div>
 
-    console.log('Room notes:', roomNotes);
+        <p class="note-text ${note.uuid}">${note.note}</p>
+        </li>`).join('');
+    $('#room_notes').html(notesHtml);
+
+
+    $('.note-actions .edit_note').off('click').on('click', async function(e) {
+        e.preventDefault();
+        const noteUuid = $(this).data('uuid');
+        const noteText = $(`.note-text.${noteUuid}`).text();
+        $('#edit_note_uuid').val(noteUuid);
+        $('#modal_form_note').val(noteText);
+        UIkit.modal('#add-note-modal', { stack : true }).show();       
+    });      
+
+
+    $('.note-actions .delete_note').off('click').on('click', async function(e) {
+        e.preventDefault();
+        const noteUuid = $(this).data('uuid');
+        UIkit.modal.confirm('Are you sure you want to delete this note?').then(async function() {
+            await db.removeNoteByUUID(noteUuid);
+            await loadRoomNotes($('#m_room_id').val());
+            UIkit.notification('Note Deleted', {status:'success',pos: 'bottom-center',timeout: 1500});
+        }, function () {
+            console.log('Delete note cancelled.');
+        });
+    });    
+    
 }
 
 async function loadRoomImages(roomId) {

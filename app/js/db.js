@@ -358,7 +358,9 @@ async function getRoomNotes(roomId) {
     const tx = db.transaction("notes", "readonly");
     const store = tx.objectStore("notes");
     const index = store.index("room_id_fk");
-    return await index.getAll(roomId);
+    const notes = await index.getAll(roomId);
+    notes.sort((a, b) => new Date(b.created_on) - new Date(a.created_on));
+    return notes;
 }
 
 async function getRoomImages(roomId) {
@@ -825,6 +827,36 @@ async function copyProject(project_id, projectName) {
 }
 
 async function addNote(roomUuid, note) {
+    const db = await initDB();
+    const tx = db.transaction("notes", "readwrite");
+    const store = tx.objectStore("notes");
+    const newNoteID = generateUUID();
+
+    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');    
+    const newNote = {
+        created_on: now,
+        last_updated: now,
+        note: note,
+        owner_id: 8,  // Assuming owner_id 8
+        room_id_fk: roomUuid,        
+        uuid: newNoteID,
+        version: "1"
+    };
+
+    await store.add(newNote);
+    await tx.done;
+    return newNoteID;
+}
+
+async function removeNoteByUUID(noteUuid) {
+    const db = await initDB();
+    const tx = db.transaction("notes", "readwrite");
+    const store = tx.objectStore("notes");
+    await store.delete(noteUuid);
+    await tx.done;
+}
+
+async function addImage(roomUuid, image) {
 
 }
 
@@ -861,6 +893,9 @@ module.exports = {
     getFloors,
     copyProject,
     getRoomNotes,
-    getRoomImages
+    getRoomImages,
+    addNote,
+    addImage,
+    removeNoteByUUID
     // Add other database-related functions here
 };
