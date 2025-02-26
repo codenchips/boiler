@@ -219,6 +219,7 @@ async function renderProjectsTable() {
         project_slug: project.slug,
         version: project.version,
         project_id: project.uuid,
+        project_ref: project.project_id,
         created: new Date(project.created_on).toLocaleDateString('en-GB'),
         products: project.products_count
     }));     
@@ -259,6 +260,12 @@ async function renderProjectsTable() {
                     $('#m_project_id').val(projectData.project_id);
                     window.router('tables', projectData.project_id);                    
                 }
+            },
+            {
+                title: "Project ID",
+                field: "project_ref",
+                width: 200,
+                visible: true
             },
             {
                 title: "Products",
