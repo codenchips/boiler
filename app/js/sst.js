@@ -318,6 +318,18 @@ const scheduleFunctions = async () => {
 */
 
 
+/*
+* Account Page functions
+*/
+
+const accountFunctions = async () => {
+        console.log('Running account functions v2');
+}
+/*
+* // End account page functions
+*/
+
+
 
 /*
 * Get all projects (for this user) and render the table
@@ -666,5 +678,6 @@ async function loadRoomImages(roomId) {
 module.exports = {
     homeFunctions,
     tablesFunctions,
-    scheduleFunctions    
+    scheduleFunctions,
+    accountFunctions 
 };

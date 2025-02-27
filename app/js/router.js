@@ -53,6 +53,15 @@ async function router(path, project_id) {
                 $('#page').html(renderedSchedule);
                 sst.scheduleFunctions();
                 break;
+                case 'account':
+                    template = await loadTemplate('account');
+                    const renderedAccount = Mustache.render(template, { 
+                        title: 'Account Page',
+                        content: 'This is the account page content'
+                    });
+                    $('#page').html(renderedAccount);
+                    sst.accountFunctions();
+                    break;                
             default:
                 template = await loadTemplate('home');
                 const renderedHome = Mustache.render(template, { 

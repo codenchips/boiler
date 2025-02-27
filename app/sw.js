@@ -8,7 +8,8 @@ const urlsToCache = [
   '/css/vendor/uikit.min.css',
   '/views/home.html',
   '/views/tables.html',
-  '/views/schedule.html',
+  '/views/schedule.html',  
+  '/views/account.html',  
   '/manifest.json'
 ];
 

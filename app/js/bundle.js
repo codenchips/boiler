@@ -1727,6 +1727,15 @@ async function router(path, project_id) {
                 $('#page').html(renderedSchedule);
                 sst.scheduleFunctions();
                 break;
+                case 'account':
+                    template = await loadTemplate('account');
+                    const renderedAccount = Mustache.render(template, { 
+                        title: 'Account Page',
+                        content: 'This is the account page content'
+                    });
+                    $('#page').html(renderedAccount);
+                    sst.accountFunctions();
+                    break;                
             default:
                 template = await loadTemplate('home');
                 const renderedHome = Mustache.render(template, { 
@@ -2073,6 +2082,18 @@ const scheduleFunctions = async () => {
 }
 /*
 * // End Schedule functions
+*/
+
+
+/*
+* Account Page functions
+*/
+
+const accountFunctions = async () => {
+        console.log('Running account functions v2');
+}
+/*
+* // End account page functions
 */
 
 
@@ -2424,7 +2445,8 @@ async function loadRoomImages(roomId) {
 module.exports = {
     homeFunctions,
     tablesFunctions,
-    scheduleFunctions    
+    scheduleFunctions,
+    accountFunctions 
 };
 
 },{"./db":2,"./modules/sidebar":3,"./modules/tables":4,"./modules/utils":5,"./sst":7,"mustache":9}],8:[function(require,module,exports){
