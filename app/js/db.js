@@ -181,7 +181,7 @@ async function getProducts() {
 }
 
 
-async function createProject(project_name, location, building, floor) {
+async function createProject(project_name, location, building, floor, room) {
     const db = await initDB();
     const tx = db.transaction("projects", "readwrite");
     const store = tx.objectStore("projects");
@@ -206,6 +206,7 @@ async function createProject(project_name, location, building, floor) {
     const locationID = await addLocation(newProjectID, location);
     const buildingID = await addBuilding(locationID, building);
     const floorID = await addFloor(buildingID, floor);
+    const roomID = await addRoom(floorID, room);
 
     return project.uuid;
 }
@@ -731,14 +732,6 @@ async function getProjectStructure(projectId) {
     return result;
 }
 
-async function getProjectData(projectId) {
-    // get the data for this projectId (uuid) from the projects data store and return it
-    const db = await initDB();
-    const tx = db.transaction("projects", "readonly");
-    const store = tx.objectStore("projects");
-    const project = await store.get(projectId);
-    return project;
-}
 
 async function getProjectByUUID(uuid) {
     const db = await initDB();

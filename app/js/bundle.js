@@ -252,7 +252,7 @@ async function getProducts() {
 }
 
 
-async function createProject(project_name, location, building, floor) {
+async function createProject(project_name, location, building, floor, room) {
     const db = await initDB();
     const tx = db.transaction("projects", "readwrite");
     const store = tx.objectStore("projects");
@@ -277,6 +277,7 @@ async function createProject(project_name, location, building, floor) {
     const locationID = await addLocation(newProjectID, location);
     const buildingID = await addBuilding(locationID, building);
     const floorID = await addFloor(buildingID, floor);
+    const roomID = await addRoom(floorID, room);
 
     return project.uuid;
 }
@@ -802,14 +803,6 @@ async function getProjectStructure(projectId) {
     return result;
 }
 
-async function getProjectData(projectId) {
-    // get the data for this projectId (uuid) from the projects data store and return it
-    const db = await initDB();
-    const tx = db.transaction("projects", "readonly");
-    const store = tx.objectStore("projects");
-    const project = await store.get(projectId);
-    return project;
-}
 
 async function getProjectByUUID(uuid) {
     const db = await initDB();
@@ -1959,10 +1952,19 @@ const homeFunctions = async () => {
 
     UIkit.offcanvas('.tables-side').hide();
 
-   
+    
+
+
 
     var dashTable = renderProjectsTable();
     //dashTable.setData(data);
+
+    $('#btn-create-project').off('click').on('click', async function(e) {
+        e.preventDefault();
+        $('#form-create-project').trigger("reset");        
+        UIkit.modal('#create-project', { stack : true }).show();
+        $('#form_project_name').focus();
+    });    
 
     /* Add project related binds */
     $('#form_project_name').off('focus').on('focus', function(e) {
@@ -1983,7 +1985,12 @@ const homeFunctions = async () => {
         if ($(this).val() != "") {
             $('#form_floor').removeAttr('disabled').focus();
         }
-    });    
+    });   
+    $('#form_floor').off('blur').on('blur', function(e) {
+        if ($(this).val() != "") {
+            $('#form_room').removeAttr('disabled').focus();
+        }
+    });     
     
     $('#form-create-project').off('submit').on('submit', function(e) {
         e.preventDefault();
@@ -2004,9 +2011,17 @@ const scheduleFunctions = async () => {
     console.log('Running schedule functions v2');
     UIkit.offcanvas('.tables-side').hide();
 
-    const sdata = await db.getProductsForProject($('#m_project_id').val());
+    const projectId = $('#m_project_id').val();
 
-    console.log('sdata: ', sdata);
+    const pdata = await db.getProjectByUUID(projectId);
+
+    $('#info_project_name').html(pdata.name);
+    $('#info_project_id').html(pdata.project_id);    
+    $('#info_engineer').html(pdata.engineer);
+    $('#info_date').html(new Date(pdata.last_updated).toLocaleDateString('en-GB'));
+
+
+    const sdata = await db.getProductsForProject(projectId);
 
     let tabledata = sdata.map(product => ({
         uuid: product.uuid,
@@ -2015,24 +2030,10 @@ const scheduleFunctions = async () => {
         ref: product.ref,
         qty: product.qty,
         sku: product.sku        
-    }));   
-    // Group tabledata by unique SKU and get the qty to the count of grouped items
-    const groupedData = tabledata.reduce((acc, item) => {
-        const existingItem = acc.find(i => i.sku === item.sku);
-        if (existingItem) {
-            existingItem.qty += 1;
-        } else {
-            acc.push({ ...item, qty: 1 });
-        }
-        return acc;
-    }, []);
-
-    //tabledata = groupedData;
-
+    }));       
 
     var sTable = new Tabulator("#stable", {
         data: tabledata,
-        //importFormat: "json",
         layout: "fitColumns",
         loader: false,
         dataLoaderError: "There was an error loading the data",
@@ -2051,21 +2052,21 @@ const scheduleFunctions = async () => {
                 visible: false
             },
             {
-                title: "Ref",
-                field: "ref",
-                visible: true,
-            },
-            {
                 title: "Qty",
-                field: "qty",
-                width: 80,
+                field: "qty",                
                 hozAlign: "left",
             },
             {
                 title: "SKU",
                 field: "sku",
-                width: 150
+                width: "50%"
             },
+            {
+                title: "Ref",
+                field: "ref",
+                visible: true,                
+            }
+
         ],
     });
 
@@ -2322,7 +2323,8 @@ async function createProject() {
     const location = $('#form_location').val();
     const building = $('#form_building').val();
     const floor = $('#form_floor').val();
-    const project_id = await db.createProject(project_name, location, building, floor);    
+    const room = $('#form_room').val();
+    const project_id = await db.createProject(project_name, location, building, floor, room);    
     await renderSidebar(project_id); 
     await renderProjectsTable();
     UIkit.modal('#create-project').hide();
