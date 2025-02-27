@@ -1,7 +1,7 @@
 {
-  "name": "SST App",
+  "name": "Site Survey Tool",
   "short_name": "SST",
-  "start_url": "/",
+  "start_url": "/home",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#192542",
