@@ -51,6 +51,7 @@ async function router(path, project_id) {
                     content: 'This is the schedule page content'
                 });
                 $('#page').html(renderedSchedule);
+                sst.scheduleFunctions();
                 break;
             default:
                 template = await loadTemplate('home');

@@ -1,6 +1,59 @@
-<div>
-    <h1>{{title}}</h1>
+<div style="display:none;" id="schedule_mode_nodata" class="uk-width-1-1 uk-margin">
 
-    <p class="clickme">{{content}}</p>
+    <div class="uk-card uk-card-large uk-card-default">
+        <div class="uk-card-header">
+            <h3 class="uk-card-title">This will be your Schedule.</h3>
+        </div>
+        <div class="uk-card-body">
+        </div>
+        <div class="uk-card-footer uk-align-center">
+        </div>
+    </div>
+</div>
+
+
+
+<div style="display:block;" id="schedule_mode_view" class="uk-width-1-1 uk-margin-remove">
+
+<div uk-grid>
+    <div class="uk-width-1-1 schedule-topper uk-margin-remove uk-padding-remove-vertical" uk-grid>
+        <div class="uk-width-auto uk-padding-remove">
+            <p class="heading">Project:</p>
+        </div>
+        <div class="uk-width-expand uk-padding-remove">
+            <p id="info_project_name"></p>
+        </div>
+        <div class="uk-width-auto uk-padding-remove">
+            <p class="heading">Project ID:</p>
+        </div>
+        <div class="uk-width-auto uk-padding-remove">
+            <p id="info_project_id"></p>
+        </div>
+    </div>
+    <div class="uk-width-1-1 schedule-topper uk-margin-remove uk-padding-remove-vertical" uk-grid>
+        <div class="uk-width-auto uk-padding-remove">
+            <p class="heading">Engineer:</p>
+        </div>
+        <div class="uk-width-expand uk-padding-remove">
+            <p id="info_engineer"></p>
+        </div>
+        <div class="uk-width-auto uk-padding-remove">
+            <p class="heading">Date:</p>
+        </div>
+        <div class="uk-width-auto uk-padding-remove">
+            <p id="info_date"></p>
+        </div>
+    </div>
+
+    <div class="uk-width-1-1">
+        <div id="stable"></div>
+    </div>
+    <div class="uk-width-1-1 uk-align-center">
+        <button  uk-toggle="target: #gen_schedules"  class="uk-button uk-button-primary uk-align-center" type="button">Generate Datasheets</button>
+    </div>
 
 </div>
+
+
+
+

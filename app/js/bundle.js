@@ -320,6 +320,70 @@ async function getProductsForRoom(roomId) {
     return await index.getAll(roomId);
 }
 
+async function getProductsForProject(projectId) {
+    const db = await initDB();
+    projectId = String(projectId);   
+
+    const tx = db.transaction(["products", "rooms", "floors", "buildings", "locations", "projects"], "readonly");
+
+    const productStore = tx.objectStore("products");
+    const roomStore = tx.objectStore("rooms");
+    const floorStore = tx.objectStore("floors");
+    const buildingStore = tx.objectStore("buildings");
+    const locationStore = tx.objectStore("locations");
+    const projectStore = tx.objectStore("projects");
+
+    const products = await productStore.getAll();
+    const rooms = await roomStore.getAll();
+    const floors = await floorStore.getAll();
+    const buildings = await buildingStore.getAll();
+    const locations = await locationStore.getAll();
+    const projects = await projectStore.getAll();
+
+    const projectProducts = products.filter(product => {
+        const room = rooms.find(room => room.uuid === product.room_id_fk);
+        if (!room) return false;
+        const floor = floors.find(floor => floor.uuid === room.floor_id_fk);
+        if (!floor) return false;
+        const building = buildings.find(building => building.uuid === floor.building_id_fk);
+        if (!building) return false;
+        const location = locations.find(location => location.uuid === building.location_id_fk);
+        if (!location) return false;
+        const project = projects.find(project => project.uuid === location.project_id_fk);
+        return project && project.uuid === projectId;
+    });
+
+    const result = projectProducts.reduce((acc, product) => {
+        const existingProduct = acc.find(p => p.sku === product.sku);
+        if (existingProduct) {
+            existingProduct.qty += 1;
+        } else {
+            const room = rooms.find(room => room.uuid === product.room_id_fk);
+            const floor = floors.find(floor => floor.uuid === room.floor_id_fk);
+            const building = buildings.find(building => building.uuid === floor.building_id_fk);
+            const location = locations.find(location => location.uuid === building.location_id_fk);
+            const project = projects.find(project => project.uuid === location.project_id_fk);
+
+            acc.push({
+                ref: product.ref,
+                product_name: product.product_name,
+                product_slug: product.product_slug,
+                sku: product.sku,
+                custom: product.custom,
+                owner_id: product.owner_id,
+                project_id_fk: project.uuid,
+                project_slug: project.slug,
+                project_version: project.version,
+                qty: 1
+            });
+        }
+        return acc;
+    }, []);
+
+    return result;
+
+}
+
 const saveProductToRoom = async (product) => {
     const db = await initDB();
     const tx = db.transaction("products", "readwrite");
@@ -967,7 +1031,8 @@ module.exports = {
     getRoomImages,
     addNote,
     addImage,
-    removeNoteByUUID
+    removeNoteByUUID,
+    getProductsForProject
     // Add other database-related functions here
 };
 
@@ -1667,6 +1732,7 @@ async function router(path, project_id) {
                     content: 'This is the schedule page content'
                 });
                 $('#page').html(renderedSchedule);
+                sst.scheduleFunctions();
                 break;
             default:
                 template = await loadTemplate('home');
@@ -1929,6 +1995,85 @@ const homeFunctions = async () => {
 /* 
     // END homeFunctions 
 */
+
+
+/*
+*   Schedule functions
+*/
+const scheduleFunctions = async () => {
+    console.log('Running schedule functions v2');
+    UIkit.offcanvas('.tables-side').hide();
+
+    const sdata = await db.getProductsForProject($('#m_project_id').val());
+
+    console.log('sdata: ', sdata);
+
+    let tabledata = sdata.map(product => ({
+        uuid: product.uuid,
+        product_slug: product.product_slug,
+        product_name: product.product_name,                
+        ref: product.ref,
+        qty: product.qty,
+        sku: product.sku        
+    }));   
+    // Group tabledata by unique SKU and get the qty to the count of grouped items
+    const groupedData = tabledata.reduce((acc, item) => {
+        const existingItem = acc.find(i => i.sku === item.sku);
+        if (existingItem) {
+            existingItem.qty += 1;
+        } else {
+            acc.push({ ...item, qty: 1 });
+        }
+        return acc;
+    }, []);
+
+    //tabledata = groupedData;
+
+
+    var sTable = new Tabulator("#stable", {
+        data: tabledata,
+        //importFormat: "json",
+        layout: "fitColumns",
+        loader: false,
+        dataLoaderError: "There was an error loading the data",
+        downloadEncoder: function(fileContents, mimeType){
+            //generateDataSheets(fileContents);
+        },
+        columns: [{
+                title: "id",
+                field: "uuid",
+                visible: false
+            },
+            {
+                title: "Product",
+                field: "product_name",
+                hozAlign: "left",
+                visible: false
+            },
+            {
+                title: "Ref",
+                field: "ref",
+                visible: true,
+            },
+            {
+                title: "Qty",
+                field: "qty",
+                width: 80,
+                hozAlign: "left",
+            },
+            {
+                title: "SKU",
+                field: "sku",
+                width: 150
+            },
+        ],
+    });
+
+}
+/*
+* // End Schedule functions
+*/
+
 
 
 /*
@@ -2276,7 +2421,8 @@ async function loadRoomImages(roomId) {
 
 module.exports = {
     homeFunctions,
-    tablesFunctions    
+    tablesFunctions,
+    scheduleFunctions    
 };
 
 },{"./db":2,"./modules/sidebar":3,"./modules/tables":4,"./modules/utils":5,"./sst":7,"mustache":9}],8:[function(require,module,exports){

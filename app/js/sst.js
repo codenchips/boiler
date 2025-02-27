@@ -233,6 +233,85 @@ const homeFunctions = async () => {
 
 
 /*
+*   Schedule functions
+*/
+const scheduleFunctions = async () => {
+    console.log('Running schedule functions v2');
+    UIkit.offcanvas('.tables-side').hide();
+
+    const sdata = await db.getProductsForProject($('#m_project_id').val());
+
+    console.log('sdata: ', sdata);
+
+    let tabledata = sdata.map(product => ({
+        uuid: product.uuid,
+        product_slug: product.product_slug,
+        product_name: product.product_name,                
+        ref: product.ref,
+        qty: product.qty,
+        sku: product.sku        
+    }));   
+    // Group tabledata by unique SKU and get the qty to the count of grouped items
+    const groupedData = tabledata.reduce((acc, item) => {
+        const existingItem = acc.find(i => i.sku === item.sku);
+        if (existingItem) {
+            existingItem.qty += 1;
+        } else {
+            acc.push({ ...item, qty: 1 });
+        }
+        return acc;
+    }, []);
+
+    //tabledata = groupedData;
+
+
+    var sTable = new Tabulator("#stable", {
+        data: tabledata,
+        //importFormat: "json",
+        layout: "fitColumns",
+        loader: false,
+        dataLoaderError: "There was an error loading the data",
+        downloadEncoder: function(fileContents, mimeType){
+            //generateDataSheets(fileContents);
+        },
+        columns: [{
+                title: "id",
+                field: "uuid",
+                visible: false
+            },
+            {
+                title: "Product",
+                field: "product_name",
+                hozAlign: "left",
+                visible: false
+            },
+            {
+                title: "Ref",
+                field: "ref",
+                visible: true,
+            },
+            {
+                title: "Qty",
+                field: "qty",
+                width: 80,
+                hozAlign: "left",
+            },
+            {
+                title: "SKU",
+                field: "sku",
+                width: 150
+            },
+        ],
+    });
+
+}
+/*
+* // End Schedule functions
+*/
+
+
+
+/*
 * Get all projects (for this user) and render the table
 */
 async function renderProjectsTable() {
@@ -577,5 +656,6 @@ async function loadRoomImages(roomId) {
 
 module.exports = {
     homeFunctions,
-    tablesFunctions    
+    tablesFunctions,
+    scheduleFunctions    
 };
