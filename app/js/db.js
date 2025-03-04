@@ -2,7 +2,7 @@ const { openDB } = require('idb');
 const utils = require('./modules/utils');
 
 const DB_NAME = 'sst_database';
-const DB_VERSION = 10;
+const DB_VERSION = 11;
 const STORE_NAME = 'product_data';
 
 // Custom function to generate UUIDs
@@ -61,6 +61,7 @@ async function initDB() {
             }   
             if (!db.objectStoreNames.contains("users")) {
                 const store = db.createObjectStore("users", { keyPath: "uuid" });                
+                store.createIndex('email', 'email', { unique: false });
             }            
 
 
@@ -138,7 +139,7 @@ async function syncData(owner_id) {
                             console.error(`Missing ID in ${storeName}:`, item);
                         } else {
                             item.uuid = item.id;  // Map 'id' to 'uuid' for IndexedDB
-                            item.owner_id = owner_id; // Add owner_id
+                            item.owner_id = owner_id + ""; // Add owner_id
                             item.room_id_fk = item.room_id_fk || item.uuid; // todo: check if this is correct (different for products, notes, images)
                             delete item.id;        // Remove the original 'id' field to avoid conflicts
                             store.put(item);
@@ -193,7 +194,7 @@ async function createProject(project_name, location, building, floor, room) {
         created_on: now,
         last_updated: now,
         name: project_name,
-        owner_id: 8,  // Assuming owner_id 8
+        owner_id: await utils.getUserID(), 
         project_id_fk: newProjectID,
         slug: projectSlug,
         uuid: newProjectID,
@@ -221,6 +222,7 @@ async function getProjects() {
 async function getProjectHierarchy(owner_id, project_id) {
     console.log("Fetching from IndexedDB for project_id:", project_id);
     const db = await initDB();
+    owner_id = String(owner_id);
 
     let projects = await db.getAllFromIndex('projects', 'owner_id', owner_id);
 
@@ -451,7 +453,7 @@ async function addRoom(floorUuid, roomName) {
         floor_id_fk: String(floorUuid),
         last_updated: now,
         name: roomName,
-        owner_id: 8,  // Assuming owner_id 8
+        owner_id: await utils.getUserID(), 
         room_id_fk: newRoomID,
         slug: roomSlug,
         uuid: newRoomID,
@@ -476,7 +478,7 @@ async function addFloor(buildingUuid, floorName) {
         building_id_fk: String(buildingUuid),
         last_updated: now,
         name: floorName,
-        owner_id: 8,  // Assuming owner_id 8
+        owner_id: await utils.getUserID(), 
         floor_id_fk: newFloorID,
         slug: floorSlug,
         uuid: newFloorID,
@@ -500,7 +502,7 @@ async function addLocation(projectUuid, locationName) {
         created_on: now,
         last_updated: now,
         name: locationName,
-        owner_id: 8,  // Assuming owner_id 8
+        owner_id: await utils.getUserID(), 
         location_id_fk: newLocationID,
         project_id_fk: projectUuid,
         slug: locationSlug,
@@ -526,7 +528,7 @@ async function addBuilding(locationUuid, buildingName) {
         location_id_fk: String(locationUuid),
         last_updated: now,
         name: buildingName,
-        owner_id: 8,  // Assuming owner_id 8
+        owner_id: await utils.getUserID(), 
         building_id_fk: newBuildingID,
         slug: buildingSlug,
         uuid: newBuildingID,
@@ -663,7 +665,10 @@ async function isDatabaseEmpty() {
 }
 
 async function getProjectStructure(projectId) {
-    const hierarchy = await getProjectHierarchy(8, projectId); // assuming owner_id 8
+    owner_id = await utils.getUserID(), 
+    owner_id = String(owner_id);
+
+    const hierarchy = await getProjectHierarchy(owner_id, projectId); 
     let result = {};
 
     // Get the project details
@@ -894,7 +899,7 @@ async function addNote(roomUuid, note) {
         created_on: now,
         last_updated: now,
         note: note,
-        owner_id: 8,  // Assuming owner_id 8
+        owner_id: await utils.getUserID(), 
         room_id_fk: roomUuid,        
         uuid: newNoteID,
         version: "1"
@@ -943,8 +948,6 @@ async function updateUser(formdata, user_id) {
     await store.put(user);
     await tx.done;
 }
-
-
 
 async function getSchedulePerRoom(projectId) {
     if (!projectId) {
@@ -1018,6 +1021,28 @@ async function getSchedulePerRoom(projectId) {
     return result;
 }
 
+async function loginUser(formData) {    
+    const db = await initDB();
+    const tx = db.transaction("users", "readonly");
+    const store = tx.objectStore("users");
+    const index = store.index("email");
+
+    // formData is a js formData object from the submitted form
+    // parse the email and password from the form data
+    const formDataObj = {};
+    formData.forEach((value, key) => (formDataObj[key] = value));    
+    console.log('formData: ', formDataObj);
+    if (!formDataObj.modal_form_email) {
+        throw new Error("Email is required");
+    }
+    const user = await index.get(formDataObj.modal_form_email);
+
+    if (user && user.password === formDataObj.modal_form_password) {
+        return user;
+    } else {
+        return false;
+    }   
+}
 
 
 
@@ -1060,6 +1085,7 @@ module.exports = {
     getProductsForProject,
     getUser,
     updateUser,
-    getSchedulePerRoom
+    getSchedulePerRoom,
+    loginUser
     // Add other database-related functions here
 };

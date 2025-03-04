@@ -1,6 +1,7 @@
 const Mustache = require('mustache');
 const db = require('./db');
 const sst = require('./sst');
+const utils = require('./modules/utils');
 
 async function loadTemplate(path) {
     try {
@@ -24,6 +25,11 @@ let isRouting = false;
 async function router(path, project_id) {
     if (isRouting) return;
     isRouting = true;
+
+    // console.log('user_id: ', utils.getUserID());
+    // if (!utils.getUserID()) return;
+    await utils.checkLogin();
+
     // Update browser URL without reload
     //window.history.pushState({}, '', `/${path}${project_id ? '/' + project_id : ''}`);
     window.history.pushState({}, '', `/${path}`);

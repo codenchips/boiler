@@ -2,8 +2,10 @@ $(document).ready(function() {
     const Mustache = require('mustache');
     const db = require('./db'); // Import the db module    
     const sst = require('./sst'); // Import the db module
+    const utils = require('./modules/utils');
         
     console.log("Mounted App...");
+    //const user_id = utils.getUserID();
 
     $('a[href^="/"]').on('click', function(e) {
         e.preventDefault();
@@ -64,6 +66,7 @@ $(document).ready(function() {
             $('#m_project_id').val(projectId);
         }
     }
+
 
     initApp();
 });

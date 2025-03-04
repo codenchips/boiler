@@ -1,5 +1,5 @@
 const Mustache = require('mustache');
-const db = require('./db'); // Import the db module
+const db = require('./db'); 
 const sst = require('./sst'); 
 const tables = require('./modules/tables');
 const utils = require('./modules/utils');
@@ -383,34 +383,6 @@ const accountFunctions = async () => {
 
 
 
-async function __getSchedulePerRoom(project_id = false) {
-    return new Promise((resolve, reject) => {
-        setTimeout(function () {
-            if (project_id == false) {
-                project_id = $('input#m_project_id').val();
-            }
-            utils.showSpin();
-            $.ajax("/api/get_schedule_per_room", {
-                type: "post",
-                data: { project_id: project_id },
-                success: function (data) {
-                    utils.hideSpin();
-                    try {
-                        const jsonData = $.parseJSON(data);
-                        resolve(jsonData); // Resolve the promise with the data
-                    } catch (e) {
-                        reject("Failed to parse JSON: " + e.message);
-                    }
-                },
-                error: function (xhr, status, error) {
-                    utils.hideSpin();
-                    reject("AJAX Error: " + error); // Reject the promise on AJAX error
-                },
-            });
-        }, 100);
-    });
-}
-
 async function generateDataSheets(data) {
     UIkit.modal($('#folio-progress')).show();
     const schedule_type = $('input[name=schedule_type]:checked').val();
@@ -419,8 +391,7 @@ async function generateDataSheets(data) {
         jsonData = data; // the schedule table data for a full project schedule
         callGenSheets(schedule_type);
     } else {
-        try {
-            console.log("Fetching schedule per room for project_id...", project_id);
+        try {            
             jsonData = await db.getSchedulePerRoom(project_id); // Wait for the data
             callGenSheets(schedule_type); // Call with the resolved data
         } catch (error) {
