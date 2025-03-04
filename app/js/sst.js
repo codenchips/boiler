@@ -265,7 +265,6 @@ const scheduleFunctions = async () => {
     $('#info_engineer').html(pdata.engineer);
     $('#info_date').html(new Date(pdata.last_updated).toLocaleDateString('en-GB'));
 
-
     const sdata = await db.getProductsForProject(projectId);
 
     let tabledata = sdata.map(product => ({
@@ -327,23 +326,18 @@ const scheduleFunctions = async () => {
         // trigger the   download, which is intercepted and triggers
         // generateDataSheets()
         sTable.download("json", "data.json", {}, "visible");
-
     });
     
     $('#form-submit-folio-progress').off('submit').on('submit', function(e) {
-        e.preventDefault();
-        const form = document.querySelector("#form-submit-folio-progress");
-        const filename = $('#m_project_slug').val();
-        if ($('#m_project_version').val() > 1) {
-            filename = filename+"-v" + $('#m_project_version').val();
-        }
-
-        //window.location.replace("https://staging.tamlite.co.uk/pdfmerge/schedule.pdf");
+        e.preventDefault();        
+        const filename = pdata.slug;
+        if (pdata.version > 1) {
+            filename = filename+"-v" + pdata.version;
+        }        
+        const buster = utils.makeid(10);
         UIkit.modal($('#folio-progress')).hide();
-        window.open("https://staging.tamlite.co.uk/pdfmerge/"+filename+".pdf?t="+utils.makeid(10), '_blank');
+        window.open("https://staging.tamlite.co.uk/pdfmerge/"+filename+".pdf?t="+buster, '_blank');
     });    
-
-
 
 
 }
@@ -389,18 +383,18 @@ const accountFunctions = async () => {
 
 
 
-async function getSchedulePerRoom(project_id = false) {
+async function __getSchedulePerRoom(project_id = false) {
     return new Promise((resolve, reject) => {
         setTimeout(function () {
             if (project_id == false) {
                 project_id = $('input#m_project_id').val();
             }
-            showSpin();
+            utils.showSpin();
             $.ajax("/api/get_schedule_per_room", {
                 type: "post",
                 data: { project_id: project_id },
                 success: function (data) {
-                    hideSpin();
+                    utils.hideSpin();
                     try {
                         const jsonData = $.parseJSON(data);
                         resolve(jsonData); // Resolve the promise with the data
@@ -409,7 +403,7 @@ async function getSchedulePerRoom(project_id = false) {
                     }
                 },
                 error: function (xhr, status, error) {
-                    hideSpin();
+                    utils.hideSpin();
                     reject("AJAX Error: " + error); // Reject the promise on AJAX error
                 },
             });
@@ -420,13 +414,14 @@ async function getSchedulePerRoom(project_id = false) {
 async function generateDataSheets(data) {
     UIkit.modal($('#folio-progress')).show();
     const schedule_type = $('input[name=schedule_type]:checked').val();
-
+    const project_id = $('input#m_project_id').val();
     if (schedule_type == "by_project") {
         jsonData = data; // the schedule table data for a full project schedule
         callGenSheets(schedule_type);
     } else {
         try {
-            jsonData = await getSchedulePerRoom(); // Wait for the data
+            console.log("Fetching schedule per room for project_id...", project_id);
+            jsonData = await db.getSchedulePerRoom(project_id); // Wait for the data
             callGenSheets(schedule_type); // Call with the resolved data
         } catch (error) {
             console.error("Error fetching schedule per room:", error);

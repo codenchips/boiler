@@ -946,6 +946,82 @@ async function updateUser(formdata, user_id) {
 
 
 
+async function getSchedulePerRoom(projectId) {
+    if (!projectId) {
+        throw new Error('No Project ID');
+    }
+
+    const db = await initDB();
+    const tx = db.transaction(["projects", "locations", "buildings", "floors", "rooms", "products", "images", "notes"], "readonly");
+
+    const projectStore = tx.objectStore("projects");
+    const locationStore = tx.objectStore("locations");
+    const buildingStore = tx.objectStore("buildings");
+    const floorStore = tx.objectStore("floors");
+    const roomStore = tx.objectStore("rooms");
+    const productStore = tx.objectStore("products");
+    const imageStore = tx.objectStore("images");
+    const noteStore = tx.objectStore("notes");
+
+    const project = await projectStore.get(projectId);
+    if (!project) {
+        throw new Error('Project not found');
+    }
+
+    const locations = await locationStore.index("project_id_fk").getAll(projectId);
+    const buildings = await buildingStore.getAll();
+    const floors = await floorStore.getAll();
+    const rooms = await roomStore.getAll();
+    const products = await productStore.getAll();
+    const images = await imageStore.getAll();
+    const notes = await noteStore.getAll();
+
+    const result = {};
+
+    rooms.forEach(room => {
+        const roomProducts = products.filter(product => product.room_id_fk === room.uuid);
+        const roomImages = images.filter(image => image.room_id_fk === room.uuid);
+        const roomNotes = notes.filter(note => note.room_id_fk === room.uuid);
+
+        const floor = floors.find(floor => floor.uuid === room.floor_id_fk);
+        const building = buildings.find(building => building.uuid === floor.building_id_fk);
+        const location = locations.find(location => location.uuid === building.location_id_fk);
+
+        roomProducts.forEach(product => {
+            if (!result[room.slug]) {
+                result[room.slug] = [];
+            }
+
+            result[room.slug].push({
+                room_slug: room.slug,
+                room_name: room.name,
+                floor_name: floor.name,
+                building_name: building.name,
+                location_name: location.name,
+                project_name: project.name,
+                ref: product.ref,
+                product_name: product.product_name,
+                product_slug: product.product_slug,
+                sku: product.sku,
+                custom: product.custom,
+                owner_id: product.owner_id,
+                project_id_fk: project.uuid,
+                project_slug: project.slug,
+                project_version: project.version,
+                qty: roomProducts.filter(p => p.sku === product.sku).length,
+                image_filenames: roomImages.map(image => image.safe_filename).join('|'),
+                room_notes: roomNotes.map(note => `${note.note} (updated: ${new Date(note.last_updated || note.created_on).toLocaleString()})`).join('|')
+            });
+        });
+    });
+
+    return result;
+}
+
+
+
+
+
 // Export the functions
 module.exports = {
     generateUUID, 
@@ -983,6 +1059,7 @@ module.exports = {
     removeNoteByUUID,
     getProductsForProject,
     getUser,
-    updateUser
+    updateUser,
+    getSchedulePerRoom
     // Add other database-related functions here
 };

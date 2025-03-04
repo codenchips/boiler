@@ -80,7 +80,7 @@ class UtilsModule {
             .replace(/-/g, ' ');           // Replace - with space          
     }
     
-    async makeid(length) {
+    makeid(length) {
         let result = '';
         const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
         const charactersLength = characters.length;

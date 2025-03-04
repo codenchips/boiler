@@ -1017,6 +1017,82 @@ async function updateUser(formdata, user_id) {
 
 
 
+async function getSchedulePerRoom(projectId) {
+    if (!projectId) {
+        throw new Error('No Project ID');
+    }
+
+    const db = await initDB();
+    const tx = db.transaction(["projects", "locations", "buildings", "floors", "rooms", "products", "images", "notes"], "readonly");
+
+    const projectStore = tx.objectStore("projects");
+    const locationStore = tx.objectStore("locations");
+    const buildingStore = tx.objectStore("buildings");
+    const floorStore = tx.objectStore("floors");
+    const roomStore = tx.objectStore("rooms");
+    const productStore = tx.objectStore("products");
+    const imageStore = tx.objectStore("images");
+    const noteStore = tx.objectStore("notes");
+
+    const project = await projectStore.get(projectId);
+    if (!project) {
+        throw new Error('Project not found');
+    }
+
+    const locations = await locationStore.index("project_id_fk").getAll(projectId);
+    const buildings = await buildingStore.getAll();
+    const floors = await floorStore.getAll();
+    const rooms = await roomStore.getAll();
+    const products = await productStore.getAll();
+    const images = await imageStore.getAll();
+    const notes = await noteStore.getAll();
+
+    const result = {};
+
+    rooms.forEach(room => {
+        const roomProducts = products.filter(product => product.room_id_fk === room.uuid);
+        const roomImages = images.filter(image => image.room_id_fk === room.uuid);
+        const roomNotes = notes.filter(note => note.room_id_fk === room.uuid);
+
+        const floor = floors.find(floor => floor.uuid === room.floor_id_fk);
+        const building = buildings.find(building => building.uuid === floor.building_id_fk);
+        const location = locations.find(location => location.uuid === building.location_id_fk);
+
+        roomProducts.forEach(product => {
+            if (!result[room.slug]) {
+                result[room.slug] = [];
+            }
+
+            result[room.slug].push({
+                room_slug: room.slug,
+                room_name: room.name,
+                floor_name: floor.name,
+                building_name: building.name,
+                location_name: location.name,
+                project_name: project.name,
+                ref: product.ref,
+                product_name: product.product_name,
+                product_slug: product.product_slug,
+                sku: product.sku,
+                custom: product.custom,
+                owner_id: product.owner_id,
+                project_id_fk: project.uuid,
+                project_slug: project.slug,
+                project_version: project.version,
+                qty: roomProducts.filter(p => p.sku === product.sku).length,
+                image_filenames: roomImages.map(image => image.safe_filename).join('|'),
+                room_notes: roomNotes.map(note => `${note.note} (updated: ${new Date(note.last_updated || note.created_on).toLocaleString()})`).join('|')
+            });
+        });
+    });
+
+    return result;
+}
+
+
+
+
+
 // Export the functions
 module.exports = {
     generateUUID, 
@@ -1054,7 +1130,8 @@ module.exports = {
     removeNoteByUUID,
     getProductsForProject,
     getUser,
-    updateUser
+    updateUser,
+    getSchedulePerRoom
     // Add other database-related functions here
 };
 
@@ -1697,7 +1774,7 @@ class UtilsModule {
             .replace(/-/g, ' ');           // Replace - with space          
     }
     
-    async makeid(length) {
+    makeid(length) {
         let result = '';
         const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
         const charactersLength = characters.length;
@@ -2073,7 +2150,6 @@ const scheduleFunctions = async () => {
     $('#info_engineer').html(pdata.engineer);
     $('#info_date').html(new Date(pdata.last_updated).toLocaleDateString('en-GB'));
 
-
     const sdata = await db.getProductsForProject(projectId);
 
     let tabledata = sdata.map(product => ({
@@ -2135,23 +2211,18 @@ const scheduleFunctions = async () => {
         // trigger the   download, which is intercepted and triggers
         // generateDataSheets()
         sTable.download("json", "data.json", {}, "visible");
-
     });
     
     $('#form-submit-folio-progress').off('submit').on('submit', function(e) {
-        e.preventDefault();
-        const form = document.querySelector("#form-submit-folio-progress");
-        const filename = $('#m_project_slug').val();
-        if ($('#m_project_version').val() > 1) {
-            filename = filename+"-v" + $('#m_project_version').val();
-        }
-
-        //window.location.replace("https://staging.tamlite.co.uk/pdfmerge/schedule.pdf");
+        e.preventDefault();        
+        const filename = pdata.slug;
+        if (pdata.version > 1) {
+            filename = filename+"-v" + pdata.version;
+        }        
+        const buster = utils.makeid(10);
         UIkit.modal($('#folio-progress')).hide();
-        window.open("https://staging.tamlite.co.uk/pdfmerge/"+filename+".pdf?t="+utils.makeid(10), '_blank');
+        window.open("https://staging.tamlite.co.uk/pdfmerge/"+filename+".pdf?t="+buster, '_blank');
     });    
-
-
 
 
 }
@@ -2197,18 +2268,18 @@ const accountFunctions = async () => {
 
 
 
-async function getSchedulePerRoom(project_id = false) {
+async function __getSchedulePerRoom(project_id = false) {
     return new Promise((resolve, reject) => {
         setTimeout(function () {
             if (project_id == false) {
                 project_id = $('input#m_project_id').val();
             }
-            showSpin();
+            utils.showSpin();
             $.ajax("/api/get_schedule_per_room", {
                 type: "post",
                 data: { project_id: project_id },
                 success: function (data) {
-                    hideSpin();
+                    utils.hideSpin();
                     try {
                         const jsonData = $.parseJSON(data);
                         resolve(jsonData); // Resolve the promise with the data
@@ -2217,7 +2288,7 @@ async function getSchedulePerRoom(project_id = false) {
                     }
                 },
                 error: function (xhr, status, error) {
-                    hideSpin();
+                    utils.hideSpin();
                     reject("AJAX Error: " + error); // Reject the promise on AJAX error
                 },
             });
@@ -2228,13 +2299,14 @@ async function getSchedulePerRoom(project_id = false) {
 async function generateDataSheets(data) {
     UIkit.modal($('#folio-progress')).show();
     const schedule_type = $('input[name=schedule_type]:checked').val();
-
+    const project_id = $('input#m_project_id').val();
     if (schedule_type == "by_project") {
         jsonData = data; // the schedule table data for a full project schedule
         callGenSheets(schedule_type);
     } else {
         try {
-            jsonData = await getSchedulePerRoom(); // Wait for the data
+            console.log("Fetching schedule per room for project_id...", project_id);
+            jsonData = await db.getSchedulePerRoom(project_id); // Wait for the data
             callGenSheets(schedule_type); // Call with the resolved data
         } catch (error) {
             console.error("Error fetching schedule per room:", error);
