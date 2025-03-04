@@ -988,6 +988,33 @@ async function addImage(roomUuid, image) {
 
 }
 
+async function getUser(user_id) {
+    user_id = String(user_id);
+    const db = await initDB();
+    const tx = db.transaction("users", "readonly");
+    const store = tx.objectStore("users");
+    return await store.get(user_id);
+}
+
+async function updateUser(formdata, user_id) {
+    user_id = String(user_id);
+
+
+    const db = await initDB();
+    const tx = db.transaction("users", "readwrite");
+    const store = tx.objectStore("users");
+    const user = await store.get(user_id);       
+
+    user.name = formdata.name;
+    user.code = formdata.code;    
+    user.email = formdata.email;
+    user.password = formdata.password;
+    user.last_updated = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+    await store.put(user);
+    await tx.done;
+}
+
 
 
 // Export the functions
@@ -1025,7 +1052,9 @@ module.exports = {
     addNote,
     addImage,
     removeNoteByUUID,
-    getProductsForProject
+    getProductsForProject,
+    getUser,
+    updateUser
     // Add other database-related functions here
 };
 
@@ -2090,7 +2119,31 @@ const scheduleFunctions = async () => {
 */
 
 const accountFunctions = async () => {
-        console.log('Running account functions v2');
+    console.log('Running account functions v2');
+    // get this user details from the store
+    const user = await db.getUser(8);
+    
+    $('#name').val(user.name);
+    $('#email').val(user.email);
+    $('#password').val(user.password);
+    $('#code').val(user.code);
+
+
+    $('#form-update-account').off('submit').on('submit', async function(e) {
+        e.preventDefault();
+        console.log('Update account clicked');
+        // build the user object from submitted form fields
+        const formdata = {            
+            name: $('#name').val(),
+            email: $('#email').val(),
+            password: $('#password').val(),
+            code: $('#code').val()
+        }        
+
+        await db.updateUser(formdata, 8);
+        UIkit.notification('Account updated', {status:'success',pos: 'bottom-center',timeout: 1500});
+    });
+
 }
 /*
 * // End account page functions

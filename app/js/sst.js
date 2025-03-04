@@ -323,7 +323,31 @@ const scheduleFunctions = async () => {
 */
 
 const accountFunctions = async () => {
-        console.log('Running account functions v2');
+    console.log('Running account functions v2');
+    // get this user details from the store
+    const user = await db.getUser(8);
+    
+    $('#name').val(user.name);
+    $('#email').val(user.email);
+    $('#password').val(user.password);
+    $('#code').val(user.code);
+
+
+    $('#form-update-account').off('submit').on('submit', async function(e) {
+        e.preventDefault();
+        console.log('Update account clicked');
+        // build the user object from submitted form fields
+        const formdata = {            
+            name: $('#name').val(),
+            email: $('#email').val(),
+            password: $('#password').val(),
+            code: $('#code').val()
+        }        
+
+        await db.updateUser(formdata, 8);
+        UIkit.notification('Account updated', {status:'success',pos: 'bottom-center',timeout: 1500});
+    });
+
 }
 /*
 * // End account page functions
