@@ -257,6 +257,9 @@ const scheduleFunctions = async () => {
 
     const pdata = await db.getProjectByUUID(projectId);
 
+    $('#m_project_slug').val(pdata.slug);
+    $('#m_project_version').val(pdata.version);
+
     $('#info_project_name').html(pdata.name);
     $('#info_project_id').html(pdata.project_id);    
     $('#info_engineer').html(pdata.engineer);
@@ -280,7 +283,7 @@ const scheduleFunctions = async () => {
         loader: false,
         dataLoaderError: "There was an error loading the data",
         downloadEncoder: function(fileContents, mimeType){
-            //generateDataSheets(fileContents);
+            generateDataSheets(fileContents);
         },
         columns: [{
                 title: "id",
@@ -312,6 +315,37 @@ const scheduleFunctions = async () => {
         ],
     });
 
+
+    $('#gen_datasheets,#gen_schedules_confirm').off('click').on('click', function(e) {
+        e.preventDefault();
+        if ($('#include_schedule').is(':checked') == false &&
+            $('#include_datasheets').is(':checked') == false) {
+                alert('Nothing to generate, please select an option');
+                return(false);
+        }
+
+        // trigger the   download, which is intercepted and triggers
+        // generateDataSheets()
+        sTable.download("json", "data.json", {}, "visible");
+
+    });
+    
+    $('#form-submit-folio-progress').off('submit').on('submit', function(e) {
+        e.preventDefault();
+        const form = document.querySelector("#form-submit-folio-progress");
+        const filename = $('#m_project_slug').val();
+        if ($('#m_project_version').val() > 1) {
+            filename = filename+"-v" + $('#m_project_version').val();
+        }
+
+        //window.location.replace("https://staging.tamlite.co.uk/pdfmerge/schedule.pdf");
+        UIkit.modal($('#folio-progress')).hide();
+        window.open("https://staging.tamlite.co.uk/pdfmerge/"+filename+".pdf?t="+utils.makeid(10), '_blank');
+    });    
+
+
+
+
 }
 /*
 * // End Schedule functions
@@ -321,7 +355,6 @@ const scheduleFunctions = async () => {
 /*
 * Account Page functions
 */
-
 const accountFunctions = async () => {
     console.log('Running account functions v2');
     // get this user details from the store
@@ -352,6 +385,128 @@ const accountFunctions = async () => {
 /*
 * // End account page functions
 */
+
+
+
+
+async function getSchedulePerRoom(project_id = false) {
+    return new Promise((resolve, reject) => {
+        setTimeout(function () {
+            if (project_id == false) {
+                project_id = $('input#m_project_id').val();
+            }
+            showSpin();
+            $.ajax("/api/get_schedule_per_room", {
+                type: "post",
+                data: { project_id: project_id },
+                success: function (data) {
+                    hideSpin();
+                    try {
+                        const jsonData = $.parseJSON(data);
+                        resolve(jsonData); // Resolve the promise with the data
+                    } catch (e) {
+                        reject("Failed to parse JSON: " + e.message);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    hideSpin();
+                    reject("AJAX Error: " + error); // Reject the promise on AJAX error
+                },
+            });
+        }, 100);
+    });
+}
+
+async function generateDataSheets(data) {
+    UIkit.modal($('#folio-progress')).show();
+    const schedule_type = $('input[name=schedule_type]:checked').val();
+
+    if (schedule_type == "by_project") {
+        jsonData = data; // the schedule table data for a full project schedule
+        callGenSheets(schedule_type);
+    } else {
+        try {
+            jsonData = await getSchedulePerRoom(); // Wait for the data
+            callGenSheets(schedule_type); // Call with the resolved data
+        } catch (error) {
+            console.error("Error fetching schedule per room:", error);
+            alert("Failed to fetch schedule data. Please try again.");
+        }
+    }
+}
+
+async function callGenSheets(schedule_type) {
+    $('.uk-progress').val(10);
+    $('#download_datasheets').prop("disabled", true);
+    $('#progress-text').text("Gathering Data ...");
+
+    $.ajax({
+        url: "https://staging.tamlite.co.uk/ci_index.php/download_schedule",
+        type: "POST",
+        data: {
+            project_slug: $('#m_project_slug').val(),
+            project_version: $('#m_project_version').val(),
+            info_project_name: $('#info_project_name').text(),
+            info_project_id: $('#info_project_id').text(),
+            info_engineer: $('#info_engineer').text(),
+            info_date: $('#info_date').text(),
+            include_schedule: $('#include_schedule').is(':checked'),
+            include_datasheets: $('#include_datasheets').is(':checked'),
+            schedule_type: schedule_type,
+            skus: jsonData,
+        },
+        xhr: function () {
+            const xhr = new window.XMLHttpRequest();
+            let lastProcessedIndex = 0;
+            xhr.onprogress = function () {
+                const responseText = xhr.responseText.trim();
+                const lines = responseText.split('\n');
+
+                for (let i = lastProcessedIndex; i < lines.length; i++) {
+                    const line = lines[i].trim();
+
+                    //console.log(line);
+                    if (!line) {
+                        continue;
+                    }
+                    try {
+                        const update = JSON.parse(line);
+                        if (update.step && update.total) {
+                            const percentage = (update.step / (update.total - 1)) * 100;
+                            $('#progress-text').text(update.message);
+                            $('.uk-progress').val(percentage);
+                        }
+                        if (update.complete) {
+                            console.log('Processing complete:', update);
+                            $('.uk-progress').val(100);
+                            $('#progress-text').text(update.message);
+                            $('#download_datasheets').prop("disabled", false);
+                        }
+                    } catch (e) {
+                        console.warn("Skipping invalid JSON line:", line, e);
+                    }
+                }
+                lastProcessedIndex = lines.length;
+            };
+            return xhr;
+        },
+        success: function () {
+        },
+        error: function (xhr, status, error) {
+            if (status === "timeout") {
+                alert("The request timed out. Please try again later.");
+            } else {
+                // todo: this is actually firing but all works ok, debug
+                //console.error("An error occurred:", status, error);
+            }
+        },
+        timeout: 310000, // 310 seconds (5 minutes + buffer)
+    });
+}
+
+
+
+
 
 
 
