@@ -56,8 +56,20 @@
     <!-- rooms nav -->
     <div class="uk-offcanvas-bar uk-visible@xl tables-side" id="desktop-sidebar">
         <div class="uk-visible@m uk-flex uk-flex-column">
-            <h4>Manage Project D</h4>    
-            <div id="locations" class="locations nav-menu"></div>
+            <div uk-switcher="animation: uk-animation-fade; toggle: > *" class="uk-width-1-1">
+                <button class="uk-button uk-button-link uk-width-1-4" type="button">Project</button>
+                <button class="uk-button uk-button-link uk-width-1-4" type="button">Favourites</button>
+            </div>        
+            <div class="uk-switcher uk-margin-remove-top uk-width-1-1">
+                <div class="uk-margin-remove-top uk-width-1-1">
+                    <h4>Manage Project D</h4>    
+                    <div id="locations" class="locations nav-menu"></div>
+                </div>
+                <div class="uk-margin-remove-top uk-width-1-1">
+                    <h4>Manage Favourites</h4>
+                    <div id="favourites" class="favourites nav-menu"></div>
+                </div>
+            </div>
         </div>
     </div> 
     <!-- end rooms nav -->
@@ -65,8 +77,21 @@
     <!-- rooms nav offcanvas-sidebar -->
     <div id="offcanvas-sidebar" class="tables-side" uk-offcanvas="mode: slide; overlay: true">   
         <div class="uk-offcanvas-bar uk-flex uk-flex-column">    
-            <h4>Manage Project M</h4>    
-            <div id="locations" class="locations nav-menu"></div>    
+            <div uk-switcher="animation: uk-animation-fade; toggle: > *" class="uk-width-1-1">
+                <button class="uk-button uk-button-link uk-width-1-4" type="button">Project</button>
+                <button class="uk-button uk-button-link uk-width-1-4" type="button">Favourites</button>
+            </div>        
+            <div class="uk-switcher uk-margin-remove-top uk-width-1-1">
+                <div class="uk-margin-remove-top uk-width-1-1">
+                    <h4>Manage Project M</h4>    
+                    <div id="locations" class="locations nav-menu"></div>
+                </div>
+                <div class="uk-margin-remove-top uk-width-1-1">
+                    <h4>Manage Favourites</h4>
+                    <div id="favourites" class="favourites nav-menu"></div>
+                </div>
+            </div>
+
         </div>
     </div>
     <!-- end rooms nav -->
