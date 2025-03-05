@@ -253,7 +253,17 @@ const scheduleFunctions = async () => {
     console.log('Running schedule functions v2');
     UIkit.offcanvas('.tables-side').hide();
 
-    const projectId = $('#m_project_id').val();
+    let projectId = $('#m_project_id').val();
+    if (projectId == "") {
+        // get from local storage
+        const currentProject = JSON.parse(localStorage.getItem('currentProject') || '{}');
+        if (currentProject.project_id) {
+            projectId = currentProject.project_id;
+        } else {
+            console.error('No project id found');
+            return;
+        }
+    }
 
     const pdata = await db.getProjectByUUID(projectId);
 

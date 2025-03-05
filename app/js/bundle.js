@@ -1754,14 +1754,12 @@ class UtilsModule {
     init() {
         if (this.isInitialized) return;
         Mustache.tags = ["[[", "]]"];
-        
-
-        
         this.isInitialized = true;        
     }
 
     
     async checkLogin() {
+        console.log('Checking authentication ...');
         const db = require('../db'); 
 
         const user_id = await this.getCookie('user_id');
@@ -1947,12 +1945,9 @@ async function router(path, project_id) {
     if (isRouting) return;
     isRouting = true;
 
-    // console.log('user_id: ', utils.getUserID());
-    // if (!utils.getUserID()) return;
     await utils.checkLogin();
 
     // Update browser URL without reload
-    //window.history.pushState({}, '', `/${path}${project_id ? '/' + project_id : ''}`);
     window.history.pushState({}, '', `/${path}`);
     
     try {
@@ -2019,7 +2014,7 @@ window.router = router;
 
 },{"./db":2,"./modules/utils":5,"./sst":7,"mustache":9}],7:[function(require,module,exports){
 const Mustache = require('mustache');
-const db = require('./db'); // Import the db module
+const db = require('./db'); 
 const sst = require('./sst'); 
 const tables = require('./modules/tables');
 const utils = require('./modules/utils');
@@ -2273,7 +2268,17 @@ const scheduleFunctions = async () => {
     console.log('Running schedule functions v2');
     UIkit.offcanvas('.tables-side').hide();
 
-    const projectId = $('#m_project_id').val();
+    let projectId = $('#m_project_id').val();
+    if (projectId == "") {
+        // get from local storage
+        const currentProject = JSON.parse(localStorage.getItem('currentProject') || '{}');
+        if (currentProject.project_id) {
+            projectId = currentProject.project_id;
+        } else {
+            console.error('No project id found');
+            return;
+        }
+    }
 
     const pdata = await db.getProjectByUUID(projectId);
 
@@ -2402,34 +2407,6 @@ const accountFunctions = async () => {
 
 
 
-
-async function __getSchedulePerRoom(project_id = false) {
-    return new Promise((resolve, reject) => {
-        setTimeout(function () {
-            if (project_id == false) {
-                project_id = $('input#m_project_id').val();
-            }
-            utils.showSpin();
-            $.ajax("/api/get_schedule_per_room", {
-                type: "post",
-                data: { project_id: project_id },
-                success: function (data) {
-                    utils.hideSpin();
-                    try {
-                        const jsonData = $.parseJSON(data);
-                        resolve(jsonData); // Resolve the promise with the data
-                    } catch (e) {
-                        reject("Failed to parse JSON: " + e.message);
-                    }
-                },
-                error: function (xhr, status, error) {
-                    utils.hideSpin();
-                    reject("AJAX Error: " + error); // Reject the promise on AJAX error
-                },
-            });
-        }, 100);
-    });
-}
 
 async function generateDataSheets(data) {
     UIkit.modal($('#folio-progress')).show();

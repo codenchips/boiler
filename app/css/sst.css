@@ -341,3 +341,7 @@ label.subheading {
   padding: 0 5px;
   font-size: 100%;
 }
+
+.uk-modal.loginmodal {
+  backdrop-filter: blur(15px);
+}

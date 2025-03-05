@@ -31,14 +31,12 @@ class UtilsModule {
     init() {
         if (this.isInitialized) return;
         Mustache.tags = ["[[", "]]"];
-        
-
-        
         this.isInitialized = true;        
     }
 
     
     async checkLogin() {
+        console.log('Checking authentication ...');
         const db = require('../db'); 
 
         const user_id = await this.getCookie('user_id');
