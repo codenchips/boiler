@@ -2,7 +2,7 @@ const { openDB } = require('idb');
 const utils = require('./modules/utils');
 
 const DB_NAME = 'sst_database';
-const DB_VERSION = 11;
+const DB_VERSION = 12;
 const STORE_NAME = 'product_data';
 
 // Custom function to generate UUIDs
@@ -51,6 +51,10 @@ async function initDB() {
                 const store = db.createObjectStore("products", { keyPath: "uuid" });
                 store.createIndex("room_id_fk", "room_id_fk", { unique: false });
             }
+            if (!db.objectStoreNames.contains("favourites")) {
+                const store = db.createObjectStore("favourites", { keyPath: "uuid" });
+                store.createIndex("room_id_fk", "room_id_fk", { unique: false });
+            }            
             if (!db.objectStoreNames.contains("notes")) {
                 const store = db.createObjectStore("notes", { keyPath: "uuid" });
                 store.createIndex("room_id_fk", "room_id_fk", { unique: false });
@@ -125,11 +129,11 @@ async function syncData(owner_id) {
         dbRequest.onsuccess = (event) => {
             const db = event.target.result;
             const transaction = db.transaction(
-                ["projects", "locations", "buildings", "floors", "rooms", "products", "notes", "images", "users"],
+                ["projects", "locations", "buildings", "floors", "rooms", "products", "favourites", "notes", "images", "users"],
                 "readwrite"
             );
 
-            ["projects", "locations", "buildings", "floors", "rooms", "products", "notes", "images", "users"].forEach(
+            ["projects", "locations", "buildings", "floors", "rooms", "products", "favourites", "notes", "images", "users"].forEach(
                 (storeName) => {
                     const store = transaction.objectStore(storeName);
                     store.clear();  // Clear existing data

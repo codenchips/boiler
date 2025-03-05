@@ -374,8 +374,18 @@ class TablesModule {
                 {                    
                     visible: true,
                     headerSort: false,
+                    formatter: utils.iconFav,
+                    width: 40,
+                    hozAlign: "center",
+                    cellClick: (e, cell) => {
+                        this.addFavDialog(cell.getRow().getData().sku);
+                    }
+                },
+                {                    
+                    visible: true,
+                    headerSort: false,
                     formatter: utils.iconX,
-                    width: 80,
+                    width: 40,
                     hozAlign: "center",
                     cellClick: (e, cell) => {
                         this.removeSkuDialog(cell.getRow().getData().sku);
