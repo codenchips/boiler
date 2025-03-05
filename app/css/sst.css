@@ -345,3 +345,23 @@ label.subheading {
 .uk-modal.loginmodal {
   backdrop-filter: blur(15px);
 }
+
+@media screen and (min-width: 1600px) {
+  .uk-offcanvas {
+    display: flex;
+  }
+}
+@media screen and (max-width: 1600px) {
+  body {
+    padding: 0 1px;
+  }
+  .btn-toggle-sidebar {
+    position: fixed;
+    left: 0;
+    top: 40%;
+    margin: 0;
+    transform: rotate(90deg) translate(0, 90px);
+    border-radius: 10px 10px 0 0;
+    letter-spacing: 2px;
+  }
+}
