@@ -2,7 +2,7 @@ const { openDB } = require('idb');
 const utils = require('./modules/utils');
 
 const DB_NAME = 'sst_database';
-const DB_VERSION = 12;
+const DB_VERSION = 13;
 const STORE_NAME = 'product_data';
 
 // Custom function to generate UUIDs
@@ -54,6 +54,7 @@ async function initDB() {
             if (!db.objectStoreNames.contains("favourites")) {
                 const store = db.createObjectStore("favourites", { keyPath: "uuid" });
                 store.createIndex("room_id_fk", "room_id_fk", { unique: false });
+                store.createIndex('owner_id', 'owner_id', { unique: false }); 
             }            
             if (!db.objectStoreNames.contains("notes")) {
                 const store = db.createObjectStore("notes", { keyPath: "uuid" });
@@ -1048,8 +1049,34 @@ async function loginUser(formData) {
     }   
 }
 
+async function addFavProduct(sku, user_id) {
+    const db = await initDB();
+    const tx = db.transaction("favourites", "readwrite");
+    const store = tx.objectStore("favourites");
+    const newFavID = generateUUID();
 
+    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    const newFav = {
+        created_on: now,
+        last_updated: now,
+        sku: sku,
+        owner_id: user_id,
+        uuid: newFavID,
+        version: "1"
+    };
 
+    // Check if the product is already in the favourites for the same user_id
+    const index = store.index("owner_id");
+    const existingFav = await index.get(user_id);   
+    if (existingFav && existingFav.sku === sku) {
+        console.log('Product already in favourites');
+        return false;   
+    }
+
+    await store.add(newFav);
+    await tx.done;
+    return newFavID;
+}
 
 // Export the functions
 module.exports = {
@@ -1090,6 +1117,7 @@ module.exports = {
     getUser,
     updateUser,
     getSchedulePerRoom,
-    loginUser
+    loginUser,
+    addFavProduct
     // Add other database-related functions here
 };

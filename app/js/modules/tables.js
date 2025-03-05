@@ -266,6 +266,28 @@ class TablesModule {
     }    
 
 
+    async addFavDialog(sku) {
+        // open the del-sku modal and pass the sku to be deleted
+        $('span.place_sku').html(sku);
+        $('input#del_sku').val(sku);
+        const user_id = await utils.getCookie('user_id');
+
+        await db.addFavProduct(sku, user_id);
+
+        // UIkit.modal('#del-sku', { stack : true }).show();        
+
+        // $('#form-submit-del-sku').off('submit').on('submit', async (e) => {
+        //     e.preventDefault();
+        //     const sku = $('#del_sku').val();
+        //     const room_id = $('#m_room_id').val();                        
+        //     await db.deleteProductFromRoom(sku, room_id);
+        //     this.refreshTableData();
+        //     UIkit.modal('#del-sku').hide();
+            
+        // });      
+    }
+
+
 
     async removeSkuDialog(sku) {
         // open the del-sku modal and pass the sku to be deleted
