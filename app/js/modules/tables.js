@@ -1,6 +1,7 @@
 const db = require('../db');
 const Mustache = require('mustache');
 const utils = require('./utils');
+const sidebar = require('./sidebar');
 
 class TablesModule {
     constructor() {
@@ -266,25 +267,14 @@ class TablesModule {
     }    
 
 
-    async addFavDialog(sku) {
-        // open the del-sku modal and pass the sku to be deleted
+    async addFavDialog(sku, product_name) {
         $('span.place_sku').html(sku);
         $('input#del_sku').val(sku);
         const user_id = await utils.getCookie('user_id');
 
-        await db.addFavProduct(sku, user_id);
-
-        // UIkit.modal('#del-sku', { stack : true }).show();        
-
-        // $('#form-submit-del-sku').off('submit').on('submit', async (e) => {
-        //     e.preventDefault();
-        //     const sku = $('#del_sku').val();
-        //     const room_id = $('#m_room_id').val();                        
-        //     await db.deleteProductFromRoom(sku, room_id);
-        //     this.refreshTableData();
-        //     UIkit.modal('#del-sku').hide();
-            
-        // });      
+        await db.addFavProduct(sku, product_name, user_id);
+        await sidebar.renderFavourites(user_id);
+   
     }
 
 
@@ -400,7 +390,7 @@ class TablesModule {
                     width: 40,
                     hozAlign: "center",
                     cellClick: (e, cell) => {
-                        this.addFavDialog(cell.getRow().getData().sku);
+                        this.addFavDialog(cell.getRow().getData().sku, cell.getRow().getData().product_name);
                     }
                 },
                 {                    

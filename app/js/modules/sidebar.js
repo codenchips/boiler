@@ -1,4 +1,6 @@
 const Mustache = require('mustache');
+const db = require('../db');
+
 
 class SidebarModule {
     constructor() {
@@ -11,6 +13,57 @@ class SidebarModule {
         Mustache.tags = ["[[", "]]"];
         this.isInitialized = true;        
     }
+
+    async generateFavourites(data)  {
+        if (!data) return '<div>No favourites available</div>';                
+        let html = '';
+
+        // sort favourites by product_name and add all sku's with the same product_name to a child object. 
+        // This will allow us to display the product_name once and all sku's under it.
+        let sorted = data.reduce((acc, item) => {
+            if (!acc[item.product_name]) {  
+                acc[item.product_name] = [];
+            }
+            acc[item.product_name].push(item);
+            return acc; 
+        }, {});
+
+        console.log('Sorted:', sorted);
+
+        // loop through the sorted object and generate the html as a list with product_name and sku's
+        Object.keys(sorted).forEach(key => {    
+            html += `<li class="product-item">
+                    <span class="product-name" uk-icon="icon: folder;"></span> 
+                    <span class="product-name"><a data-product="${key}" href="#">${key}</a></span>
+                <ul class="sku-list">`;
+            sorted[key].forEach(item => {   
+                html += `
+                    <li class="sku-item">
+                        <span class="sku-name"><a data-sku="${item.sku}" href="#">${item.sku}</a></span>
+                        <span uk-icon="minus-circle" class="action-icon" data-uuid="${item.uuid}" data-action="remove"></span>
+                    </li>`;
+            });
+            html += `</ul></li>`;
+        });  
+
+        return html;
+    }
+
+    
+    // 
+    // renderFavourites
+    // 
+    async renderFavourites(user_id) {
+        
+        user_id.toString();
+        console.log('Rendering fabourites for user:', user_id);
+
+        const favourites =  await db.getFavourites(user_id);
+        const sidemenuHtml = await this.generateFavourites(favourites);   
+
+        $('.favourites').html(sidemenuHtml);
+    }    
+
 
     async generateNavMenu(data) {
         if (!data) return '<div>No project structure available</div>';                

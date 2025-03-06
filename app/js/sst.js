@@ -11,6 +11,7 @@ const sidebar = require('./modules/sidebar');
 */
 async function tablesFunctions(project_id) {
     tables.init();        
+    const user_id = await utils.getCookie('user_id');
     
     const currentProject = JSON.parse(localStorage.getItem('currentProject') || '{}');
     if (currentProject.project_id) {
@@ -56,7 +57,9 @@ async function tablesFunctions(project_id) {
 
     await tables.renderProdctsTable();
 
-    await renderSidebar(project_id); // project_id
+    await renderSidebar(project_id); 
+    await sidebar.renderFavourites(user_id);
+
 
     // loadRoomData for the first mentioned room id in the sidebar
     const firstRoomId = $('#locations .room-link').first().data('id');    
@@ -193,9 +196,6 @@ const homeFunctions = async () => {
     });
 
     UIkit.offcanvas('.tables-side').hide();
-
-    
-
 
 
     var dashTable = renderProjectsTable();
@@ -392,7 +392,9 @@ const accountFunctions = async () => {
 
 
 
-
+/*
+* Generate Data Sheets related functions
+*/
 async function generateDataSheets(data) {
     UIkit.modal($('#folio-progress')).show();
     const schedule_type = $('input[name=schedule_type]:checked').val();
@@ -479,10 +481,9 @@ async function callGenSheets(schedule_type) {
         timeout: 310000, // 310 seconds (5 minutes + buffer)
     });
 }
-
-
-
-
+/*
+* // end Generate Data Sheets
+*/
 
 
 
@@ -588,15 +589,8 @@ async function renderProjectsTable() {
 }
 
 
-async function copyProject(project_id) {
-    const projectData = await db.getProjectByUUID(project_id);
-    const projectName = await UIkit.modal.prompt('<h4>Enter the new project name</h4>', projectData.name + ' - Copy');
-    if (projectName) {
-        const newProjectId = await db.copyProject(project_id, projectName);
-        await renderProjectsTable();
-        UIkit.notification('Project copied', {status:'success',pos: 'bottom-center',timeout: 1500});
-    }
-}
+
+
 
 
 // 
@@ -737,6 +731,19 @@ async function createProject() {
     await renderSidebar(project_id); 
     await renderProjectsTable();
     UIkit.modal('#create-project').hide();
+}
+
+/* 
+* Copy Project
+*/
+async function copyProject(project_id) {
+    const projectData = await db.getProjectByUUID(project_id);
+    const projectName = await UIkit.modal.prompt('<h4>Enter the new project name</h4>', projectData.name + ' - Copy');
+    if (projectName) {
+        const newProjectId = await db.copyProject(project_id, projectName);
+        await renderProjectsTable();
+        UIkit.notification('Project copied', {status:'success',pos: 'bottom-center',timeout: 1500});
+    }
 }
 
 async function loadProjectData(projectId) {    

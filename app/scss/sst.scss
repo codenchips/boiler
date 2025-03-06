@@ -272,6 +272,26 @@ body {
   }
 }
 
+
+ul.sku-list {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 10px 0;
+  li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 3px 0 12px 25px;    
+    .sku-name {
+      font-weight: bold;
+    }
+    .sku-qty {
+      font-weight: normal;
+    }
+  } 
+}
+
+
 label.subheading {
   margin-bottom: 10px;
   display: block;

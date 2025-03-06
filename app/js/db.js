@@ -2,7 +2,7 @@ const { openDB } = require('idb');
 const utils = require('./modules/utils');
 
 const DB_NAME = 'sst_database';
-const DB_VERSION = 13;
+const DB_VERSION = 15;
 const STORE_NAME = 'product_data';
 
 // Custom function to generate UUIDs
@@ -53,7 +53,7 @@ async function initDB() {
             }
             if (!db.objectStoreNames.contains("favourites")) {
                 const store = db.createObjectStore("favourites", { keyPath: "uuid" });
-                store.createIndex("room_id_fk", "room_id_fk", { unique: false });
+                store.createIndex("sku_owner", ["sku", "owner_id"], { unique: true });
                 store.createIndex('owner_id', 'owner_id', { unique: false }); 
             }            
             if (!db.objectStoreNames.contains("notes")) {
@@ -1049,7 +1049,16 @@ async function loginUser(formData) {
     }   
 }
 
-async function addFavProduct(sku, user_id) {
+async function getFavourites(user_id) {
+    const db = await initDB();
+    const tx = db.transaction("favourites", "readonly");
+    const store = tx.objectStore("favourites");
+    const index = store.index("owner_id");
+    user_id = String(user_id);
+    return await index.getAll(user_id);
+}
+
+async function addFavProduct(sku, product_name, user_id) {
     const db = await initDB();
     const tx = db.transaction("favourites", "readwrite");
     const store = tx.objectStore("favourites");
@@ -1060,17 +1069,19 @@ async function addFavProduct(sku, user_id) {
         created_on: now,
         last_updated: now,
         sku: sku,
+        product_name: product_name,
         owner_id: user_id,
         uuid: newFavID,
         version: "1"
     };
 
     // Check if the product is already in the favourites for the same user_id
-    const index = store.index("owner_id");
-    const existingFav = await index.get(user_id);   
-    if (existingFav && existingFav.sku === sku) {
-        console.log('Product already in favourites');
-        return false;   
+    // make sure not to save th same sku for the same user!  we now have keys on teh columns "sku" and "owner_id"
+    const allFavs = await store.getAll();
+    const existingFav = allFavs.find(fav => fav.sku === sku && fav.owner_id === user_id);
+    if (existingFav) {
+        console.warn('Product already in favourites:', existingFav);
+        return false;
     }
 
     await store.add(newFav);
@@ -1118,6 +1129,7 @@ module.exports = {
     updateUser,
     getSchedulePerRoom,
     loginUser,
-    addFavProduct
+    addFavProduct,
+    getFavourites
     // Add other database-related functions here
 };

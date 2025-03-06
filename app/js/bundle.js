@@ -76,7 +76,7 @@ const { openDB } = require('idb');
 const utils = require('./modules/utils');
 
 const DB_NAME = 'sst_database';
-const DB_VERSION = 13;
+const DB_VERSION = 15;
 const STORE_NAME = 'product_data';
 
 // Custom function to generate UUIDs
@@ -127,7 +127,7 @@ async function initDB() {
             }
             if (!db.objectStoreNames.contains("favourites")) {
                 const store = db.createObjectStore("favourites", { keyPath: "uuid" });
-                store.createIndex("room_id_fk", "room_id_fk", { unique: false });
+                store.createIndex("sku_owner", ["sku", "owner_id"], { unique: true });
                 store.createIndex('owner_id', 'owner_id', { unique: false }); 
             }            
             if (!db.objectStoreNames.contains("notes")) {
@@ -1123,7 +1123,16 @@ async function loginUser(formData) {
     }   
 }
 
-async function addFavProduct(sku, user_id) {
+async function getFavourites(user_id) {
+    const db = await initDB();
+    const tx = db.transaction("favourites", "readonly");
+    const store = tx.objectStore("favourites");
+    const index = store.index("owner_id");
+    user_id = String(user_id);
+    return await index.getAll(user_id);
+}
+
+async function addFavProduct(sku, product_name, user_id) {
     const db = await initDB();
     const tx = db.transaction("favourites", "readwrite");
     const store = tx.objectStore("favourites");
@@ -1134,17 +1143,19 @@ async function addFavProduct(sku, user_id) {
         created_on: now,
         last_updated: now,
         sku: sku,
+        product_name: product_name,
         owner_id: user_id,
         uuid: newFavID,
         version: "1"
     };
 
     // Check if the product is already in the favourites for the same user_id
-    const index = store.index("owner_id");
-    const existingFav = await index.get(user_id);   
-    if (existingFav && existingFav.sku === sku) {
-        console.log('Product already in favourites');
-        return false;   
+    // make sure not to save th same sku for the same user!  we now have keys on teh columns "sku" and "owner_id"
+    const allFavs = await store.getAll();
+    const existingFav = allFavs.find(fav => fav.sku === sku && fav.owner_id === user_id);
+    if (existingFav) {
+        console.warn('Product already in favourites:', existingFav);
+        return false;
     }
 
     await store.add(newFav);
@@ -1192,12 +1203,15 @@ module.exports = {
     updateUser,
     getSchedulePerRoom,
     loginUser,
-    addFavProduct
+    addFavProduct,
+    getFavourites
     // Add other database-related functions here
 };
 
 },{"./modules/utils":5,"idb":8}],3:[function(require,module,exports){
 const Mustache = require('mustache');
+const db = require('../db');
+
 
 class SidebarModule {
     constructor() {
@@ -1210,6 +1224,57 @@ class SidebarModule {
         Mustache.tags = ["[[", "]]"];
         this.isInitialized = true;        
     }
+
+    async generateFavourites(data)  {
+        if (!data) return '<div>No favourites available</div>';                
+        let html = '';
+
+        // sort favourites by product_name and add all sku's with the same product_name to a child object. 
+        // This will allow us to display the product_name once and all sku's under it.
+        let sorted = data.reduce((acc, item) => {
+            if (!acc[item.product_name]) {  
+                acc[item.product_name] = [];
+            }
+            acc[item.product_name].push(item);
+            return acc; 
+        }, {});
+
+        console.log('Sorted:', sorted);
+
+        // loop through the sorted object and generate the html as a list with product_name and sku's
+        Object.keys(sorted).forEach(key => {    
+            html += `<li class="product-item">
+                    <span class="product-name" uk-icon="icon: folder;"></span> 
+                    <span class="product-name"><a data-product="${key}" href="#">${key}</a></span>
+                <ul class="sku-list">`;
+            sorted[key].forEach(item => {   
+                html += `
+                    <li class="sku-item">
+                        <span class="sku-name"><a data-sku="${item.sku}" href="#">${item.sku}</a></span>
+                        <span uk-icon="minus-circle" class="action-icon" data-uuid="${item.uuid}" data-action="remove"></span>
+                    </li>`;
+            });
+            html += `</ul></li>`;
+        });  
+
+        return html;
+    }
+
+    
+    // 
+    // renderFavourites
+    // 
+    async renderFavourites(user_id) {
+        
+        user_id.toString();
+        console.log('Rendering fabourites for user:', user_id);
+
+        const favourites =  await db.getFavourites(user_id);
+        const sidemenuHtml = await this.generateFavourites(favourites);   
+
+        $('.favourites').html(sidemenuHtml);
+    }    
+
 
     async generateNavMenu(data) {
         if (!data) return '<div>No project structure available</div>';                
@@ -1352,10 +1417,11 @@ class SidebarModule {
 }
 
 module.exports = new SidebarModule();
-},{"mustache":9}],4:[function(require,module,exports){
+},{"../db":2,"mustache":9}],4:[function(require,module,exports){
 const db = require('../db');
 const Mustache = require('mustache');
 const utils = require('./utils');
+const sidebar = require('./sidebar');
 
 class TablesModule {
     constructor() {
@@ -1621,13 +1687,14 @@ class TablesModule {
     }    
 
 
-    async addFavDialog(sku) {
+    async addFavDialog(sku, product_name) {
         // open the del-sku modal and pass the sku to be deleted
         $('span.place_sku').html(sku);
         $('input#del_sku').val(sku);
         const user_id = await utils.getCookie('user_id');
 
-        await db.addFavProduct(sku, user_id);
+        await db.addFavProduct(sku, product_name, user_id);
+        await sidebar.renderFavourites(user_id);
 
         // UIkit.modal('#del-sku', { stack : true }).show();        
 
@@ -1755,7 +1822,7 @@ class TablesModule {
                     width: 40,
                     hozAlign: "center",
                     cellClick: (e, cell) => {
-                        this.addFavDialog(cell.getRow().getData().sku);
+                        this.addFavDialog(cell.getRow().getData().sku, cell.getRow().getData().product_name);
                     }
                 },
                 {                    
@@ -1784,7 +1851,7 @@ class TablesModule {
 }
 
 module.exports = new TablesModule();
-},{"../db":2,"./utils":5,"mustache":9}],5:[function(require,module,exports){
+},{"../db":2,"./sidebar":3,"./utils":5,"mustache":9}],5:[function(require,module,exports){
 class UtilsModule {
 
     constructor() {
@@ -2094,6 +2161,7 @@ const sidebar = require('./modules/sidebar');
 */
 async function tablesFunctions(project_id) {
     tables.init();        
+    const user_id = await utils.getCookie('user_id');
     
     const currentProject = JSON.parse(localStorage.getItem('currentProject') || '{}');
     if (currentProject.project_id) {
@@ -2139,7 +2207,9 @@ async function tablesFunctions(project_id) {
 
     await tables.renderProdctsTable();
 
-    await renderSidebar(project_id); // project_id
+    await renderSidebar(project_id); 
+    await sidebar.renderFavourites(user_id);
+
 
     // loadRoomData for the first mentioned room id in the sidebar
     const firstRoomId = $('#locations .room-link').first().data('id');    
@@ -2276,9 +2346,6 @@ const homeFunctions = async () => {
     });
 
     UIkit.offcanvas('.tables-side').hide();
-
-    
-
 
 
     var dashTable = renderProjectsTable();
@@ -2475,7 +2542,9 @@ const accountFunctions = async () => {
 
 
 
-
+/*
+* Generate Data Sheets related functions
+*/
 async function generateDataSheets(data) {
     UIkit.modal($('#folio-progress')).show();
     const schedule_type = $('input[name=schedule_type]:checked').val();
@@ -2562,10 +2631,9 @@ async function callGenSheets(schedule_type) {
         timeout: 310000, // 310 seconds (5 minutes + buffer)
     });
 }
-
-
-
-
+/*
+* // end Generate Data Sheets
+*/
 
 
 
@@ -2671,15 +2739,8 @@ async function renderProjectsTable() {
 }
 
 
-async function copyProject(project_id) {
-    const projectData = await db.getProjectByUUID(project_id);
-    const projectName = await UIkit.modal.prompt('<h4>Enter the new project name</h4>', projectData.name + ' - Copy');
-    if (projectName) {
-        const newProjectId = await db.copyProject(project_id, projectName);
-        await renderProjectsTable();
-        UIkit.notification('Project copied', {status:'success',pos: 'bottom-center',timeout: 1500});
-    }
-}
+
+
 
 
 // 
@@ -2820,6 +2881,19 @@ async function createProject() {
     await renderSidebar(project_id); 
     await renderProjectsTable();
     UIkit.modal('#create-project').hide();
+}
+
+/* 
+* Copy Project
+*/
+async function copyProject(project_id) {
+    const projectData = await db.getProjectByUUID(project_id);
+    const projectName = await UIkit.modal.prompt('<h4>Enter the new project name</h4>', projectData.name + ' - Copy');
+    if (projectName) {
+        const newProjectId = await db.copyProject(project_id, projectName);
+        await renderProjectsTable();
+        UIkit.notification('Project copied', {status:'success',pos: 'bottom-center',timeout: 1500});
+    }
 }
 
 async function loadProjectData(projectId) {    

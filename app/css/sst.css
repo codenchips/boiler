@@ -223,6 +223,24 @@ body {
   gap: 0.5em;
 }
 
+ul.sku-list {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 10px 0;
+}
+ul.sku-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3px 0 12px 25px;
+}
+ul.sku-list li .sku-name {
+  font-weight: bold;
+}
+ul.sku-list li .sku-qty {
+  font-weight: normal;
+}
+
 label.subheading {
   margin-bottom: 10px;
   display: block;
