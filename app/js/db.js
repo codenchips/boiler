@@ -1,6 +1,7 @@
 const { openDB } = require('idb');
 const utils = require('./modules/utils');
 
+
 const DB_NAME = 'sst_database';
 const DB_VERSION = 15;
 const STORE_NAME = 'product_data';
@@ -1089,6 +1090,35 @@ async function addFavProduct(sku, product_name, user_id) {
     return newFavID;
 }
 
+async function addFavouriteToRoom(sku, room_id) {
+    const db = await initDB();
+    // first get the full data about the product from the "product_data" table by sku
+    const productData = await getProducts();
+    console.log('Product Data:', productData);  
+    const p = productData.find(p => p.product_code === sku);
+    if (!p) {
+        throw new Error(`Product with SKU ${sku} not found`);
+    }
+
+    // build the product data object    
+    const newProductData = {
+        brand: p.site,
+        type: p.type_slug,
+        product_slug: p.product_slug,
+        product_name: p.product_name,
+        sku: p.product_code,
+        room_id_fk: room_id,
+        owner_id: await utils.getCookie('user_id'),
+        custom: 0,
+        ref: "",
+        created_on: await utils.formatDateTime(new Date()),
+        last_updated: await utils.formatDateTime(new Date()),
+        order: null,
+        range: null
+    };
+    this.saveProductToRoom(newProductData);   
+}
+
 // Export the functions
 module.exports = {
     generateUUID, 
@@ -1130,6 +1160,7 @@ module.exports = {
     getSchedulePerRoom,
     loginUser,
     addFavProduct,
-    getFavourites
+    getFavourites,
+    addFavouriteToRoom
     // Add other database-related functions here
 };

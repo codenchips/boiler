@@ -1,5 +1,6 @@
 const Mustache = require('mustache');
 const db = require('../db');
+const tables = require('./tables');
 
 
 class SidebarModule {
@@ -39,8 +40,8 @@ class SidebarModule {
             sorted[key].forEach(item => {   
                 html += `
                     <li class="sku-item">
-                        <span class="sku-name"><a data-sku="${item.sku}" href="#">${item.sku}</a></span>
-                        <span uk-icon="minus-circle" class="action-icon" data-uuid="${item.uuid}" data-action="remove"></span>
+                        <span class="sku-name"><a class="add-fav-to-room" data-sku="${item.sku}" href="#">${item.sku}</a></span>
+                        <span uk-icon="minus-circle" class="action-icon remove-product-from-favs" data-uuid="${item.uuid}" data-action="remove"></span>
                     </li>`;
             });
             html += `</ul></li>`;
@@ -62,6 +63,19 @@ class SidebarModule {
         const sidemenuHtml = await this.generateFavourites(favourites);   
 
         $('.favourites').html(sidemenuHtml);
+
+        $('.add-fav-to-room').on('click', async function(e) {
+            e.preventDefault();
+            const sku = $(this).data('sku');
+            const room_id = $('#m_room_id').val();
+
+
+            console.log('Adding SKU:', sku, 'to room:', room_id);
+            await db.addFavouriteToRoom(sku, room_id);
+            tables.renderProdctsTable(room_id);
+        });
+
+
     }    
 
 

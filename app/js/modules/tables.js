@@ -180,7 +180,7 @@ class TablesModule {
             product_name: $('#form_custom_product').val(),
             sku: $('#form_custom_sku').val(),            
             room_id_fk: $('#m_room_id').val(),
-            owner_id: '8', // Hardcoded for now
+            owner_id: await utils.getCookie('user_id'),
             custom: $('#form_custom_flag').val(),
             ref: "",
             created_on: await utils.formatDateTime(new Date()),
@@ -202,7 +202,7 @@ class TablesModule {
             product_name: $('#form_product option:selected').text(),
             sku: $('#form_sku').val() || $('#form_product').val(),
             room_id_fk: $('#m_room_id').val(),
-            owner_id: '8', // Hardcoded for now
+            owner_id: await utils.getCookie('user_id'),
             custom: 0,
             ref: "",
             created_on: await utils.formatDateTime(new Date()),

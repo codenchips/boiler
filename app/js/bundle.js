@@ -75,6 +75,7 @@ $(document).ready(function() {
 const { openDB } = require('idb');
 const utils = require('./modules/utils');
 
+
 const DB_NAME = 'sst_database';
 const DB_VERSION = 15;
 const STORE_NAME = 'product_data';
@@ -1163,6 +1164,35 @@ async function addFavProduct(sku, product_name, user_id) {
     return newFavID;
 }
 
+async function addFavouriteToRoom(sku, room_id) {
+    const db = await initDB();
+    // first get the full data about the product from the "product_data" table by sku
+    const productData = await getProducts();
+    console.log('Product Data:', productData);  
+    const p = productData.find(p => p.product_code === sku);
+    if (!p) {
+        throw new Error(`Product with SKU ${sku} not found`);
+    }
+
+    // build the product data object    
+    const newProductData = {
+        brand: p.site,
+        type: p.type_slug,
+        product_slug: p.product_slug,
+        product_name: p.product_name,
+        sku: p.product_code,
+        room_id_fk: room_id,
+        owner_id: await utils.getCookie('user_id'),
+        custom: 0,
+        ref: "",
+        created_on: await utils.formatDateTime(new Date()),
+        last_updated: await utils.formatDateTime(new Date()),
+        order: null,
+        range: null
+    };
+    this.saveProductToRoom(newProductData);   
+}
+
 // Export the functions
 module.exports = {
     generateUUID, 
@@ -1204,13 +1234,15 @@ module.exports = {
     getSchedulePerRoom,
     loginUser,
     addFavProduct,
-    getFavourites
+    getFavourites,
+    addFavouriteToRoom
     // Add other database-related functions here
 };
 
 },{"./modules/utils":5,"idb":8}],3:[function(require,module,exports){
 const Mustache = require('mustache');
 const db = require('../db');
+const tables = require('./tables');
 
 
 class SidebarModule {
@@ -1250,8 +1282,8 @@ class SidebarModule {
             sorted[key].forEach(item => {   
                 html += `
                     <li class="sku-item">
-                        <span class="sku-name"><a data-sku="${item.sku}" href="#">${item.sku}</a></span>
-                        <span uk-icon="minus-circle" class="action-icon" data-uuid="${item.uuid}" data-action="remove"></span>
+                        <span class="sku-name"><a class="add-fav-to-room" data-sku="${item.sku}" href="#">${item.sku}</a></span>
+                        <span uk-icon="minus-circle" class="action-icon remove-product-from-favs" data-uuid="${item.uuid}" data-action="remove"></span>
                     </li>`;
             });
             html += `</ul></li>`;
@@ -1273,6 +1305,19 @@ class SidebarModule {
         const sidemenuHtml = await this.generateFavourites(favourites);   
 
         $('.favourites').html(sidemenuHtml);
+
+        $('.add-fav-to-room').on('click', async function(e) {
+            e.preventDefault();
+            const sku = $(this).data('sku');
+            const room_id = $('#m_room_id').val();
+
+
+            console.log('Adding SKU:', sku, 'to room:', room_id);
+            await db.addFavouriteToRoom(sku, room_id);
+            tables.renderProdctsTable(room_id);
+        });
+
+
     }    
 
 
@@ -1417,7 +1462,7 @@ class SidebarModule {
 }
 
 module.exports = new SidebarModule();
-},{"../db":2,"mustache":9}],4:[function(require,module,exports){
+},{"../db":2,"./tables":4,"mustache":9}],4:[function(require,module,exports){
 const db = require('../db');
 const Mustache = require('mustache');
 const utils = require('./utils');
@@ -1600,7 +1645,7 @@ class TablesModule {
             product_name: $('#form_custom_product').val(),
             sku: $('#form_custom_sku').val(),            
             room_id_fk: $('#m_room_id').val(),
-            owner_id: '8', // Hardcoded for now
+            owner_id: await utils.getCookie('user_id'),
             custom: $('#form_custom_flag').val(),
             ref: "",
             created_on: await utils.formatDateTime(new Date()),
@@ -1622,7 +1667,7 @@ class TablesModule {
             product_name: $('#form_product option:selected').text(),
             sku: $('#form_sku').val() || $('#form_product').val(),
             room_id_fk: $('#m_room_id').val(),
-            owner_id: '8', // Hardcoded for now
+            owner_id: await utils.getCookie('user_id'),
             custom: 0,
             ref: "",
             created_on: await utils.formatDateTime(new Date()),
@@ -1688,25 +1733,13 @@ class TablesModule {
 
 
     async addFavDialog(sku, product_name) {
-        // open the del-sku modal and pass the sku to be deleted
         $('span.place_sku').html(sku);
         $('input#del_sku').val(sku);
         const user_id = await utils.getCookie('user_id');
 
         await db.addFavProduct(sku, product_name, user_id);
         await sidebar.renderFavourites(user_id);
-
-        // UIkit.modal('#del-sku', { stack : true }).show();        
-
-        // $('#form-submit-del-sku').off('submit').on('submit', async (e) => {
-        //     e.preventDefault();
-        //     const sku = $('#del_sku').val();
-        //     const room_id = $('#m_room_id').val();                        
-        //     await db.deleteProductFromRoom(sku, room_id);
-        //     this.refreshTableData();
-        //     UIkit.modal('#del-sku').hide();
-            
-        // });      
+   
     }
 
 
@@ -2791,7 +2824,7 @@ async function renderSidebar(project_id) {
         if (floorName) {
             const floorUuid = await db.addFloor(buildingUuid, floorName);
             UIkit.notification('Floor added', {status:'success',pos: 'bottom-center',timeout: 1500});
-            await renderSidebar(project_id); // project_id
+            await renderSidebar(project_id); 
         }   
     });
 
@@ -2804,7 +2837,7 @@ async function renderSidebar(project_id) {
         if (buildingName) {
             const buildingUuid = await db.addBuilding(locationUuid, buildingName);                                
             UIkit.notification('building added', {status:'success',pos: 'bottom-center',timeout: 1500});
-            await renderSidebar(project_id); // project_id
+            await renderSidebar(project_id); 
         }   
     });     
     

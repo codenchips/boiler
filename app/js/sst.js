@@ -641,7 +641,7 @@ async function renderSidebar(project_id) {
         if (floorName) {
             const floorUuid = await db.addFloor(buildingUuid, floorName);
             UIkit.notification('Floor added', {status:'success',pos: 'bottom-center',timeout: 1500});
-            await renderSidebar(project_id); // project_id
+            await renderSidebar(project_id); 
         }   
     });
 
@@ -654,7 +654,7 @@ async function renderSidebar(project_id) {
         if (buildingName) {
             const buildingUuid = await db.addBuilding(locationUuid, buildingName);                                
             UIkit.notification('building added', {status:'success',pos: 'bottom-center',timeout: 1500});
-            await renderSidebar(project_id); // project_id
+            await renderSidebar(project_id); 
         }   
     });     
     
