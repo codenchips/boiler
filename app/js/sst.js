@@ -53,6 +53,7 @@ async function tablesFunctions(project_id) {
         UIkit.modal('#add-special', { stack : true }).show();
     });
 
+    $('#add-image').on('change', tables.handleFileUpload);
 
 
     await tables.renderProdctsTable();
@@ -195,7 +196,7 @@ const homeFunctions = async () => {
         installButton.hide();
     });
 
-    UIkit.offcanvas('.tables-side').hide();
+    //UIkit.offcanvas('.tables-side').hide();
 
 
     var dashTable = renderProjectsTable();
@@ -251,7 +252,7 @@ const homeFunctions = async () => {
 */
 const scheduleFunctions = async () => {
     console.log('Running schedule functions v2');
-    UIkit.offcanvas('.tables-side').hide();
+    //UIkit.offcanvas('.tables-side').hide();
 
     let projectId = $('#m_project_id').val();
     if (projectId == "") {

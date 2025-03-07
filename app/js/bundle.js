@@ -1897,6 +1897,87 @@ class TablesModule {
         });        
 
     }
+
+    async handleFileUpload(event) {
+        try {
+            const filePicker = event.target;
+            
+            if (!filePicker || !filePicker.files || filePicker.files.length <= 0) {
+                throw new Error('No file selected.');
+            }
+            
+            const file = filePicker.files[0];
+            console.log('Selected file:', file);
+
+            UIkit.modal($('#upload-progress')).show();
+
+            //var file = addImage[0].files[0]; // Get the selected file
+
+            if (file) {
+                var formData = new FormData();
+                formData.append('image', file);
+                formData.append('user_id', await utils.getCookie('user_id'));
+                formData.append('room_id', $('#m_room_id').val());
+
+                // Create a new XMLHttpRequest to monitor progress
+                var xhr = new XMLHttpRequest();
+
+                xhr.open("POST", "https://sst.tamlite.co.uk/api/image_upload", true);
+
+                // Monitor progress events
+                xhr.upload.addEventListener("progress", function (e) {
+                    if (e.lengthComputable) {
+                        var percentage = (e.loaded / e.total) * 100; // Calculate percentage
+                        $('#progress-text').text(`Uploading: ${Math.round(percentage)}%`);
+                        $('.uk-progress').val(percentage); // Update progress bar
+                    }
+                });
+
+                // Handle successful upload
+                xhr.onload = function () {
+                    if (xhr.status === 200) {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.success) {
+                            console.log('File uploaded successfully:', response);
+                            $('#progress-text').text('Upload complete!');
+                            $('.uk-progress').val(100);
+                            $('#upload-progress #close-progress').prop("disabled", false);
+                            //updateImages();
+                        } else {
+                            console.error('File upload failed:', response.message);
+                            $('#progress-text').text('Upload failed: ' + response.message);
+                            $('#upload-progress #close-progress').prop("disabled", false);
+                        }
+                    } else {
+                        console.error('File upload failed. Status:', xhr.status);
+                        $('#progress-text').text('Upload failed. Please try again.');
+                        $('#upload-progress #close-progress').prop("disabled", false);
+                    }
+                };
+
+                // Handle errors
+                xhr.onerror = function () {
+                    console.error('File upload failed due to a network error.');
+                    $('#progress-text').text('Network error occurred during upload.');
+                    $('#upload-progress #close-progress').prop("disabled", false);
+                };
+
+                xhr.timeout = 120000; // Set timeout to 2 minutes
+                xhr.ontimeout = function () {
+                    console.error('File upload timed out.');
+                    $('#progress-text').text('Upload timed out. Please try again.');
+                    $('#upload-progress #close-progress').prop("disabled", false);
+                };
+
+                xhr.send(formData); // Send the form data
+            } else {
+                console.warn('No file selected.');
+            }
+            
+        } catch (error) {
+            console.error('Upload error:', error);
+        }
+    }    
     
 
 
@@ -2255,6 +2336,7 @@ async function tablesFunctions(project_id) {
         UIkit.modal('#add-special', { stack : true }).show();
     });
 
+    $('#add-image').on('change', tables.handleFileUpload);
 
 
     await tables.renderProdctsTable();
@@ -2397,7 +2479,7 @@ const homeFunctions = async () => {
         installButton.hide();
     });
 
-    UIkit.offcanvas('.tables-side').hide();
+    //UIkit.offcanvas('.tables-side').hide();
 
 
     var dashTable = renderProjectsTable();
@@ -2453,7 +2535,7 @@ const homeFunctions = async () => {
 */
 const scheduleFunctions = async () => {
     console.log('Running schedule functions v2');
-    UIkit.offcanvas('.tables-side').hide();
+    //UIkit.offcanvas('.tables-side').hide();
 
     let projectId = $('#m_project_id').val();
     if (projectId == "") {
