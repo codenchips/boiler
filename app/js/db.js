@@ -1081,12 +1081,14 @@ async function addFavProduct(sku, product_name, user_id) {
     const allFavs = await store.getAll();
     const existingFav = allFavs.find(fav => fav.sku === sku && fav.owner_id === user_id);
     if (existingFav) {
+        UIkit.notification('Product already in favoutites', {status:'warning',pos: 'bottom-center',timeout: 1500});
         console.warn('Product already in favourites:', existingFav);
         return false;
     }
 
     await store.add(newFav);
     await tx.done;
+    UIkit.notification('Added favourite product', {status:'success',pos: 'bottom-center',timeout: 1500});
     return newFavID;
 }
 
@@ -1117,6 +1119,14 @@ async function addFavouriteToRoom(sku, room_id) {
         range: null
     };
     this.saveProductToRoom(newProductData);   
+}
+
+async function removeFavourite(uuid) {
+    const db = await initDB();
+    const tx = db.transaction("favourites", "readwrite");
+    const store = tx.objectStore("favourites");
+    await store.delete(uuid);
+    await tx.done;
 }
 
 // Export the functions
@@ -1161,6 +1171,7 @@ module.exports = {
     loginUser,
     addFavProduct,
     getFavourites,
-    addFavouriteToRoom
+    addFavouriteToRoom,
+    removeFavourite
     // Add other database-related functions here
 };

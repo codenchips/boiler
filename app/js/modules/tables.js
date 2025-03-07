@@ -1,7 +1,7 @@
 const db = require('../db');
 const Mustache = require('mustache');
 const utils = require('./utils');
-const sidebar = require('./sidebar');
+let sidebar; // placeholder for sidebar module, lazy loaded later
 
 class TablesModule {
     constructor() {
@@ -10,8 +10,11 @@ class TablesModule {
     }
 
     init() {
-        //if (this.isInitialized) return;
+        if (this.isInitialized) return;
         Mustache.tags = ["[[", "]]"];                
+        if (!sidebar) {
+            sidebar = require('./sidebar');  // lazy load it to avoid circular dependencies, just use call init when required
+        }        
         this.isInitialized = true;        
     }
 
@@ -268,13 +271,14 @@ class TablesModule {
 
 
     async addFavDialog(sku, product_name) {
+        await this.init();  // call init as we'll need the sidebar module to be loaded
+
         $('span.place_sku').html(sku);
         $('input#del_sku').val(sku);
         const user_id = await utils.getCookie('user_id');
 
-        await db.addFavProduct(sku, product_name, user_id);
-        await sidebar.renderFavourites(user_id);
-   
+        await db.addFavProduct(sku, product_name, user_id);       
+        await sidebar.renderFavourites(user_id);       
     }
 
 

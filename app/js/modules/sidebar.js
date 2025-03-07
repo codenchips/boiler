@@ -3,6 +3,7 @@ const db = require('../db');
 const tables = require('./tables');
 
 
+
 class SidebarModule {
     constructor() {
         this.menuHtml = '';
@@ -29,8 +30,6 @@ class SidebarModule {
             return acc; 
         }, {});
 
-        console.log('Sorted:', sorted);
-
         // loop through the sorted object and generate the html as a list with product_name and sku's
         Object.keys(sorted).forEach(key => {    
             html += `<li class="product-item">
@@ -53,26 +52,32 @@ class SidebarModule {
     
     // 
     // renderFavourites
-    // 
-    async renderFavourites(user_id) {
-        
+    //     
+    async renderFavourites(user_id) {        
         user_id.toString();
-        console.log('Rendering fabourites for user:', user_id);
-
         const favourites =  await db.getFavourites(user_id);
         const sidemenuHtml = await this.generateFavourites(favourites);   
 
         $('.favourites').html(sidemenuHtml);
 
-        $('.add-fav-to-room').on('click', async function(e) {
+        $('.add-fav-to-room').off('click').on('click', async function(e) {
             e.preventDefault();
             const sku = $(this).data('sku');
-            const room_id = $('#m_room_id').val();
-
-
-            console.log('Adding SKU:', sku, 'to room:', room_id);
+            const room_id = $('#m_room_id').val();          
             await db.addFavouriteToRoom(sku, room_id);
+            UIkit.notification('Favourite added to room', {status:'success',pos: 'bottom-center',timeout: 1500});
             tables.renderProdctsTable(room_id);
+        });
+
+        $('.action-icon.remove-product-from-favs').off('click').on('click', async (e) => {  //arrow function preserves the context of this
+            e.preventDefault();
+            const uuid = $(e.currentTarget).data('uuid');
+            await db.removeFavourite(uuid);
+            UIkit.notification('Favourite removed', {status:'success',pos: 'bottom-center',timeout: 1500});
+            await this.renderFavourites(user_id);
+    
+            $('.favourites').html(sidemenuHtml);            
+
         });
 
 

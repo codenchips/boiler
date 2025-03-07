@@ -433,6 +433,24 @@ label.subheading {
   backdrop-filter: blur(15px);
 }
 
+.sidetabs {
+  white-space: nowrap;
+  button {
+    background: #717171;
+    width: 50%;
+    height: 33px;
+    border-radius: 10px 10px 0 0;
+    margin-bottom: 10px;  
+  
+    &.uk-active {
+      background: $ltblue;
+    }
+
+  }
+}
+
+
+
 @media screen and (min-width: 1600px) {
   .uk-offcanvas {
     display: flex;

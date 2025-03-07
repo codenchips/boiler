@@ -1155,12 +1155,14 @@ async function addFavProduct(sku, product_name, user_id) {
     const allFavs = await store.getAll();
     const existingFav = allFavs.find(fav => fav.sku === sku && fav.owner_id === user_id);
     if (existingFav) {
+        UIkit.notification('Product already in favoutites', {status:'warning',pos: 'bottom-center',timeout: 1500});
         console.warn('Product already in favourites:', existingFav);
         return false;
     }
 
     await store.add(newFav);
     await tx.done;
+    UIkit.notification('Added favourite product', {status:'success',pos: 'bottom-center',timeout: 1500});
     return newFavID;
 }
 
@@ -1191,6 +1193,14 @@ async function addFavouriteToRoom(sku, room_id) {
         range: null
     };
     this.saveProductToRoom(newProductData);   
+}
+
+async function removeFavourite(uuid) {
+    const db = await initDB();
+    const tx = db.transaction("favourites", "readwrite");
+    const store = tx.objectStore("favourites");
+    await store.delete(uuid);
+    await tx.done;
 }
 
 // Export the functions
@@ -1235,7 +1245,8 @@ module.exports = {
     loginUser,
     addFavProduct,
     getFavourites,
-    addFavouriteToRoom
+    addFavouriteToRoom,
+    removeFavourite
     // Add other database-related functions here
 };
 
@@ -1243,6 +1254,7 @@ module.exports = {
 const Mustache = require('mustache');
 const db = require('../db');
 const tables = require('./tables');
+
 
 
 class SidebarModule {
@@ -1271,8 +1283,6 @@ class SidebarModule {
             return acc; 
         }, {});
 
-        console.log('Sorted:', sorted);
-
         // loop through the sorted object and generate the html as a list with product_name and sku's
         Object.keys(sorted).forEach(key => {    
             html += `<li class="product-item">
@@ -1295,26 +1305,32 @@ class SidebarModule {
     
     // 
     // renderFavourites
-    // 
-    async renderFavourites(user_id) {
-        
+    //     
+    async renderFavourites(user_id) {        
         user_id.toString();
-        console.log('Rendering fabourites for user:', user_id);
-
         const favourites =  await db.getFavourites(user_id);
         const sidemenuHtml = await this.generateFavourites(favourites);   
 
         $('.favourites').html(sidemenuHtml);
 
-        $('.add-fav-to-room').on('click', async function(e) {
+        $('.add-fav-to-room').off('click').on('click', async function(e) {
             e.preventDefault();
             const sku = $(this).data('sku');
-            const room_id = $('#m_room_id').val();
-
-
-            console.log('Adding SKU:', sku, 'to room:', room_id);
+            const room_id = $('#m_room_id').val();          
             await db.addFavouriteToRoom(sku, room_id);
+            UIkit.notification('Favourite added to room', {status:'success',pos: 'bottom-center',timeout: 1500});
             tables.renderProdctsTable(room_id);
+        });
+
+        $('.action-icon.remove-product-from-favs').off('click').on('click', async (e) => {  //arrow function preserves the context of this
+            e.preventDefault();
+            const uuid = $(e.currentTarget).data('uuid');
+            await db.removeFavourite(uuid);
+            UIkit.notification('Favourite removed', {status:'success',pos: 'bottom-center',timeout: 1500});
+            await this.renderFavourites(user_id);
+    
+            $('.favourites').html(sidemenuHtml);            
+
         });
 
 
@@ -1466,7 +1482,7 @@ module.exports = new SidebarModule();
 const db = require('../db');
 const Mustache = require('mustache');
 const utils = require('./utils');
-const sidebar = require('./sidebar');
+let sidebar; // placeholder for sidebar module, lazy loaded later
 
 class TablesModule {
     constructor() {
@@ -1475,8 +1491,11 @@ class TablesModule {
     }
 
     init() {
-        //if (this.isInitialized) return;
+        if (this.isInitialized) return;
         Mustache.tags = ["[[", "]]"];                
+        if (!sidebar) {
+            sidebar = require('./sidebar');  // lazy load it to avoid circular dependencies, just use call init when required
+        }        
         this.isInitialized = true;        
     }
 
@@ -1733,13 +1752,14 @@ class TablesModule {
 
 
     async addFavDialog(sku, product_name) {
+        await this.init();  // call init as we'll need the sidebar module to be loaded
+
         $('span.place_sku').html(sku);
         $('input#del_sku').val(sku);
         const user_id = await utils.getCookie('user_id');
 
-        await db.addFavProduct(sku, product_name, user_id);
-        await sidebar.renderFavourites(user_id);
-   
+        await db.addFavProduct(sku, product_name, user_id);       
+        await sidebar.renderFavourites(user_id);       
     }
 
 
