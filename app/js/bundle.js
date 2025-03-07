@@ -1271,7 +1271,10 @@ class SidebarModule {
     }
 
     async generateFavourites(data)  {
-        if (!data) return '<div>No favourites available</div>';                
+        if (Array.isArray(data) && data.length === 0) {
+            return `<p>You have not added any faoutite products yet.</p>
+            <p>You can add products to your favourites by first adding a product to this room then clicking the <span class="product-name" uk-icon="icon: heart;"></span> icon in the table.</p>`;
+        }        
         let html = '';
 
         // sort favourites by product_name and add all sku's with the same product_name to a child object. 
