@@ -1197,8 +1197,9 @@ async function addFavouriteToRoom(sku, room_id) {
 
 async function removeFavourite(uuid) {
     const db = await initDB();
+    uuid = uuid + "";
     const tx = db.transaction("favourites", "readwrite");
-    const store = tx.objectStore("favourites");
+    const store = tx.objectStore("favourites");    
     await store.delete(uuid);
     await tx.done;
 }
@@ -1307,9 +1308,9 @@ class SidebarModule {
     // renderFavourites
     //     
     async renderFavourites(user_id) {        
-        user_id.toString();
-        const favourites =  await db.getFavourites(user_id);
-        const sidemenuHtml = await this.generateFavourites(favourites);   
+        user_id.toString();        
+        const favourites =  await db.getFavourites(user_id);        
+        const sidemenuHtml = await this.generateFavourites(favourites);           
 
         $('.favourites').html(sidemenuHtml);
 
@@ -1326,14 +1327,9 @@ class SidebarModule {
             e.preventDefault();
             const uuid = $(e.currentTarget).data('uuid');
             await db.removeFavourite(uuid);
-            UIkit.notification('Favourite removed', {status:'success',pos: 'bottom-center',timeout: 1500});
+            UIkit.notification('Favourite removed', {status:'success',pos: 'bottom-center',timeout: 1500});            
             await this.renderFavourites(user_id);
-    
-            $('.favourites').html(sidemenuHtml);            
-
         });
-
-
     }    
 
 

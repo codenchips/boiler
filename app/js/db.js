@@ -1123,8 +1123,9 @@ async function addFavouriteToRoom(sku, room_id) {
 
 async function removeFavourite(uuid) {
     const db = await initDB();
+    uuid = uuid + "";
     const tx = db.transaction("favourites", "readwrite");
-    const store = tx.objectStore("favourites");
+    const store = tx.objectStore("favourites");    
     await store.delete(uuid);
     await tx.done;
 }
