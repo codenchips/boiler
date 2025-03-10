@@ -54,6 +54,9 @@ async function tablesFunctions(project_id) {
     });
 
     $('#add-image').on('change', tables.handleFileUpload);
+    $('#upload-progress #close-progress').off('click').on('click', function() {
+        UIkit.modal($('#upload-progress')).hide();
+    });    
 
 
     await tables.renderProdctsTable();
@@ -830,10 +833,9 @@ async function loadRoomImages(roomId) {
     $('#m_room_id').val(roomId);   
     if (!roomId) return;         
     roomId = "" + roomId;
-    
-    const roomImages = await db.getRoomImages(roomId);        
 
-    console.log('Room images:', roomImages);
+    await tables.getRoomImages();
+   
 }
 
 

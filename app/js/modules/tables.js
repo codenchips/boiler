@@ -7,6 +7,10 @@ class TablesModule {
     constructor() {
         this.isInitialized = false;
         this.pTable = null;
+        // Bind methods that need 'this' context
+        this.handleFileUpload = this.handleFileUpload.bind(this);
+        this.updateImages = this.updateImages.bind(this);        
+        this.getRoomImages = this.getRoomImages.bind(this);        
     }
 
     init() {
@@ -419,10 +423,11 @@ class TablesModule {
     }
 
     async handleFileUpload(event) {
+        
         try {
             const filePicker = event.target;
             
-            if (!filePicker || !filePicker.files || filePicker.files.length <= 0) {
+            if (!filePicker || !filePicker.files || !filePicker.files.length) {
                 throw new Error('No file selected.');
             }
             
@@ -431,18 +436,14 @@ class TablesModule {
 
             UIkit.modal($('#upload-progress')).show();
 
-            //var file = addImage[0].files[0]; // Get the selected file
-
             if (file) {
                 var formData = new FormData();
                 formData.append('image', file);
                 formData.append('user_id', await utils.getCookie('user_id'));
                 formData.append('room_id', $('#m_room_id').val());
 
-                // Create a new XMLHttpRequest to monitor progress
                 var xhr = new XMLHttpRequest();
-
-                xhr.open("POST", "https://sst.tamlite.co.uk/api/image_upload", true);
+                xhr.open("POST", "https://sst.tamlite.co.uk/api/image_upload", true)    ;
 
                 // Monitor progress events
                 xhr.upload.addEventListener("progress", function (e) {
@@ -452,9 +453,9 @@ class TablesModule {
                         $('.uk-progress').val(percentage); // Update progress bar
                     }
                 });
-
-                // Handle successful upload
-                xhr.onload = function () {
+                
+                // Use arrow function to preserve 'this' context
+                xhr.onload = async () => {
                     if (xhr.status === 200) {
                         const response = JSON.parse(xhr.responseText);
                         if (response.success) {
@@ -462,7 +463,8 @@ class TablesModule {
                             $('#progress-text').text('Upload complete!');
                             $('.uk-progress').val(100);
                             $('#upload-progress #close-progress').prop("disabled", false);
-                            //updateImages();
+                            
+                            await this.updateImages(response);
                         } else {
                             console.error('File upload failed:', response.message);
                             $('#progress-text').text('Upload failed: ' + response.message);
@@ -499,6 +501,37 @@ class TablesModule {
         }
     }    
     
+    async updateImages(response) {        
+        const res = await db.saveImageForRoom($('#m_room_id').val(), response);        
+        await this.getRoomImages();
+    }
+
+    async getRoomImages() {
+        const images = await db.getImagesForRoom($('#m_room_id').val());
+        console.log('get room images:', images);
+        const html = await this.generateImages(images);
+        $('#images.room_images').html(html);
+    }
+
+    async generateImages(images) {
+        let html = `<div class="uk-width-1-1" uk-lightbox="animation: slide">
+        <div class="uk-grid-small uk-child-width-1-2 uk-child-width-1-2@s uk-child-width-1-3@m uk-child-width-1-4@l uk-flex-center uk-text-center " uk-grid>`;
+            
+        
+        images.forEach(image => {
+            html += `<div>
+            <div class="uk-card uk-card-default uk-card-body uk-padding-remove">
+                <a href="https://sst.tamlite.co.uk/uploads/${image.safe_filename}">
+                <div class="imagebg" style="background-image: url(https://sst.tamlite.co.uk/uploads/${image.safe_filename});"></div>
+                </a>
+            </div>
+            </div>`;
+        });
+            
+        html += `</div></div>`;
+
+        return(html);
+    }
 
 
 }

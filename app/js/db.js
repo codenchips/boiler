@@ -436,15 +436,6 @@ async function getRoomNotes(roomId) {
     return notes;
 }
 
-async function getRoomImages(roomId) {
-    roomId = String(roomId);
-
-    const db = await initDB();
-    const tx = db.transaction("images", "readonly");
-    const store = tx.objectStore("images");
-    const index = store.index("room_id_fk");
-    return await index.getAll(roomId);
-}
 
 async function addRoom(floorUuid, roomName) {
     const db = await initDB();
@@ -1130,6 +1121,42 @@ async function removeFavourite(uuid) {
     await tx.done;
 }
 
+async function getImagesForRoom(room_id) {
+    // get all images for this room and this user
+    const db = await initDB();
+    const tx = db.transaction("images", "readonly");
+    const store = tx.objectStore("images");
+    const index = store.index("room_id_fk");
+    const images = await index.getAll(room_id);
+    const user_id = await utils.getUserID()
+    return images.filter(image => image.owner_id === user_id);
+}
+
+async function saveImageForRoom(room_id, data)  {
+    const db = await initDB();
+    const tx = db.transaction("images", "readwrite");
+    const store = tx.objectStore("images");
+    const newImageID = generateUUID();
+
+    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    const newImage = {
+        created_on: now,
+        last_updated: now,
+        room_id_fk: room_id,
+        owner_id: await utils.getUserID(),
+        uuid: newImageID,
+        version: "1",
+        filename: data.fileName,
+        safe_filename: data.safeFileName
+    };
+
+    await store.add(newImage);
+    await tx.done;
+    return newImageID;
+
+}
+
+
 // Export the functions
 module.exports = {
     generateUUID, 
@@ -1160,8 +1187,7 @@ module.exports = {
     copyRoom,
     getFloors,
     copyProject,
-    getRoomNotes,
-    getRoomImages,
+    getRoomNotes,    
     addNote,
     addImage,
     removeNoteByUUID,
@@ -1173,6 +1199,8 @@ module.exports = {
     addFavProduct,
     getFavourites,
     addFavouriteToRoom,
-    removeFavourite
+    removeFavourite,
+    getImagesForRoom,
+    saveImageForRoom
     // Add other database-related functions here
 };
