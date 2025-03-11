@@ -22,7 +22,9 @@ class UtilsModule {
         };     
         this.iconFav = function(cell, formatterParams, onRendered) {
             return '<span class="icon red" uk-icon="icon: heart; ratio: 1.3" title="Favourite"></span>';
-        };     
+        };   
+        
+      
         
         
         var login = UIkit.modal('.loginmodal', {

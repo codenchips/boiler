@@ -45,6 +45,7 @@ async function router(path, project_id) {
                     project_id: project_id
                 });
                 $('#page').html(rendered);
+                sst.globalBinds();
                 sst.tablesFunctions(project_id);
                 break;
             case 'schedule':

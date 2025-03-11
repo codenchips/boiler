@@ -5,12 +5,43 @@ const tables = require('./modules/tables');
 const utils = require('./modules/utils');
 const sidebar = require('./modules/sidebar');
 
+async function globalBinds() {
+
+    $('#syncicon').off('click').on('click', async function(e) {
+        e.preventDefault();
+        $('#syncicon').addClass('active');
+        const user_id = await utils.getCookie('user_id');
+        await db.syncData(user_id);
+        $('#syncicon').removeClass('active');        
+    });
+
+
+    $('span.tip').balloon({
+        tipSize: 16,
+        position: "left",
+        html: true,
+        hideDuration: "fast",
+        hideAnimation: function(d, c) {  this.fadeOut(d, c); },
+        css: {
+            maxWidth: '380px',
+            margin: '0 20px',
+            border: '2px solid #C8102E',
+            borderRadius: '15px',
+            backgroundColor: '#fff',
+            color: '#000',
+            fontSize: '16px',
+            padding: '5px 10px'
+        }
+    });  
+
+}
 
 /*
 *   Tables page functions
 */
 async function tablesFunctions(project_id) {
-    tables.init();        
+    tables.init();      
+
     const user_id = await utils.getCookie('user_id');
     
     const currentProject = JSON.parse(localStorage.getItem('currentProject') || '{}');
@@ -841,6 +872,7 @@ async function loadRoomImages(roomId) {
 
 
 module.exports = {
+    globalBinds,
     homeFunctions,
     tablesFunctions,
     scheduleFunctions,

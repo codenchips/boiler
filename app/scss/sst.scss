@@ -449,6 +449,39 @@ label.subheading {
   }
 }
 
+.syncicon {
+  display: inline-block;
+  background-image: url('/img/sync.png');
+  filter: grayscale(100%); 
+  width: 38px; // Adjust the size as needed
+  height: 38px; // Adjust the size as needed
+  background-size: cover;
+  transition: transform 0.3s ease-in-out;
+
+  &.active {
+    filter: grayscale(0%);
+    animation: rotate 1s linear infinite;
+  }
+
+  &:hover {
+    filter: grayscale(0%);
+    animation: rotate 1s linear infinite;
+  }
+
+}
+
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+
 
 
 @media screen and (min-width: 1600px) {

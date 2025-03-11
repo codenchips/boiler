@@ -378,6 +378,32 @@ label.subheading {
   background: #0f7ae5;
 }
 
+.syncicon {
+  display: inline-block;
+  background-image: url("/img/sync.png");
+  filter: grayscale(100%);
+  width: 38px;
+  height: 38px;
+  background-size: cover;
+  transition: transform 0.3s ease-in-out;
+}
+.syncicon.active {
+  filter: grayscale(0%);
+  animation: rotate 1s linear infinite;
+}
+.syncicon:hover {
+  filter: grayscale(0%);
+  animation: rotate 1s linear infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
 @media screen and (min-width: 1600px) {
   .uk-offcanvas {
     display: flex;
