@@ -71,7 +71,7 @@ $(document).ready(function() {
 
     initApp();
 });
-},{"./db":2,"./modules/utils":5,"./sst":7,"mustache":9}],2:[function(require,module,exports){
+},{"./db":2,"./modules/utils":6,"./sst":8,"mustache":10}],2:[function(require,module,exports){
 const { openDB } = require('idb');
 const utils = require('./modules/utils');
 
@@ -1279,7 +1279,7 @@ module.exports = {
     // Add other database-related functions here
 };
 
-},{"./modules/utils":5,"idb":8}],3:[function(require,module,exports){
+},{"./modules/utils":6,"idb":9}],3:[function(require,module,exports){
 const Mustache = require('mustache');
 const db = require('../db');
 const tables = require('./tables');
@@ -1505,7 +1505,48 @@ class SidebarModule {
 }
 
 module.exports = new SidebarModule();
-},{"../db":2,"./tables":4,"mustache":9}],4:[function(require,module,exports){
+},{"../db":2,"./tables":5,"mustache":10}],4:[function(require,module,exports){
+const db = require('../db');
+const utils = require('./utils');
+let sidebar; // placeholder for sidebar module, lazy loaded later
+
+class SyncModule {
+    constructor() {
+        this.isInitialized = false;
+
+        // Bind methods that need 'this' context
+        //this.handleFileUpload = this.handleFileUpload.bind(this);
+    }
+
+    init() {
+        if (this.isInitialized) return;        
+        if (!sidebar) {
+            sidebar = require('./sidebar');  // lazy load it to avoid circular dependencies, just use call init when required
+        }        
+        this.isInitialized = true;        
+    }
+
+    async getUserData(product) {
+        this.init();
+
+        UIkit.notification({message: 'Data Sync Started ...', status: 'warning', pos: 'bottom-center', timeout: 1000 });
+        utils.showSpin();
+        
+        $('#syncicon').addClass('active');
+
+        const user_id = await utils.getCookie('user_id');
+
+        await db.syncData(user_id);
+        $('#syncicon').removeClass('active');        
+        
+        utils.hideSpin();
+
+        UIkit.notification({message: 'Data Sync Complete ...', status: 'success', pos: 'bottom-center', timeout: 1000 });
+    }
+}
+
+module.exports = new SyncModule();
+},{"../db":2,"./sidebar":3,"./utils":6}],5:[function(require,module,exports){
 const db = require('../db');
 const Mustache = require('mustache');
 const utils = require('./utils');
@@ -2045,7 +2086,7 @@ class TablesModule {
 }
 
 module.exports = new TablesModule();
-},{"../db":2,"./sidebar":3,"./utils":5,"mustache":9}],5:[function(require,module,exports){
+},{"../db":2,"./sidebar":3,"./utils":6,"mustache":10}],6:[function(require,module,exports){
 class UtilsModule {
 
     constructor() {
@@ -2247,7 +2288,7 @@ class UtilsModule {
 
 }
 module.exports = new UtilsModule();
-},{"../db":2}],6:[function(require,module,exports){
+},{"../db":2}],7:[function(require,module,exports){
 const Mustache = require('mustache');
 const db = require('./db');
 const sst = require('./sst');
@@ -2344,22 +2385,20 @@ window.addEventListener('popstate', () => {
 //module.exports = router;
 window.router = router;
 
-},{"./db":2,"./modules/utils":5,"./sst":7,"mustache":9}],7:[function(require,module,exports){
+},{"./db":2,"./modules/utils":6,"./sst":8,"mustache":10}],8:[function(require,module,exports){
 const Mustache = require('mustache');
 const db = require('./db'); 
 const sst = require('./sst'); 
 const tables = require('./modules/tables');
 const utils = require('./modules/utils');
 const sidebar = require('./modules/sidebar');
+const sync = require('./modules/sync');
 
 async function globalBinds() {
 
     $('#syncicon').off('click').on('click', async function(e) {
         e.preventDefault();
-        $('#syncicon').addClass('active');
-        const user_id = await utils.getCookie('user_id');
-        await db.syncData(user_id);
-        $('#syncicon').removeClass('active');        
+        sync.getUserData();
     });
 
 
@@ -3226,7 +3265,7 @@ module.exports = {
     accountFunctions 
 };
 
-},{"./db":2,"./modules/sidebar":3,"./modules/tables":4,"./modules/utils":5,"./sst":7,"mustache":9}],8:[function(require,module,exports){
+},{"./db":2,"./modules/sidebar":3,"./modules/sync":4,"./modules/tables":5,"./modules/utils":6,"./sst":8,"mustache":10}],9:[function(require,module,exports){
 'use strict';
 
 const instanceOfAny = (object, constructors) => constructors.some((c) => object instanceof c);
@@ -3538,7 +3577,7 @@ exports.openDB = openDB;
 exports.unwrap = unwrap;
 exports.wrap = wrap;
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -4312,4 +4351,4 @@ exports.wrap = wrap;
 
 })));
 
-},{}]},{},[3,4,5,2,7,6,1]);
+},{}]},{},[3,4,5,6,2,8,7,1]);

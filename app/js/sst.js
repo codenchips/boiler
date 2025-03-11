@@ -4,15 +4,13 @@ const sst = require('./sst');
 const tables = require('./modules/tables');
 const utils = require('./modules/utils');
 const sidebar = require('./modules/sidebar');
+const sync = require('./modules/sync');
 
 async function globalBinds() {
 
     $('#syncicon').off('click').on('click', async function(e) {
         e.preventDefault();
-        $('#syncicon').addClass('active');
-        const user_id = await utils.getCookie('user_id');
-        await db.syncData(user_id);
-        $('#syncicon').removeClass('active');        
+        sync.getUserData();
     });
 
 
