@@ -3,7 +3,7 @@ const utils = require('./modules/utils');
 
 
 const DB_NAME = 'sst_database';
-const DB_VERSION = 15;
+const DB_VERSION = 16;
 const STORE_NAME = 'product_data';
 
 // Custom function to generate UUIDs
@@ -51,6 +51,7 @@ async function initDB() {
             if (!db.objectStoreNames.contains("products")) {
                 const store = db.createObjectStore("products", { keyPath: "uuid" });
                 store.createIndex("room_id_fk", "room_id_fk", { unique: false });
+                store.createIndex('owner_id', 'owner_id', { unique: false });
             }
             if (!db.objectStoreNames.contains("favourites")) {
                 const store = db.createObjectStore("favourites", { keyPath: "uuid" });
@@ -60,14 +61,17 @@ async function initDB() {
             if (!db.objectStoreNames.contains("notes")) {
                 const store = db.createObjectStore("notes", { keyPath: "uuid" });
                 store.createIndex("room_id_fk", "room_id_fk", { unique: false });
+                store.createIndex('owner_id', 'owner_id', { unique: false });
             }            
             if (!db.objectStoreNames.contains("images")) {
                 const store = db.createObjectStore("images", { keyPath: "uuid" });
                 store.createIndex("room_id_fk", "room_id_fk", { unique: false });
+                store.createIndex('owner_id', 'owner_id', { unique: false });
             }   
             if (!db.objectStoreNames.contains("users")) {
                 const store = db.createObjectStore("users", { keyPath: "uuid" });                
                 store.createIndex('email', 'email', { unique: false });
+                store.createIndex('owner_id', 'owner_id', { unique: false });
             }            
 
 
@@ -1156,6 +1160,59 @@ async function saveImageForRoom(room_id, data)  {
 
 }
 
+async function pushUserData(user_id) {
+    const db = await initDB();
+    // gather all the user data from the indexedDB inclusing all the projects, locations, buildings, floors, rooms, products, images, notes, favourites
+    const tx = db.transaction(["projects", "locations", "buildings", "floors", "rooms", "products", "images", "notes", "favourites"], "readonly");  
+    const projectStore = tx.objectStore("projects");
+    const locationStore = tx.objectStore("locations");
+    const buildingStore = tx.objectStore("buildings");
+    const floorStore = tx.objectStore("floors");
+    const roomStore = tx.objectStore("rooms");
+    const productStore = tx.objectStore("products");
+    const imageStore = tx.objectStore("images");
+    const noteStore = tx.objectStore("notes");
+    const favStore = tx.objectStore("favourites");
+
+    const projects = await projectStore.index("owner_id").getAll(user_id);
+    const locations = await locationStore.index("owner_id").getAll(user_id);
+    const buildings = await buildingStore.index("owner_id").getAll(user_id);
+    const floors = await floorStore.index("owner_id").getAll(user_id);
+    const rooms = await roomStore.index("owner_id").getAll(user_id);
+    const products = await productStore.index("owner_id").getAll(user_id);
+    const images = await imageStore.index("owner_id").getAll(user_id);
+    const notes = await noteStore.index("owner_id").getAll(user_id);
+    const favourites = await favStore.index("owner_id").getAll(user_id);
+
+    // now push all this data to the server
+    const userData = {
+        projects: projects,
+        locations: locations,
+        buildings: buildings,
+        floors: floors,
+        rooms: rooms,
+        products: products,
+        images: images,
+        notes: notes,
+        favourites: favourites
+    };
+
+    console.log('User Data:', userData);
+        
+    const response = await fetch('https://sst.tamlite.co.uk/api/sync_user_data', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(userData)
+    });
+    console.log('Response:', response);
+    
+    
+    
+    
+}
+
 
 // Export the functions
 module.exports = {
@@ -1201,6 +1258,7 @@ module.exports = {
     addFavouriteToRoom,
     removeFavourite,
     getImagesForRoom,
-    saveImageForRoom
+    saveImageForRoom,
+    pushUserData
     // Add other database-related functions here
 };

@@ -35,6 +35,29 @@ class SyncModule {
 
         UIkit.notification({message: 'Data Sync Complete ...', status: 'success', pos: 'bottom-center', timeout: 1000 });
     }
+
+
+    async pushAllUserData() {
+        this.init();
+
+        UIkit.notification({message: 'Data Push Started ...', status: 'warning', pos: 'bottom-center', timeout: 1000 });
+        utils.showSpin();
+        
+        $('#syncicon').addClass('active');
+
+        const user_id = await utils.getCookie('user_id');
+
+        await db.pushUserData(user_id);
+        $('#syncicon').removeClass('active');        
+        
+        utils.hideSpin();
+
+        UIkit.notification({message: 'Data Push Complete ...', status: 'success', pos: 'bottom-center', timeout: 1000 });
+
+    }
+
+
+
 }
 
 module.exports = new SyncModule();

@@ -10,7 +10,7 @@ async function globalBinds() {
 
     $('#syncicon').off('click').on('click', async function(e) {
         e.preventDefault();
-        sync.getUserData();
+        sync.pushAllUserData();
     });
 
 
