@@ -43,7 +43,7 @@ class UtilsModule {
     
     async checkLogin() {
         console.log('Checking authentication ...');
-        const db = require('../db'); 
+        const db = require('../db');         
 
         const user_id = await this.getCookie('user_id');
 

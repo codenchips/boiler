@@ -33,6 +33,7 @@ $(document).ready(function() {
     window.addEventListener('online', function() {
         console.log('App is online');
         db.fetchAndStoreProducts();
+        //db.fetchAndStoreUsers();
         db.syncData(8);
     });
 
@@ -46,7 +47,8 @@ $(document).ready(function() {
         
         if (navigator.onLine) {    
             await db.fetchAndStoreProducts(); 
-            await db.syncData(8);
+            //await db.fetchAndStoreUsers();
+            await db.syncData(await utils.getUserID());
         }
 
         // Get current path and route
@@ -154,23 +156,44 @@ async function fetchAndStoreProducts() {
     if (isEmpty) {
         try {
             console.log('Fetching products from API...');
-        const response = await fetch('https://sst.tamlite.co.uk/api/get_all_products_neat');
+            const response = await fetch('https://sst.tamlite.co.uk/api/get_all_products_neat');
 
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
 
-        const products = await response.json();
-        await saveProducts(products);
+            const products = await response.json();
+            await saveProducts(products);
             console.log('Products fetched and saved to IndexedDB');
-    } catch (error) {
+        } catch (error) {
             console.error('Error fetching product data:', error);
-    }
+        }
     } else {
         console.log('Product data is present in indexedDB, skipping fetch.');
     }
 }
 
+async function fetchAndStoreUsers() {
+    const isEmpty = await isUsersTableEmpty();
+    if (isEmpty) {
+        try {
+            console.log('Fetching products from API...');
+            const response = await fetch('https://sst.tamlite.co.uk/api/get_all_users_neat');
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const users = await response.json();
+            await saveUsers(users);
+                console.log('Auth saved to IndexedDB');
+        } catch (error) {
+            console.error('Error fetching auth data:', error);
+        }
+    } else {
+        console.log('Auth data is present in indexedDB, skipping fetch.');
+    }
+}
 
 
 async function syncData(owner_id) {
@@ -240,6 +263,12 @@ async function isProductsTableEmpty() {
     return count === 0;
 }
 
+async function isUsersTableEmpty() {
+    const db = await initDB();
+    const count = await db.count(users);
+    return count === 0;
+}
+
 async function saveProducts(data) {
     const db = await initDB();
     const tx = db.transaction(STORE_NAME, 'readwrite');
@@ -251,6 +280,19 @@ async function saveProducts(data) {
 
     await tx.done;
     console.log('Products stored in IndexedDB');
+}
+
+async function saveUsers(data) {
+    const db = await initDB();
+    const tx = db.transaction('users', 'readwrite');
+    const store = tx.objectStore('users');
+
+    for (const user of data) {
+        await store.put(user);
+    }
+
+    await tx.done;
+    console.log('Auth stored in IndexedDB');
 }
 
 async function getProducts() {
@@ -1303,6 +1345,7 @@ module.exports = {
     generateUUID, 
     initDB,
     fetchAndStoreProducts,
+    fetchAndStoreUsers,
     getProducts,
     getProjects,    
     getProjectByUUID,
@@ -2226,7 +2269,7 @@ class UtilsModule {
     
     async checkLogin() {
         console.log('Checking authentication ...');
-        const db = require('../db'); 
+        const db = require('../db');         
 
         const user_id = await this.getCookie('user_id');
 
@@ -2410,7 +2453,7 @@ let isRouting = false;
 async function router(path, project_id) {
     if (isRouting) return;
     isRouting = true;
-
+    
     await utils.checkLogin();
 
     // Update browser URL without reload

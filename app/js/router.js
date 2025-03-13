@@ -25,7 +25,7 @@ let isRouting = false;
 async function router(path, project_id) {
     if (isRouting) return;
     isRouting = true;
-
+    
     await utils.checkLogin();
 
     // Update browser URL without reload

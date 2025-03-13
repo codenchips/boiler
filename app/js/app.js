@@ -32,6 +32,7 @@ $(document).ready(function() {
     window.addEventListener('online', function() {
         console.log('App is online');
         db.fetchAndStoreProducts();
+        //db.fetchAndStoreUsers();
         db.syncData(8);
     });
 
@@ -45,7 +46,8 @@ $(document).ready(function() {
         
         if (navigator.onLine) {    
             await db.fetchAndStoreProducts(); 
-            await db.syncData(8);
+            //await db.fetchAndStoreUsers();
+            await db.syncData(await utils.getUserID());
         }
 
         // Get current path and route
