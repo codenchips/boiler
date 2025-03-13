@@ -999,6 +999,9 @@ async function getSchedulePerRoom(projectId) {
             result[room.slug].push({
                 room_slug: room.slug,
                 room_name: room.name,
+                room_width: room.width,
+                room_length: room.length,
+                room_height: room.height,
                 floor_name: floor.name,
                 building_name: building.name,
                 location_name: location.name,

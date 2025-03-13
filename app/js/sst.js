@@ -438,7 +438,7 @@ const accountFunctions = async () => {
 async function generateDataSheets(data) {
     UIkit.modal($('#folio-progress')).show();
     const schedule_type = $('input[name=schedule_type]:checked').val();
-    const project_id = $('input#m_project_id').val();
+    const project_id = $('input#m_project_id').val() || JSON.parse(localStorage.getItem('currentProject')).project_id;
     if (schedule_type == "by_project") {
         jsonData = data; // the schedule table data for a full project schedule
         callGenSheets(schedule_type);
