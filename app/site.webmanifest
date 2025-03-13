@@ -1,7 +1,11 @@
 {
-  "name": "SST App 2",
+  "name": "Site Survey Tool",
   "short_name": "SST",
+  "description": "A tool for surveying sites",
+  "lang": "en",   
+  "orientation": "portrait",
   "start_url": "/",
+  "display_override": ["fullscreen", "minimal-ui"],
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#192542",
@@ -9,8 +13,24 @@
     {
       "src": "img/tamlite-logo-pwa.webp",
       "sizes": "512x512",
-      "type": "image/webp",
-      "purpose": "any maskable"
+      "type": "image/webp" 
     }
-  ]
+  ],
+  "screenshots": [
+    {
+      "src": "img/screen-wide.webp",
+      "sizes": "900x510",
+      "type": "image/webp",
+      "form_factor": "wide",
+      "label": "Schedule Screen"
+    },
+    {
+      "src": "img/screen-tall.webp",
+      "sizes": "404x492",
+      "type": "image/webp",
+      "platform": "ios",
+      "label": "Schedule Screen"
+    }
+]
+
 }
