@@ -40,19 +40,22 @@ class SyncModule {
     async pushAllUserData() {
         this.init();
 
-        UIkit.notification({message: 'Data Push Started ...', status: 'warning', pos: 'bottom-center', timeout: 1000 });
+        UIkit.notification({message: 'Data Push Started ...', status: 'primary', pos: 'bottom-center', timeout: 1000 });
         utils.showSpin();
         
         $('#syncicon').addClass('active');
 
         const user_id = await utils.getCookie('user_id');
 
-        await db.pushUserData(user_id);
+        const result = await db.pushUserData(user_id);
         $('#syncicon').removeClass('active');        
         
         utils.hideSpin();
-
-        UIkit.notification({message: 'Data Push Complete ...', status: 'success', pos: 'bottom-center', timeout: 1000 });
+        if (result.status == 'error') {
+            UIkit.notification({message: 'Ther was an error syncing your data! Please try again.', status: 'danger', pos: 'bottom-center', timeout: 2000 });
+        } else {
+            UIkit.notification({message: 'Data Push Complete ...', status: 'success', pos: 'bottom-center', timeout: 2000 });
+        }
 
     }
 
