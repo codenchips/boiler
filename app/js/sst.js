@@ -8,6 +8,13 @@ const sync = require('./modules/sync');
 
 async function globalBinds() {
 
+    const currentProject = JSON.parse(localStorage.getItem('currentProject') || '{}');
+    if (!currentProject.project_id) {
+        $('.tables_link,.schedule_link').hide();
+    } else {
+        $('.tables_link,.schedule_link').show();
+    }    
+
     $('#syncicon').off('click').on('click', async function(e) {
         e.preventDefault();
         sync.pushAllUserData();

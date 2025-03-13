@@ -13,12 +13,7 @@ $(document).ready(function() {
         window.router(path);
     });
 
-    const currentProject = JSON.parse(localStorage.getItem('currentProject') || '{}');
-    if (!currentProject.project_id) {
-        $('.tables_link,.schedule_link').hide();
-    } else {
-        $('.tables_link,.schedule_link').show();
-    }
+
     
 
     // Register Service Worker

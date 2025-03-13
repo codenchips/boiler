@@ -14,12 +14,7 @@ $(document).ready(function() {
         window.router(path);
     });
 
-    const currentProject = JSON.parse(localStorage.getItem('currentProject') || '{}');
-    if (!currentProject.project_id) {
-        $('.tables_link,.schedule_link').hide();
-    } else {
-        $('.tables_link,.schedule_link').show();
-    }
+
     
 
     // Register Service Worker
@@ -2433,6 +2428,7 @@ async function router(path, project_id) {
                     content: 'This is the schedule page content'
                 });
                 $('#page').html(renderedSchedule);
+                sst.globalBinds();
                 sst.scheduleFunctions();
                 break;
             case 'account':
@@ -2442,6 +2438,7 @@ async function router(path, project_id) {
                     content: 'This is the account page content'
                 });
                 $('#page').html(renderedAccount);
+                sst.globalBinds();
                 sst.accountFunctions();
                 break;                
             default:
@@ -2451,6 +2448,7 @@ async function router(path, project_id) {
                     content: 'Your projects are listed below'
                 });
                 $('#page').html(renderedHome);
+                sst.globalBinds();
                 sst.homeFunctions();
         }
     } catch (error) {
@@ -2482,6 +2480,13 @@ const sidebar = require('./modules/sidebar');
 const sync = require('./modules/sync');
 
 async function globalBinds() {
+
+    const currentProject = JSON.parse(localStorage.getItem('currentProject') || '{}');
+    if (!currentProject.project_id) {
+        $('.tables_link,.schedule_link').hide();
+    } else {
+        $('.tables_link,.schedule_link').show();
+    }    
 
     $('#syncicon').off('click').on('click', async function(e) {
         e.preventDefault();

@@ -183,7 +183,7 @@
                     </div> -->
 
                         <div class="uk-width-1-1">
-
+                            <input type="submit" hidden />
                             <button class="uk-modal-close uk-button uk-button-default">Cancel</button>
                             <button id="form-update-project" type="submit" class="uk-button uk-button-primary">Update</button>
                         </div>
@@ -211,7 +211,7 @@
 
                         <div class="uk-width-1-1 uk-margin-small">
                             <input type="hidden" name="del_sku" id="del_sku" value />
-
+                            <input type="submit" hidden />
                             <button class="uk-modal-close uk-button uk-button-default">Cancel</button>
                             <button id="form-submit-del-sku" type="submit" class="uk-button uk-button-primary">Remove</button>
 
@@ -248,6 +248,7 @@
                                 name="modal_form_project_id" value />
 
                             <div class="form-actions">
+                                <input type="submit" hidden />
                                 <button class="uk-modal-close uk-button uk-button-default">Cancel</button>
                                 <button disabled type="submit"
                                     class="copy-project-button uk-button uk-button-primary">Duplicate
@@ -295,7 +296,7 @@
 
                         <div class="uk-width-1-1">
                             <div class="form-actions">
-
+                                <input type="submit" hidden />
                                 <button class="uk-modal-close uk-button uk-button-default">Cancel</button>
                                 <button type="submit" class="copy-room-button uk-button uk-button-primary">Duplicate</button>
                             </div>
@@ -334,7 +335,7 @@
                             <input type="hidden" name="label" value />
 
                             <div class="form-actions">
-
+                                <input type="submit" hidden />
                                 <button class="uk-modal-close uk-button uk-button-default">Cancel</button>
                                 <button type="submit" class="uk-button uk-button-primary">Update</button>
                             </div>
@@ -366,6 +367,7 @@
                             <div class="form-actions">
                                 <input type="hidden" name="edit_note_uuid"
                                     id="edit_note_uuid" value />
+                                    <input type="submit" hidden />
 
                                 <button class="uk-modal-close uk-button uk-button-default">Cancel</button>
                                 <button type="submit" class="uk-button uk-button-primary">Save</button>
@@ -403,26 +405,25 @@
         <div id="set-qty" uk-modal>
             <div class="uk-modal-dialog uk-margin-auto-vertical uk-modal-body">
                 <button class="uk-modal-close-default" type="button" uk-close></button>
-                <form id="form-submit-set-qty">
+                <form id="form-submit-set-qty" defaultButton="form-submit-set-qty">
                     <div class="uk-text-center" uk-grid>
                         <div class="uk-width-1-1">
                             <h3>Set Quantity</h3>
                         </div>
 
                         <div class="uk-width-1-1 uk-align-center">
-                            <p>How Many <span class="place_sku"></span> in this
-                                room?</p>
+                            <p>How Many <span class="place_sku"></span> in this room?</p>
                             <input id="set_qty_qty" class="uk-input uk-width-1-5"
-                                name="set_qty_qty" type="number" min="0" max="999"
-                                step="1" value>
+                                name="set_qty_qty" type="number" min="0" max="999" step="1" value>
                         </div>
 
                         <div class="uk-width-1-1 uk-margin-small">
-                            <input type="hidden" name="set_qty_sku" id="set_qty_sku"
-                                value />
+                            <input type="hidden" name="set_qty_sku" id="set_qty_sku" value />
+                            <input type="submit" hidden />
 
                             <button class="uk-modal-close uk-button uk-button-default">Cancel</button>
                             <button id="form-submit-set-qty" type="submit" class="uk-button uk-button-primary">OK</button>
+
 
                         </div>
                     </div>
@@ -485,6 +486,7 @@
                             <input type="hidden" id="form_custom_flag"
                                 name="form_custom_flag" value="1" />
 
+                                <input type="submit" hidden />
                             <button class="uk-modal-close uk-button uk-button-default">Cancel</button>
                             <button id="form-submit-special" type="submit" class="uk-button uk-button-primary">Add</button>
                         </div>
@@ -640,7 +642,7 @@
 
                     <div class="uk-width-1-1 uk-margin uk-text-right">
                         <input type="hidden" name="uid" id="uid" value="1" />
-
+                        <input type="submit" hidden />
                         <button class="uk-modal-close uk-button uk-button-default">Cancel</button>
                         <button id="form-submit-createproject" type="submit"class="uk-button uk-button-primary">Create</button>
 
