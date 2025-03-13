@@ -66,6 +66,8 @@ class UtilsModule {
                 $('#m_user_id').val(user.uuid);
                 await that.setCookie('user_id', user.uuid);;
                 await that.setCookie('user_name', user.name);
+                await db.syncData(user.uuid);  // now i can sync just THIS users data.  Also if user has NO data, always PULL it
+
                 UIkit.modal($('#login')).hide();
                 window.location.replace("/");
                 //updateDashTable();

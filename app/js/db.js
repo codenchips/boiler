@@ -126,11 +126,13 @@ async function fetchAndStoreUsers() {
 
 
 async function syncData(owner_id) {
+    console.log('get userdata for user: ', owner_id); 
+
     if (!navigator.onLine) {
         console.log('Offline - using cached data');
         return false;
     }
-    const isEmpty = await isDatabaseEmpty();
+    const isEmpty = await isDatabaseEmpty();  // nah I think we'll grab JUST the user data IF theer is none already
     if (!isEmpty) {
         console.log('User data exists, skipping sync.');
         return (false);
@@ -138,7 +140,7 @@ async function syncData(owner_id) {
 
     const formData = new FormData();
     formData.append("user_id", owner_id); // Use the owner_id variable
-    console.log('get userdata for user: ', owner_id);
+    
 
     try {
         const response = await fetch("https://sst.tamlite.co.uk/api/get_all_user_data", {
@@ -186,6 +188,18 @@ async function syncData(owner_id) {
     }
 }
 
+async function isDatabaseEmpty() {
+    const db = await initDB();
+    const projectCount = await db.count('projects');
+    const locationCount = await db.count('locations');
+    const buildingCount = await db.count('buildings');
+    const floorCount = await db.count('floors');
+    const roomCount = await db.count('rooms');
+    const productCount = await db.count('products');
+
+    return projectCount === 0 && locationCount === 0 && buildingCount === 0 && floorCount === 0 && roomCount === 0 && productCount === 0;
+}
+
 async function isProductsTableEmpty() {
     const db = await initDB();
     const count = await db.count(STORE_NAME);
@@ -194,7 +208,7 @@ async function isProductsTableEmpty() {
 
 async function isUsersTableEmpty() {
     const db = await initDB();
-    const count = await db.count(users);
+    const count = await db.count('users');
     return count === 0;
 }
 
@@ -693,18 +707,6 @@ async function updateName(store, uuid, newName) {
     record.slug = await utils.slugify(newName);
     await objectStore.put(record);
     await tx.done;    
-}
-
-async function isDatabaseEmpty() {
-    const db = await initDB();
-    const projectCount = await db.count('projects');
-    const locationCount = await db.count('locations');
-    const buildingCount = await db.count('buildings');
-    const floorCount = await db.count('floors');
-    const roomCount = await db.count('rooms');
-    const productCount = await db.count('products');
-
-    return projectCount === 0 && locationCount === 0 && buildingCount === 0 && floorCount === 0 && roomCount === 0 && productCount === 0;
 }
 
 async function getProjectStructure(projectId) {
