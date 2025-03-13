@@ -402,8 +402,8 @@ const scheduleFunctions = async () => {
 const accountFunctions = async () => {
     console.log('Running account functions v2');
     // get this user details from the store
-    const user = await db.getUser(8);
-    
+    const user = await db.getUser(await utils.getCookie('user_id'));    
+
     $('#name').val(user.name);
     $('#email').val(user.email);
     $('#password').val(user.password);
@@ -532,7 +532,7 @@ async function callGenSheets(schedule_type) {
 */
 async function renderProjectsTable() {
 
-    const projects = await db.getProjects();
+    const projects = await db.getProjects(await utils.getCookie('user_id'));
     let tabledata = projects.map(project => ({
         project_name: project.name,
         project_slug: project.slug,

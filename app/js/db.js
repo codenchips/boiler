@@ -222,12 +222,14 @@ async function createProject(project_name, location, building, floor, room) {
     return project.uuid;
 }
 
-async function getProjects() {
+async function getProjects(user_id) {
     const db = await initDB();
     const transaction = db.transaction('projects', 'readonly');
     const store = transaction.objectStore('projects');
-    return await store.getAll();
-}``
+    const index = store.index('owner_id');
+    user_id = String(user_id);
+    return await index.getAll(user_id);    
+}
 
 async function getProjectHierarchy(owner_id, project_id) {
     console.log("Fetching from IndexedDB for project_id:", project_id);
@@ -924,7 +926,7 @@ async function addImage(roomUuid, image) {
 }
 
 async function getUser(user_id) {
-    user_id = String(user_id);
+    user_id = user_id+ "";    
     const db = await initDB();
     const tx = db.transaction("users", "readonly");
     const store = tx.objectStore("users");
@@ -932,7 +934,7 @@ async function getUser(user_id) {
 }
 
 async function updateUser(formdata, user_id) {
-    user_id = String(user_id);
+    user_id = user_id + "";
 
 
     const db = await initDB();
@@ -1042,6 +1044,13 @@ async function loginUser(formData) {
     const user = await index.get(formDataObj.modal_form_email);
 
     if (user && user.password === formDataObj.modal_form_password) {
+        // destroy all the local storage items
+        localStorage.clear();
+        // set the user_id cookie
+        await utils.setCookie('user_id', user.uuid, 365);
+        // set the user_name cookie
+        await utils.setCookie('user_name', user.name, 365);
+
         return user;
     } else {
         return false;
