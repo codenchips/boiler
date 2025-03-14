@@ -74,7 +74,7 @@ const utils = require('./modules/utils');
 
 
 const DB_NAME = 'sst_database';
-const DB_VERSION = 16;
+const DB_VERSION = 17;
 const STORE_NAME = 'product_data';
 
 // Custom function to generate UUIDs
@@ -197,49 +197,54 @@ async function fetchAndStoreUsers() {
 
 
 async function syncData(owner_id) {
-    console.log('get userdata for user: ', owner_id); 
+    if (!owner_id) {
+        console.error('No owner_id provided for data sync');
+        return false;
+    }    
+    owner_id = owner_id+""; // ensure it's a string
 
     if (!navigator.onLine) {
-        console.log('Offline - using cached data');
+        console.log('Wont sync as offline');
         return false;
     }
-    const isEmpty = await isDatabaseEmpty();  // nah I think we'll grab JUST the user data IF theer is none already
-    if (!isEmpty) {
-        console.log('User data exists, skipping sync.');
-        return (false);
+    //const isEmpty = await isDatabaseEmpty();  // nah I think we'll grab JUST the user data IF theer is none already
+    const hasProjects = await getProjects(owner_id);    
+    if (hasProjects.length > 0) {
+        console.log('Local Projects exist. Skipping sync.');
+        return false;
     }
-
-    const formData = new FormData();
-    formData.append("user_id", owner_id); // Use the owner_id variable
     
-
+    const userData = {"user_id": owner_id}; // Use the owner_id variable
     try {
         const response = await fetch("https://sst.tamlite.co.uk/api/get_all_user_data", {
-            method: "POST",
-            body: formData,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(userData)
         });
 
         if (!response.ok) {
             throw new Error(`Server error: ${response.status}`);
         }
 
-        const data = await response.json();
-        console.log("data from remote: ", data );
+        const data = await response.json();        
         const dbRequest = indexedDB.open(DB_NAME, DB_VERSION);
         dbRequest.onsuccess = (event) => {
             const db = event.target.result;
             const transaction = db.transaction(
-                ["projects", "locations", "buildings", "floors", "rooms", "products", "favourites", "notes", "images", "users"],
-                "readwrite"
-            );
+                ["projects", "locations", "buildings", "floors", "rooms", "products", "favourites", "notes", "images"],
+                "readwrite" );
 
-            ["projects", "locations", "buildings", "floors", "rooms", "products", "favourites", "notes", "images", "users"].forEach(
+                ["projects", "locations", "buildings", "floors", "rooms", "products", "favourites", "notes", "images"].forEach(
                 (storeName) => {
                     const store = transaction.objectStore(storeName);
                     store.clear();  // Clear existing data
 
-                    data[storeName].forEach(item => {
-                        if (!item.id) {
+                    // Convert single object to array if needed
+                    const items = Array.isArray(data[storeName]) ? data[storeName] : [data[storeName]];
+                    items.forEach(item => {
+                        if (!item || !item.id) {
                             console.error(`Missing ID in ${storeName}:`, item);
                         } else {
                             item.uuid = item.id;  // Map 'id' to 'uuid' for IndexedDB
@@ -251,12 +256,25 @@ async function syncData(owner_id) {
                     });
                 }
             );
-            return(true);
+            // update the users table "pulled" column with durrent datetime
+            setPulled(owner_id);
+            
             console.log("Data synced to IndexedDB successfully.");
+            return(true);            
         };
     } catch (error) {
         console.error("Data sync failed:", error);
     }
+}
+
+async function setPulled(owner_id) {
+    const db = await initDB();
+    const tx = db.transaction("users", "readwrite");
+    const store = tx.objectStore("users");
+    const user = await store.get(owner_id);        
+    user.pulled = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    await store.put(user);
+    await tx.done;
 }
 
 async function isDatabaseEmpty() {
@@ -352,7 +370,7 @@ async function getProjects(user_id) {
     const transaction = db.transaction('projects', 'readonly');
     const store = transaction.objectStore('projects');
     const index = store.index('owner_id');
-    user_id = String(user_id);
+    user_id = user_id + "";
     return await index.getAll(user_id);    
 }
 
@@ -1149,8 +1167,7 @@ async function loginUser(formData) {
     // formData is a js formData object from the submitted form
     // parse the email and password from the form data
     const formDataObj = {};
-    formData.forEach((value, key) => (formDataObj[key] = value));    
-    console.log('formData: ', formDataObj);
+    formData.forEach((value, key) => (formDataObj[key] = value));        
     if (!formDataObj.modal_form_email) {
         throw new Error("Email is required");
     }
@@ -1639,7 +1656,7 @@ class SyncModule {
         this.isInitialized = true;        
     }
 
-    async getUserData(product) {
+    async getUserData() {
         this.init();
 
         UIkit.notification({message: 'Data Sync Started ...', status: 'warning', pos: 'bottom-center', timeout: 1000 });
@@ -2294,7 +2311,8 @@ class UtilsModule {
                 $('#m_user_id').val(user.uuid);
                 await that.setCookie('user_id', user.uuid);;
                 await that.setCookie('user_name', user.name);
-                await db.syncData(user.uuid);
+                // Sync just THIS users data.  If user has NO data, always PULL it
+                await db.syncData(user.uuid);  
 
                 UIkit.modal($('#login')).hide();
                 window.location.replace("/");

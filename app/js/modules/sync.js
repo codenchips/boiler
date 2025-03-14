@@ -18,7 +18,7 @@ class SyncModule {
         this.isInitialized = true;        
     }
 
-    async getUserData(product) {
+    async getUserData() {
         this.init();
 
         UIkit.notification({message: 'Data Sync Started ...', status: 'warning', pos: 'bottom-center', timeout: 1000 });
