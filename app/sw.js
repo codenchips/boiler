@@ -13,6 +13,8 @@ const urlsToCache = [
   '/manifest.json'
 ];
 
+//const backgroundSync = new BackgroundSyncManager('api-queue');
+
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -21,36 +23,68 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  // Ignore chrome extension requests
   if (event.request.url.startsWith('chrome-extension://')) {
-    console.log(`Ignoring chrome-extension:// request: ${event.request.url}`);
-    event.respondWith(fetch(event.request)); // Just fetch normally
+    event.respondWith(fetch(event.request));
     return;
   }
 
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        if (response) {
-          return response; // Return cached version
-        }
-        
-        // Not in cache - fetch from network
-        return fetch(event.request)
-          .then(response => {
-            // Cache successful responses
-            if (response.ok) {
-              const responseClone = response.clone();
-              caches.open(CACHE_NAME)
-                .then(cache => {
-                  cache.put(event.request, responseClone);
-                });
+  // Handle API calls differently
+  if (event.request.url.includes('/api/')) {
+    event.respondWith(
+      fetch(event.request)
+        .catch(error => {
+          console.log('API call failed (offline):', error);
+          return new Response(
+            JSON.stringify({ 
+              error: 'You are offline. This action will be queued for when you are back online.' 
+            }),
+            { 
+              status: 503,
+              headers: { 'Content-Type': 'application/json' }
             }
+          );
+        })
+    );
+    return;
+  }
+
+  // Handle regular GET requests with caching
+  if (event.request.method === 'GET') {
+    event.respondWith(
+      caches.match(event.request)
+        .then(response => {
+          if (response) {
             return response;
-          })
-          .catch(() => {
-            // Network failed, show offline page
-            return caches.match('/views/offline.html');
-          });
-      })
-  );
+          }
+          
+          return fetch(event.request)
+            .then(response => {
+              if (response.ok) {
+                const responseClone = response.clone();
+                caches.open(CACHE_NAME)
+                  .then(cache => {
+                    cache.put(event.request, responseClone);
+                  });
+              }
+              return response;
+            })
+            .catch(() => {
+              return caches.match('/views/offline.html');
+            });
+        })
+    );
+    return;
+  }
+
+  // Let other requests pass through
+  event.respondWith(fetch(event.request));
 });
+
+// self.addEventListener('sync', (event) => {
+//   if (event.tag === 'api-queue') {
+//     event.waitUntil(
+//       backgroundSync.process()
+//     );
+//   }
+// });
