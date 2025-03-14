@@ -409,6 +409,11 @@ const accountFunctions = async () => {
     $('#password').val(user.password);
     $('#code').val(user.code);
 
+    $('#btn_pull_user_data').off('click').on('click', async function(e) {
+        e.preventDefault();
+        await sync.getUserData();
+    });
+
 
     $('#form-update-account').off('submit').on('submit', async function(e) {
         e.preventDefault();

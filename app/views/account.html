@@ -5,7 +5,7 @@
         <h3>Your details</h3>
     </div>
 
-    <form name="form-update-account" id="form-update-account" class="uk-margin-small-top">
+    <form name="form-update-account" id="form-update-account" class="uk-margin-small-top" uk-grid>
         <div class="uk-width-1-2 uk-margin">                        
             <div class="dimensions uk-grid-match" uk-grid>
                 <div class="uk-width-1-1 ">
@@ -29,9 +29,11 @@
         </div>
 
 
-        <div class="uk-width-1-2 uk-margin">                        
+        <div class="uk-width-1-2 uk-margin">    
+            <div class="uk-width-1-1 uk-margin">
+                <button id="btn_pull_user_data" class="uk-button uk-button-primary uk-width-1-1">Fetch Data From Server</button>
+            </div>
             <div class="dimensions uk-grid-match" uk-grid>
-
             </div>
         </div>
 
@@ -40,6 +42,10 @@
             <div class="uk-width-1-6 uk-margin">
                 <button type="submit" id="btn_update_account" class="uk-button uk-button-primary uk-width-1-1">Update</button>
             </div>
+
+            
+
+
         </div>
     </form>
 

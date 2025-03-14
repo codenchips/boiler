@@ -21,19 +21,15 @@ class SyncModule {
     async getUserData() {
         this.init();
 
-        UIkit.notification({message: 'Data Sync Started ...', status: 'warning', pos: 'bottom-center', timeout: 1000 });
         utils.showSpin();
         
         $('#syncicon').addClass('active');
 
-        const user_id = await utils.getCookie('user_id');
-
-        await db.syncData(user_id);
-        $('#syncicon').removeClass('active');        
-        
+        const user_id = await utils.getUserID();
+        const result = await db.pullUserData(user_id);        
+        $('#syncicon').removeClass('active');  
+                      
         utils.hideSpin();
-
-        UIkit.notification({message: 'Data Sync Complete ...', status: 'success', pos: 'bottom-center', timeout: 1000 });
     }
 
 
@@ -52,7 +48,7 @@ class SyncModule {
         
         utils.hideSpin();
         if (result.status == 'error') {
-            UIkit.notification({message: 'Ther was an error syncing your data! Please try again.', status: 'danger', pos: 'bottom-center', timeout: 2000 });
+            UIkit.notification({message: 'There was an error syncing your data! Please try again.', status: 'danger', pos: 'bottom-center', timeout: 2000 });
         } else {
             UIkit.notification({message: 'Data Push Complete ...', status: 'success', pos: 'bottom-center', timeout: 2000 });
         }

@@ -125,12 +125,53 @@ async function fetchAndStoreUsers() {
 }
 
 
-async function syncData(owner_id) {
+async function pullUserData(owner_id) {
     if (!owner_id) {
         console.error('No owner_id provided for data sync');
         return false;
     }    
     owner_id = owner_id+""; // ensure it's a string
+    const userData = {"user_id": owner_id}; // Use the owner_id variable
+
+    // user has projects, offer to pull from and show the pushed date on the user table for information
+    try {
+        const response = await fetch("https://sst.tamlite.co.uk/api/get_last_pushed", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(userData)
+        });    
+        if (!response.ok) { throw new Error(`Server error: ${response.status}`); }
+        const data = await response.json(); 
+        console.log("pushed: ", data.pushed); 
+        const lastPushed = new Date(data.pushed);
+        const lastPushedStr = lastPushed.toLocaleString();
+        const lastPushedEpoch = lastPushed.getTime();
+        const lastPushedEpochStr = lastPushedEpoch.toString();
+        // offer a uikit confirm dialog to pulll data, showing the last pushed date and time
+        const str = `<h4>Your last push to the server was <br><b>${lastPushedStr}</b></h4> <p>Would you like to pull this data?</p>`
+        +`<p style="color: red; font-weight: bold"><small>Clicking OK will overwrite any local changes since this date.</small>`;
+        UIkit.modal.confirm(str).then(function() {
+            console.log('Confirmed.')
+            syncData(owner_id, true);      
+        }, function () {
+            console.log('Rejected.')
+            return false;
+        });
+        
+        
+    } catch (error) { console.error("Data sync failed:", error); }        
+        
+    return true;
+}
+
+
+async function syncData(owner_id, force = false) {
+    if (!owner_id) {
+        console.error('No owner_id provided for data sync');
+        return false;
+    }    
+    owner_id = owner_id+""; // ensure it's a string
+    const userData = {"user_id": owner_id}; // Use the owner_id variable
 
     if (!navigator.onLine) {
         console.log('Wont sync as offline');
@@ -138,12 +179,17 @@ async function syncData(owner_id) {
     }
     //const isEmpty = await isDatabaseEmpty();  // nah I think we'll grab JUST the user data IF theer is none already
     const hasProjects = await getProjects(owner_id);    
-    if (hasProjects.length > 0) {
-        console.log('Local Projects exist. Skipping sync.');
+
+    // user has projects, offer to pull from and show the pushed date on the user table for information
+    if (hasProjects.length > 0 && !force) {
+        console.log('Local Projects exist. Not forcing. Dont sync.');        
         return false;
     }
-    
-    const userData = {"user_id": owner_id}; // Use the owner_id variable
+
+    if (force) {
+        console.log('forcing userdata PULL');
+    }
+        
     try {
         const response = await fetch("https://sst.tamlite.co.uk/api/get_all_user_data", {
             method: 'POST',
@@ -187,7 +233,7 @@ async function syncData(owner_id) {
             );
             // update the users table "pulled" column with durrent datetime
             setPulled(owner_id);
-            
+            UIkit.notification({message: 'Data Fetch Complete ...', status: 'success', pos: 'bottom-center', timeout: 1500 });
             console.log("Data synced to IndexedDB successfully.");
             return(true);            
         };
@@ -1334,6 +1380,7 @@ module.exports = {
     removeFavourite,
     getImagesForRoom,
     saveImageForRoom,
-    pushUserData
+    pushUserData,
+    pullUserData
     // Add other database-related functions here
 };
