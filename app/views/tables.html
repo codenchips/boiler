@@ -44,7 +44,7 @@
 </div>
 <!-- end rooms nav -->
 
-<button class="btn-toggle-sidebar uk-button uk-align-right uk-button-primary uk-hidden@xl " type="button" uk-toggle="target: #offcanvas-sidebar">Manage Project</button>
+<button class="btn-toggle-sidebar uk-button uk-align-right uk-button-primary uk-visible@l" type="button" uk-toggle="target: #offcanvas-sidebar">Manage Project</button>
 <!-- 
     // END Sidebar  
 --> 
@@ -53,8 +53,12 @@
 <!-- 
     Tables View 
 -->     
-<div id="table_mode_view" class="uk-width-1-1 uk-margin">
-   
+<div id="table_mode_view" class="uk-width-1-1 uk-margin-remove-botttom@l" uk-grid>
+    
+    <div class="uk-width-1-1">
+        <button class="uk-button uk-align-left uk-button-primary uk-hidden@l" type="button" uk-toggle="target: #offcanvas-sidebar">Manage Project</button>
+    </div>
+
     <div  class="uk-margin-top location-heading" uk-grid>
         <div class="uk-width-1-1">
             <span class="uk-icon" uk-icon="icon: location;"></span>
@@ -167,7 +171,7 @@
         <div class="uk-switcher uk-margin-remove-top uk-width-1-1">
             <div class="uk-width-1-1 notes-images-container">
                 <div id="target-notes" class="uk-width-1-1 notes-area">
-                    <button id="add-note" class="uk-width-1-4 uk-button uk-button-primary">Add Note</button>
+                    <button id="add-note" class="uk-width-1-4@l uk-width-1-2 uk-button uk-button-primary">Add Note</button>
                     <ul id="room_notes" class="uk-width-1-1 notes-area"></ul>                    
                 </div>
             </div>

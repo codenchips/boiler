@@ -505,7 +505,129 @@ label.subheading {
     letter-spacing: 2px;
 
   }
+}
+
+@media screen and (max-width: 768px) {
+//   [class*=uk-width] {
+//     box-sizing: border-box;
+//     width: auto;
+//     max-width: auto;
+// }
+  .uk-grid {
+    margin-left: 0;
+    margin-right: 0;
+  }
+  .uk-grid>* {
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .tables-side {
+    .uk-button {
+      border: none;
+    }
+  }
+  .uk-button {
+    border: 1px solid #fff;
+  }
+
+  .uk-offcanvas-bar {
+    --uk-inverse: light;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -270px;
+    box-sizing: border-box;
+    width: 270px;
+    padding: 10px 5px 2px 2px;
+    background: #222;
+    overflow-y: auto
+}
 
 
+  .uk-navbar-container {
+    .uk-icon {
+      font-size: 1.3em;
+    }
+  }
+
+
+  .nav-menu {
+    .location-item, .project-item {
+      font-size: 1.3em;
+    }
+
+    .building-item {
+      font-size: 1.1em;
+    }
+
+    .floor-item {
+      font-size: 1em;
+    }
+
+    .room-item {
+      font-size: 1em;
+    }
+
+    .action-icons, .action-icon {
+      font-size: 1.2em;
+    }
+  }
+
+  .location-heading {
+    .room_name {
+      font-size: 1em;
+    }
+  }
+
+
+
+  .sidetabs {
+    button {
+      height: 30px;
+    }
+  }
+
+  .schedule-topper {
+    div {
+      p {
+        font-size: 80%;
+      }
+    }
+  }
+
+  .dimensions {
+    label {
+      font-size: 0.8em;
+    }
+  }
+
+  .notes-area {
+    textarea.note {
+      font-size: 1em;
+    }
+  }
+
+  .notes-images-area {
+    .notes-images-container {
+      border-top-width: 1px;
+    }
+
+    #room_notes {
+      .note {
+        padding: 15px 10px;
+        margin: 5px 0;
+      }
+    }
+
+    .uk-button-link {
+      line-height: 30px;
+    }
+  }
+
+  .sku-list {
+    li {
+      padding: 3px 0 10px 15px;
+    }
+  }
 
 }
