@@ -12,8 +12,6 @@ $(document).ready(function() {
         const path = $(this).attr('href').substring(1);        
         window.router(path);
     });
-
-
     
 
     // Register Service Worker
