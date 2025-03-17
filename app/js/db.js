@@ -1105,6 +1105,11 @@ async function getSchedulePerRoom(projectId) {
                 result[room.slug] = [];
             }
 
+            // I need to ensure that the product is not already in the array for this room
+            if (result[room.slug].find(p => p.sku === product.sku)) {
+                return;
+            }   
+
             result[room.slug].push({
                 room_slug: room.slug,
                 room_name: room.name,

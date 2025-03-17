@@ -1244,6 +1244,11 @@ async function getSchedulePerRoom(projectId) {
                 result[room.slug] = [];
             }
 
+            // I need to ensure that the product is not already in the array for this room
+            if (result[room.slug].find(p => p.sku === product.sku)) {
+                return;
+            }   
+
             result[room.slug].push({
                 room_slug: room.slug,
                 room_name: room.name,
@@ -3133,6 +3138,7 @@ async function generateDataSheets(data) {
     } else {
         try {            
             jsonData = await db.getSchedulePerRoom(project_id); // Wait for the data
+            //console.log('jsonData', jsonData);
             callGenSheets(schedule_type); // Call with the resolved data
         } catch (error) {
             console.error("Error fetching schedule per room:", error);

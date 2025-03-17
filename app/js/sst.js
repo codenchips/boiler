@@ -455,6 +455,7 @@ async function generateDataSheets(data) {
     } else {
         try {            
             jsonData = await db.getSchedulePerRoom(project_id); // Wait for the data
+            //console.log('jsonData', jsonData);
             callGenSheets(schedule_type); // Call with the resolved data
         } catch (error) {
             console.error("Error fetching schedule per room:", error);
