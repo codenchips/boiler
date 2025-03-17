@@ -409,6 +409,8 @@ const accountFunctions = async () => {
     $('#password').val(user.password);
     $('#code').val(user.code);
 
+    $('.version').html(await utils.getAppVersion());
+
     $('#btn_pull_user_data').off('click').on('click', async function(e) {
         e.preventDefault();
         await sync.getUserData();
@@ -416,7 +418,7 @@ const accountFunctions = async () => {
 
     $('#btn_clear_local_storage').off('click').on('click', async function(e) {
         e.preventDefault();
-        await sync.clearLocalStorage();
+        await utils.clearServiceWorkerCache();
     });    
 
 

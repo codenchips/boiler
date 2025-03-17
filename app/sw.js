@@ -1,4 +1,24 @@
-const CACHE_NAME = 'sst-cache-v19'; // Increment this when you want to force an update
+const CACHE_NAME = 'sst-cache-v22'; 
+
+self.addEventListener('message', (event) => {
+  console.log('SW received message:', event.data);
+  
+  if (event.data?.type === 'GET_VERSION') {
+      console.log('SW sending version:', CACHE_NAME);
+      
+      // Send response back to all clients
+      self.clients.matchAll().then(clients => {
+          clients.forEach(client => {
+              client.postMessage({ 
+                  type: 'CACHE_VERSION',
+                  version: CACHE_NAME,
+                  timestamp: event.data.timestamp
+              });
+          });
+      });
+  }
+});
+
 const urlsToCache = [
   '/',
   '/index.html',

@@ -186,6 +186,69 @@ class UtilsModule {
         return text.toString().toLowerCase().trim()
             .replace(/-/g, ' ');           // Replace - with space          
     }
+
+    async getAppVersion() {
+        console.log('getting version');
+        try {
+            // Wait for service worker registration
+            const registration = await navigator.serviceWorker.ready;
+            console.log('got registration:', registration);
+    
+            if (!registration.active) {
+                throw new Error('No active service worker found');
+            }
+    
+            const versionPromise = new Promise((resolve, reject) => {
+                let messageHandler;
+    
+                const cleanup = () => {
+                    clearTimeout(timeout);
+                    navigator.serviceWorker.removeEventListener('message', messageHandler);
+                };
+    
+                const timeout = setTimeout(() => {
+                    cleanup();
+                    reject(new Error('Version request timed out'));
+                }, 10000);
+    
+                messageHandler = (event) => {
+                    console.log('Utils received SW message:', event.data);
+                    if (event.data?.type === 'CACHE_VERSION') {
+                        cleanup();
+                        const version = event.data.version.split('-v')[1];
+                        console.log('Extracted version:', version);
+                        resolve(version);
+                    }
+                };
+    
+                // Add message listener before sending message
+                navigator.serviceWorker.addEventListener('message', messageHandler);
+                
+                // Send message to service worker
+                console.log('Utils sending getCacheVersion message');
+                registration.active.postMessage({
+                    type: 'GET_VERSION',
+                    timestamp: Date.now()
+                });
+            });
+    
+            const version = await versionPromise;
+            return `1.0.${version}`;
+    
+        } catch (error) {
+            console.error('Error getting app version:', error);
+            return '1.0.0';
+        }
+    }
+
+    async clearServiceWorkerCache() {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map(reg => reg.unregister()));
+        const cacheKeys = await caches.keys();
+        await Promise.all(cacheKeys.map(key => caches.delete(key)));
+        console.log('Service Worker and caches cleared');
+        location.reload();
+    }
     
     makeid(length) {
         let result = '';
