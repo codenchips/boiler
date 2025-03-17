@@ -414,6 +414,11 @@ const accountFunctions = async () => {
         await sync.getUserData();
     });
 
+    $('#btn_clear_local_storage').off('click').on('click', async function(e) {
+        e.preventDefault();
+        await sync.clearLocalStorage();
+    });    
+
 
     $('#form-update-account').off('submit').on('submit', async function(e) {
         e.preventDefault();

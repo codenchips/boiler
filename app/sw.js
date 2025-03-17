@@ -81,10 +81,3 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(fetch(event.request));
 });
 
-// self.addEventListener('sync', (event) => {
-//   if (event.tag === 'api-queue') {
-//     event.waitUntil(
-//       backgroundSync.process()
-//     );
-//   }
-// });

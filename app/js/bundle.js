@@ -1704,6 +1704,21 @@ class SyncModule {
         this.isInitialized = true;        
     }
 
+
+    async clearLocalStorage() {
+        this.init();
+
+        utils.showSpin();
+        
+        $('#syncicon').addClass('active');
+
+        localStorage.clear();
+
+        $('#syncicon').removeClass('active');  
+                      
+        utils.hideSpin();        
+    }
+
     async getUserData() {
         this.init();
 
@@ -3008,6 +3023,11 @@ const accountFunctions = async () => {
         e.preventDefault();
         await sync.getUserData();
     });
+
+    $('#btn_clear_local_storage').off('click').on('click', async function(e) {
+        e.preventDefault();
+        await sync.clearLocalStorage();
+    });    
 
 
     $('#form-update-account').off('submit').on('submit', async function(e) {

@@ -18,6 +18,21 @@ class SyncModule {
         this.isInitialized = true;        
     }
 
+
+    async clearLocalStorage() {
+        this.init();
+
+        utils.showSpin();
+        
+        $('#syncicon').addClass('active');
+
+        localStorage.clear();
+
+        $('#syncicon').removeClass('active');  
+                      
+        utils.hideSpin();        
+    }
+
     async getUserData() {
         this.init();
 
