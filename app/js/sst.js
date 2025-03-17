@@ -424,7 +424,7 @@ const accountFunctions = async () => {
 
     $('#form-update-account').off('submit').on('submit', async function(e) {
         e.preventDefault();
-        console.log('Update account clicked');
+        //console.log('Update account clicked');
         // build the user object from submitted form fields
         const formdata = {            
             name: $('#name').val(),

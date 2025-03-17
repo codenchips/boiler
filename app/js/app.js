@@ -20,7 +20,7 @@ $(document).ready(function() {
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js')
             .then(registration => {
-                console.log('ServiceWorker registration successful');
+                //console.log('ServiceWorker registration successful');
                 
                 // Check for updates
                 registration.addEventListener('updatefound', () => {
@@ -33,14 +33,14 @@ $(document).ready(function() {
                 });
             })
             .catch(err => {
-                console.log('ServiceWorker registration failed:', err);
+                //console.log('ServiceWorker registration failed:', err);
             });
     }
         
 
     // Handle online/offline status
     window.addEventListener('online', function() {
-        console.log('App is online');
+        //console.log('App is online');
         db.fetchAndStoreProducts();
         //db.fetchAndStoreUsers();
         //db.syncData(utils.getUserID());

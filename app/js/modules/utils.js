@@ -58,7 +58,7 @@ class UtilsModule {
         $("#form-login").off("submit").on("submit", async function(e) {
             e.preventDefault();
             $('.login-error').hide();
-            console.log('Login submitted');
+            //console.log('Login submitted');
             const form = document.querySelector("#form-login");            
             const user = await db.loginUser(new FormData(form));            
             
@@ -188,11 +188,11 @@ class UtilsModule {
     }
 
     async getAppVersion() {
-        console.log('getting version');
+        //console.log('getting version');
         try {
             // Wait for service worker registration
             const registration = await navigator.serviceWorker.ready;
-            console.log('got registration:', registration);
+            //console.log('got registration:', registration);
     
             if (!registration.active) {
                 throw new Error('No active service worker found');
@@ -212,7 +212,7 @@ class UtilsModule {
                 }, 10000);
     
                 messageHandler = (event) => {
-                    console.log('Utils received SW message:', event.data);
+                    //console.log('Utils received SW message:', event.data);
                     if (event.data?.type === 'CACHE_VERSION') {
                         cleanup();
                         const version = event.data.version.split('-v')[1];
@@ -225,7 +225,7 @@ class UtilsModule {
                 navigator.serviceWorker.addEventListener('message', messageHandler);
                 
                 // Send message to service worker
-                console.log('Utils sending getCacheVersion message');
+                //console.log('Utils sending getCacheVersion message');
                 registration.active.postMessage({
                     type: 'GET_VERSION',
                     timestamp: Date.now()
@@ -236,8 +236,8 @@ class UtilsModule {
             return `1.0.${version}`;
     
         } catch (error) {
-            console.error('Error getting app version:', error);
-            return '1.0.0';
+            //console.error('Error getting app version:', error);
+            return 'Not set';
         }
     }
 
@@ -246,7 +246,7 @@ class UtilsModule {
         await Promise.all(registrations.map(reg => reg.unregister()));
         const cacheKeys = await caches.keys();
         await Promise.all(cacheKeys.map(key => caches.delete(key)));
-        console.log('Service Worker and caches cleared');
+        //console.log('Service Worker and caches cleared');
         location.reload();
     }
     
