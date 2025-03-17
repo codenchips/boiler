@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sst-cache-v1';
+const CACHE_NAME = 'sst-cache-v18'; // Increment this when you want to force an update
 const urlsToCache = [
   '/',
   '/index.html',
@@ -13,7 +13,36 @@ const urlsToCache = [
   '/manifest.json'
 ];
 
-//const backgroundSync = new BackgroundSyncManager('api-queue');
+// Add activate event handler to clean up old caches
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
+});
+
+// Add message handler for client communication
+self.addEventListener('message', (event) => {
+  if (event.data === 'skipWaiting') {
+      self.skipWaiting()
+          .then(() => {
+              // Notify all clients about the update
+              self.clients.matchAll().then(clients => {
+                  clients.forEach(client => {
+                      client.postMessage({ type: 'UPDATE_READY' });
+                  });
+              });
+          });
+  }
+});
+
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
