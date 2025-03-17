@@ -3,7 +3,7 @@ const utils = require('./modules/utils');
 
 
 const DB_NAME = 'sst_database';
-const DB_VERSION = 17;
+const DB_VERSION = 18;
 const STORE_NAME = 'product_data';
 
 // Custom function to generate UUIDs
@@ -21,7 +21,8 @@ async function initDB() {
             // Check and create existing store for products
             if (!db.objectStoreNames.contains(STORE_NAME)) {
                 console.log('Creating object store for products...');
-                db.createObjectStore(STORE_NAME, { keyPath: 'product_code' });
+                const store = db.createObjectStore(STORE_NAME, { keyPath: 'product_code' });
+                store.createIndex('site', 'site', { unique: false });                
             }
             if (!db.objectStoreNames.contains("projects")) {
                 const store = db.createObjectStore("projects", { keyPath: "uuid" });

@@ -79,17 +79,18 @@ class TablesModule {
 
     async getProductsForType(type) {
         const products = await db.getProducts();
-        
+        const site = $('#form_brand').val();
+
         return products
-            .filter(product => product.type_slug === type)
+            .filter(product => product.type_slug === type && product.site === site )
             .reduce((acc, product) => {
-                if (!acc.some(item => item.slug === product.product_slug)) {
-                    acc.push({ 
-                        slug: product.product_slug, 
-                        name: product.product_slug.replace(/^xcite-/i, '').toString().toUpperCase().trim().replace(/-/g, ' ')
-                    });
-                }
-                return acc;
+            if (!acc.some(item => item.slug === product.product_slug)) {
+                acc.push({ 
+                slug: product.product_slug, 
+                name: product.product_slug.replace(/^xcite-/i, '').toString().toUpperCase().trim().replace(/-/g, ' ')
+                });
+            }
+            return acc;
             }, [])            
             .sort((a, b) => a.name.localeCompare(b.name));
     }    
