@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sst-cache-v18'; // Increment this when you want to force an update
+const CACHE_NAME = 'sst-cache-v19'; // Increment this when you want to force an update
 const urlsToCache = [
   '/',
   '/index.html',
