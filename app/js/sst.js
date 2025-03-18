@@ -438,7 +438,8 @@ const accountFunctions = async () => {
             code: $('#code').val()
         }        
 
-        await db.updateUser(formdata, 8);
+        const user_id = await utils.getCookie('user_id');
+        await db.updateUser(formdata, user_id);
         UIkit.notification('Account updated', {status:'success',pos: 'bottom-center',timeout: 1500});
     });
 
