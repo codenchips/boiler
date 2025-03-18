@@ -402,7 +402,8 @@ const scheduleFunctions = async () => {
 const accountFunctions = async () => {
     console.log('Running account functions v2');
     // get this user details from the store
-    const user = await db.getUser(await utils.getCookie('user_id'));    
+    const user = await db.getUser(await utils.getCookie('user_id'));   
+    if (!user) return false;
 
     $('#name').val(user.name);
     $('#email').val(user.email);
@@ -421,6 +422,10 @@ const accountFunctions = async () => {
         await utils.clearServiceWorkerCache();
     });    
 
+    $('#btn_logout').off('click').on('click', async function(e) {
+        e.preventDefault();
+        await utils.logout();
+    });      
 
     $('#form-update-account').off('submit').on('submit', async function(e) {
         e.preventDefault();

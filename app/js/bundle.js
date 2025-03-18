@@ -2454,23 +2454,23 @@ class UtilsModule {
             }
     
         });
-    
-        $('#logout').off('click').on('click', function(e) {
-            e.preventDefault();
-            deleteCookie('user_id');
-            deleteCookie('user_name');
-            window.open("/?t="+makeid(10), '_self');
-        });
+   
+
     }
 
-    async deleteCookie( name, path, domain ) {
-        if( getCookie( name ) ) {
-            document.cookie = name + "=" +
-                ((path) ? ";path="+path:"")+
-                ((domain)?";domain="+domain:"") +
-                ";expires=Thu, 01 Jan 1970 00:00:01 GMT";
-        }
+    async logout() {
+        await this.deleteCookie('user_id');
+        await this.deleteCookie('user_name');
+        window.open("/?t=", '_self');
     }
+
+    async deleteCookie(cname) {
+        const d = new Date();
+        d.setTime(d.getTime() - (24 * 60 * 60 * 1000));
+        let expires = "expires=" + d.toUTCString();
+        document.cookie = cname + "=;" + expires + ";path=/";
+    }
+
     async setCookie(cname, cvalue, exdays) {
         const d = new Date();
         d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
@@ -2520,14 +2520,6 @@ class UtilsModule {
         return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
     }
 
-    async deleteCookie( name, path, domain ) {
-        if( getCookie( name ) ) {
-            document.cookie = name + "=" +
-                ((path) ? ";path="+path:"")+
-                ((domain)?";domain="+domain:"") +
-                ";expires=Thu, 01 Jan 1970 00:00:01 GMT";
-        }
-    }
     async setCookie(cname, cvalue, exdays) {
         const d = new Date();
         d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
@@ -3146,7 +3138,8 @@ const scheduleFunctions = async () => {
 const accountFunctions = async () => {
     console.log('Running account functions v2');
     // get this user details from the store
-    const user = await db.getUser(await utils.getCookie('user_id'));    
+    const user = await db.getUser(await utils.getCookie('user_id'));   
+    if (!user) return false;
 
     $('#name').val(user.name);
     $('#email').val(user.email);
@@ -3165,6 +3158,10 @@ const accountFunctions = async () => {
         await utils.clearServiceWorkerCache();
     });    
 
+    $('#btn_logout').off('click').on('click', async function(e) {
+        e.preventDefault();
+        await utils.logout();
+    });      
 
     $('#form-update-account').off('submit').on('submit', async function(e) {
         e.preventDefault();
