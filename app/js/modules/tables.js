@@ -314,8 +314,10 @@ class TablesModule {
         $('input#set_qty_qty').val(qty);
 
         UIkit.modal('#set-qty', { stack : true }).show();    
-
-        $('#set_qty_qty').focus().select();
+        UIkit.util.on('#set-qty', 'shown', () => {
+            $('#set_qty_qty').focus().select();
+        });
+        
 
         $('#form-submit-set-qty').off('submit').on('submit', async (e) => {
             e.preventDefault();
