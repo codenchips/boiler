@@ -1075,6 +1075,21 @@ async function getFloors(project_id) {
     return floorArray;
 }
 
+
+async function removeProject(project_id) {
+    // rather than delete anything from the database, i just want to change the owner_if of the project to prepend] 999 in front 
+    // but only in the projects table, so that it is not shown in the project list
+    const db = await initDB();
+    const tx = db.transaction("projects", "readwrite");
+    const store = tx.objectStore("projects");
+    const project = await store.get(project_id);
+    project.owner_id = "999" + project.owner_id;
+    await store.put(project);
+    await tx.done;   
+}
+
+
+
 async function copyProject(project_id, projectName) {
     const db = await initDB();
     const tx = db.transaction(["projects", "locations", "buildings", "floors", "rooms", "products"], "readwrite");
@@ -1524,7 +1539,8 @@ module.exports = {
     getImagesForRoom,
     saveImageForRoom,
     pushUserData,
-    pullUserData
+    pullUserData,
+    removeProject
     // Add other database-related functions here
 };
 
@@ -3368,17 +3384,17 @@ async function renderProjectsTable() {
                 visible: true,
                 headerSort: false,
                 formatter: utils.iconCopy,
-                width: 80,
+                width: 60,
                 hozAlign: "center",
                 cellClick: function (e, cell) {
                     copyProject(cell.getRow().getData().project_id);
                 }
             },
             {                    
-                visible: false,
+                visible: true,
                 headerSort: false,
                 formatter: utils.iconX,
-                width: 80,
+                width: 60,
                 hozAlign: "center",
                 cellClick: function (e, cell) {
                     deleteProject(cell.getRow().getData().project_id);
@@ -3544,6 +3560,18 @@ async function copyProject(project_id) {
         await renderProjectsTable();
         UIkit.notification('Project copied', {status:'success',pos: 'bottom-center',timeout: 1500});
     }
+}
+
+async function deleteProject(project_id) {
+    const msg = '<h4 class="red">Warning</h4><p>This will remove the project, all floors, rooms and <b>ALL products</b> in those rooms!</p>';
+    UIkit.modal.confirm(msg).then( async function() {
+        await db.removeProject(project_id);
+        await renderProjectsTable();
+        await renderSidebar(project_id);
+        UIkit.notification('Project removed', {status:'success',pos: 'bottom-center',timeout: 1500});
+    }, function () {
+        console.log('Cancelled.')
+    });        
 }
 
 async function loadProjectData(projectId) {    

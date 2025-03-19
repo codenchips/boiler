@@ -627,17 +627,17 @@ async function renderProjectsTable() {
                 visible: true,
                 headerSort: false,
                 formatter: utils.iconCopy,
-                width: 80,
+                width: 60,
                 hozAlign: "center",
                 cellClick: function (e, cell) {
                     copyProject(cell.getRow().getData().project_id);
                 }
             },
             {                    
-                visible: false,
+                visible: true,
                 headerSort: false,
                 formatter: utils.iconX,
-                width: 80,
+                width: 60,
                 hozAlign: "center",
                 cellClick: function (e, cell) {
                     deleteProject(cell.getRow().getData().project_id);
@@ -803,6 +803,18 @@ async function copyProject(project_id) {
         await renderProjectsTable();
         UIkit.notification('Project copied', {status:'success',pos: 'bottom-center',timeout: 1500});
     }
+}
+
+async function deleteProject(project_id) {
+    const msg = '<h4 class="red">Warning</h4><p>This will remove the project, all floors, rooms and <b>ALL products</b> in those rooms!</p>';
+    UIkit.modal.confirm(msg).then( async function() {
+        await db.removeProject(project_id);
+        await renderProjectsTable();
+        await renderSidebar(project_id);
+        UIkit.notification('Project removed', {status:'success',pos: 'bottom-center',timeout: 1500});
+    }, function () {
+        console.log('Cancelled.')
+    });        
 }
 
 async function loadProjectData(projectId) {    

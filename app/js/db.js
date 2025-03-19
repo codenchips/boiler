@@ -938,6 +938,21 @@ async function getFloors(project_id) {
     return floorArray;
 }
 
+
+async function removeProject(project_id) {
+    // rather than delete anything from the database, i just want to change the owner_if of the project to prepend] 999 in front 
+    // but only in the projects table, so that it is not shown in the project list
+    const db = await initDB();
+    const tx = db.transaction("projects", "readwrite");
+    const store = tx.objectStore("projects");
+    const project = await store.get(project_id);
+    project.owner_id = "999" + project.owner_id;
+    await store.put(project);
+    await tx.done;   
+}
+
+
+
 async function copyProject(project_id, projectName) {
     const db = await initDB();
     const tx = db.transaction(["projects", "locations", "buildings", "floors", "rooms", "products"], "readwrite");
@@ -1387,6 +1402,7 @@ module.exports = {
     getImagesForRoom,
     saveImageForRoom,
     pushUserData,
-    pullUserData
+    pullUserData,
+    removeProject
     // Add other database-related functions here
 };
