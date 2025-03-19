@@ -1289,9 +1289,9 @@ async function loginUser(formData) {
     if (!formDataObj.modal_form_email) {
         throw new Error("Email is required");
     }
-    const user = await index.get(formDataObj.modal_form_email);
+    const user = await index.get(formDataObj.modal_form_email.toLowerCase());
 
-    if (user && user.password === formDataObj.modal_form_password) {
+    if (user && user.password.toLowerCase() === formDataObj.modal_form_password.toLowerCase()) {
         // destroy all the local storage items
         localStorage.clear();
         // set the user_id cookie
