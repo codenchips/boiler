@@ -237,7 +237,7 @@ class TablesModule {
 
         try {
             await db.saveProductToRoom(productData);
-
+            
             this.refreshTableData();
 
             UIkit.notification({
@@ -248,6 +248,7 @@ class TablesModule {
             });
 
             utils.hideSpin();
+            await this.setQtyDialog(productData.sku, 1);
         } catch (err) {
             console.error('Error saving product to room:', err);
             UIkit.notification({
@@ -256,7 +257,7 @@ class TablesModule {
                 pos: 'bottom-center',
                 timeout: 1500
             });            
-            utils.hideSpin();
+            utils.hideSpin();            
         }
     }
 
@@ -312,7 +313,9 @@ class TablesModule {
         $('input#set_qty_sku').val(sku);
         $('input#set_qty_qty').val(qty);
 
-        UIkit.modal('#set-qty', { stack : true }).show();        
+        UIkit.modal('#set-qty', { stack : true }).show();    
+
+        $('#set_qty_qty').focus().select();
 
         $('#form-submit-set-qty').off('submit').on('submit', async (e) => {
             e.preventDefault();
