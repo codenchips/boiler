@@ -65,8 +65,10 @@ async function router(path, project_id) {
                     content: 'This is the account page content'
                 });
                 $('#page').html(renderedAccount);
-                sst.globalBinds();
-                sst.accountFunctions();
+                setTimeout(function() {
+                    sst.globalBinds();
+                    sst.accountFunctions();
+                }, 500);
                 break;                
             default:
                 template = await loadTemplate('home');

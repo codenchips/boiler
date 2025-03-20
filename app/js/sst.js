@@ -401,16 +401,18 @@ const scheduleFunctions = async () => {
 */
 const accountFunctions = async () => {
     console.log('Running account functions v2');
-    // get this user details from the store
-    const user = await db.getUser(await utils.getCookie('user_id'));   
-    if (!user) return false;
+    const user_id = await utils.getCookie('user_id');
+    const user = await db.getUser(user_id);   
+    
+    if (!user) {
+        console.error('error getting ueer details');
+        return false;
+    }
 
     $('#name').val(user.name);
     $('#email').val(user.email);
     $('#password').val(user.password);
     $('#code').val(user.code);
-
-    $('.version').html(await utils.getAppVersion());
 
     $('#btn_pull_user_data').off('click').on('click', async function(e) {
         e.preventDefault();
@@ -689,9 +691,9 @@ async function renderSidebar(project_id) {
             const roomUuid = await db.addRoom(floorUuid, roomName);
             if (roomUuid) {
                 UIkit.notification('Room added', {status:'success',pos: 'bottom-center',timeout: 1500});
-                await renderSidebar(project_id); // project_id
+                await renderSidebar(project_id); 
             } else {
-                UIkit.notification({message: 'Room already exists in this floor', status: 'warning', pos: 'bottom-center', timeout: 1500 });        
+                UIkit.notification({message: 'A room of the same name already exists.', status: 'danger', pos: 'bottom-center', timeout: 2500 });        
             }
         }   
     });

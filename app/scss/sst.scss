@@ -46,6 +46,15 @@ body {
   margin: 0 auto;
 }
 
+.uk-notification {
+  width: 90%;
+  min-width: 350px;
+}
+.uk-notification-message {
+  background: #f9f9f9;  
+  font-size: 1.25rem;
+}
+
 .uk-navbar-container {
   .uk-icon {
     color:$primary-color;

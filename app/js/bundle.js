@@ -723,25 +723,55 @@ async function getRoomNotes(roomId) {
 
 async function addRoom(floorUuid, roomName) {
     const db = await initDB();
-    const tx = db.transaction("rooms", "readwrite");
-    const store = tx.objectStore("rooms");
-    const newRoomID = generateUUID();
+    let tx1 = db.transaction("rooms", "readwrite");
+    let store1 = tx1.objectStore("rooms");
+    let newRoomID = generateUUID();
 
     const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
     const roomSlug = await utils.slugify(roomName);
     // i need to check if this room already exists in this project
-    const existingRooms = await store.getAll();
+    const existingRooms = await store1.getAll();
     console.log('Existing rooms:', existingRooms);
     const existingRoom = existingRooms.find(room => room.slug == roomSlug && room.floor_id_fk == floorUuid);
     console.log('Existing room:', existingRoom);
-    if (existingRoom) {
-        console.error('Room already exists in this floor:', existingRoom);
-        // also show a uikit notification bar here        
+    if (existingRoom) {            
         return false;   
     }
-    // if the room exists 
-
-
+    // if the room exists ANYWHERE in this PROJECT
+    const currentProject = JSON.parse(localStorage.getItem('currentProject') || '{}');    
+    const projectStore = db.transaction("projects", "readonly").objectStore("projects");
+    const project = await projectStore.get(String(currentProject.project_id));    
+    
+    const locationStore = db.transaction("locations", "readonly").objectStore("locations");
+    const locations = await locationStore.index("project_id_fk").getAll(project.uuid);
+   
+    const buildingStore = db.transaction("buildings", "readonly").objectStore("buildings");
+    let buildings = [];
+    for (const location of locations) {
+        const locationBuildings = await buildingStore.index("location_id_fk").getAll(location.uuid);
+        buildings = buildings.concat(locationBuildings);
+    }
+    const floorStore = db.transaction("floors", "readonly").objectStore("floors");
+    let floors = [];
+    for (const building of buildings) {
+        const buildingFloors = await floorStore.index("building_id_fk").getAll(building.uuid);
+        floors = floors.concat(buildingFloors);
+    }
+    const roomStore = db.transaction("rooms", "readonly").objectStore("rooms");
+    let rooms = [];
+    for (const floor of floors) {
+        const floorRooms = await roomStore.index("floor_id_fk").getAll(floor.uuid);
+        rooms = rooms.concat(floorRooms);
+    }
+    const existingRoomInProject = rooms.find(room => room.slug === roomSlug);
+    if (existingRoomInProject) {        
+        return false;
+    }
+   
+    
+    // add the room
+    let tx = db.transaction("rooms", "readwrite");
+    let store = tx.objectStore("rooms");
     const room = {
         created_on: now,
         floor_id_fk: String(floorUuid),
@@ -2754,8 +2784,10 @@ async function router(path, project_id) {
                     content: 'This is the account page content'
                 });
                 $('#page').html(renderedAccount);
-                sst.globalBinds();
-                sst.accountFunctions();
+                setTimeout(function() {
+                    sst.globalBinds();
+                    sst.accountFunctions();
+                }, 500);
                 break;                
             default:
                 template = await loadTemplate('home');
@@ -3190,16 +3222,18 @@ const scheduleFunctions = async () => {
 */
 const accountFunctions = async () => {
     console.log('Running account functions v2');
-    // get this user details from the store
-    const user = await db.getUser(await utils.getCookie('user_id'));   
-    if (!user) return false;
+    const user_id = await utils.getCookie('user_id');
+    const user = await db.getUser(user_id);   
+    
+    if (!user) {
+        console.error('error getting ueer details');
+        return false;
+    }
 
     $('#name').val(user.name);
     $('#email').val(user.email);
     $('#password').val(user.password);
     $('#code').val(user.code);
-
-    $('.version').html(await utils.getAppVersion());
 
     $('#btn_pull_user_data').off('click').on('click', async function(e) {
         e.preventDefault();
@@ -3478,9 +3512,9 @@ async function renderSidebar(project_id) {
             const roomUuid = await db.addRoom(floorUuid, roomName);
             if (roomUuid) {
                 UIkit.notification('Room added', {status:'success',pos: 'bottom-center',timeout: 1500});
-                await renderSidebar(project_id); // project_id
+                await renderSidebar(project_id); 
             } else {
-                UIkit.notification({message: 'Room already exists in this floor', status: 'warning', pos: 'bottom-center', timeout: 1500 });        
+                UIkit.notification({message: 'A room of the same name already exists.', status: 'danger', pos: 'bottom-center', timeout: 2500 });        
             }
         }   
     });
