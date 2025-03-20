@@ -21,6 +21,10 @@ class SyncModule {
 
     async clearLocalStorage() {
         this.init();
+        if (!navigator.onLine) {
+            UIkit.notification({message: 'You are offline. Please connect to the internet and try again.', status: 'warning', pos: 'bottom-center', timeout: 2000 });
+            return;
+        }        
 
         utils.showSpin();
         
@@ -35,6 +39,10 @@ class SyncModule {
 
     async getUserData() {
         this.init();
+        if (!navigator.onLine) {
+            UIkit.notification({message: 'You are offline. Please connect to the internet and try again.', status: 'warning', pos: 'bottom-center', timeout: 2000 });
+            return;
+        }        
 
         utils.showSpin();
         
@@ -50,6 +58,12 @@ class SyncModule {
 
     async pushAllUserData() {
         this.init();
+        // detect if user is offline
+        if (!navigator.onLine) {
+            UIkit.notification({message: 'You are offline. Please connect to the internet and try again.', status: 'warning', pos: 'bottom-center', timeout: 2000 });
+            return;
+        }
+
 
         UIkit.notification({message: 'Data Push Started ...', status: 'primary', pos: 'bottom-center', timeout: 1000 });
         utils.showSpin();

@@ -1859,6 +1859,10 @@ class SyncModule {
 
     async clearLocalStorage() {
         this.init();
+        if (!navigator.onLine) {
+            UIkit.notification({message: 'You are offline. Please connect to the internet and try again.', status: 'warning', pos: 'bottom-center', timeout: 2000 });
+            return;
+        }        
 
         utils.showSpin();
         
@@ -1873,6 +1877,10 @@ class SyncModule {
 
     async getUserData() {
         this.init();
+        if (!navigator.onLine) {
+            UIkit.notification({message: 'You are offline. Please connect to the internet and try again.', status: 'warning', pos: 'bottom-center', timeout: 2000 });
+            return;
+        }        
 
         utils.showSpin();
         
@@ -1888,6 +1896,12 @@ class SyncModule {
 
     async pushAllUserData() {
         this.init();
+        // detect if user is offline
+        if (!navigator.onLine) {
+            UIkit.notification({message: 'You are offline. Please connect to the internet and try again.', status: 'warning', pos: 'bottom-center', timeout: 2000 });
+            return;
+        }
+
 
         UIkit.notification({message: 'Data Push Started ...', status: 'primary', pos: 'bottom-center', timeout: 1000 });
         utils.showSpin();
@@ -3400,6 +3414,7 @@ async function renderProjectsTable() {
                     target: "_self",
                     url: "#",
                 },
+                width: "40%",
                 cellClick: function(e, cell) {                    
                     const projectData = cell.getRow().getData();                    
                     localStorage.setItem('currentProject', JSON.stringify(projectData));
@@ -3410,7 +3425,7 @@ async function renderProjectsTable() {
             {
                 title: "Project ID",
                 field: "project_ref",
-                width: 200,
+                width: "20%",
                 visible: true
             },
             {
@@ -3428,14 +3443,14 @@ async function renderProjectsTable() {
             {
                 title: "Created",
                 field: "created",
-                width: 110,
+                width: "20%",
                 visible: true
             },
             {                    
                 visible: true,
                 headerSort: false,
                 formatter: utils.iconCopy,
-                width: 60,
+                width: "10%",
                 hozAlign: "center",
                 cellClick: function (e, cell) {
                     copyProject(cell.getRow().getData().project_id);
@@ -3445,7 +3460,7 @@ async function renderProjectsTable() {
                 visible: true,
                 headerSort: false,
                 formatter: utils.iconX,
-                width: 60,
+                width: "10%",
                 hozAlign: "center",
                 cellClick: function (e, cell) {
                     deleteProject(cell.getRow().getData().project_id);
