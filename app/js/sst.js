@@ -687,8 +687,12 @@ async function renderSidebar(project_id) {
         const roomName = await UIkit.modal.prompt('<h4>Enter the room name</h4>');
         if (roomName) {
             const roomUuid = await db.addRoom(floorUuid, roomName);
-            UIkit.notification('Room added', {status:'success',pos: 'bottom-center',timeout: 1500});
-            await renderSidebar(project_id); // project_id
+            if (roomUuid) {
+                UIkit.notification('Room added', {status:'success',pos: 'bottom-center',timeout: 1500});
+                await renderSidebar(project_id); // project_id
+            } else {
+                UIkit.notification({message: 'Room already exists in this floor', status: 'warning', pos: 'bottom-center', timeout: 1500 });        
+            }
         }   
     });
 

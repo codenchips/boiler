@@ -570,6 +570,19 @@ async function addRoom(floorUuid, roomName) {
 
     const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
     const roomSlug = await utils.slugify(roomName);
+    // i need to check if this room already exists in this project
+    const existingRooms = await store.getAll();
+    console.log('Existing rooms:', existingRooms);
+    const existingRoom = existingRooms.find(room => room.slug == roomSlug && room.floor_id_fk == floorUuid);
+    console.log('Existing room:', existingRoom);
+    if (existingRoom) {
+        console.error('Room already exists in this floor:', existingRoom);
+        // also show a uikit notification bar here        
+        return false;   
+    }
+    // if the room exists 
+
+
     const room = {
         created_on: now,
         floor_id_fk: String(floorUuid),

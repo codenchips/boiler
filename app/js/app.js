@@ -21,10 +21,12 @@ $(document).ready(function() {
                 //console.log('ServiceWorker registration successful');
                 
                 // Check for updates
+                let updateBarShown = false;
                 registration.addEventListener('updatefound', () => {
                     const newWorker = registration.installing;
                     newWorker.addEventListener('statechange', () => {
-                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller && !updateBarShown) {
+                            updateBarShown = true;
                             showUpdateBar();
                         }
                     });

@@ -22,10 +22,12 @@ $(document).ready(function() {
                 //console.log('ServiceWorker registration successful');
                 
                 // Check for updates
+                let updateBarShown = false;
                 registration.addEventListener('updatefound', () => {
                     const newWorker = registration.installing;
                     newWorker.addEventListener('statechange', () => {
-                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller && !updateBarShown) {
+                            updateBarShown = true;
                             showUpdateBar();
                         }
                     });
@@ -707,6 +709,19 @@ async function addRoom(floorUuid, roomName) {
 
     const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
     const roomSlug = await utils.slugify(roomName);
+    // i need to check if this room already exists in this project
+    const existingRooms = await store.getAll();
+    console.log('Existing rooms:', existingRooms);
+    const existingRoom = existingRooms.find(room => room.slug == roomSlug && room.floor_id_fk == floorUuid);
+    console.log('Existing room:', existingRoom);
+    if (existingRoom) {
+        console.error('Room already exists in this floor:', existingRoom);
+        // also show a uikit notification bar here        
+        return false;   
+    }
+    // if the room exists 
+
+
     const room = {
         created_on: now,
         floor_id_fk: String(floorUuid),
@@ -3444,8 +3459,12 @@ async function renderSidebar(project_id) {
         const roomName = await UIkit.modal.prompt('<h4>Enter the room name</h4>');
         if (roomName) {
             const roomUuid = await db.addRoom(floorUuid, roomName);
-            UIkit.notification('Room added', {status:'success',pos: 'bottom-center',timeout: 1500});
-            await renderSidebar(project_id); // project_id
+            if (roomUuid) {
+                UIkit.notification('Room added', {status:'success',pos: 'bottom-center',timeout: 1500});
+                await renderSidebar(project_id); // project_id
+            } else {
+                UIkit.notification({message: 'Room already exists in this floor', status: 'warning', pos: 'bottom-center', timeout: 1500 });        
+            }
         }   
     });
 
