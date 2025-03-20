@@ -1,4 +1,78 @@
 (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
+let registration;
+
+async function registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+        try {
+            registration = await navigator.serviceWorker.register('/sw.js');
+            console.log('ServiceWorker registration successful');
+            checkForUpdates();
+        } catch (err) {
+            console.log('ServiceWorker registration failed:', err);
+        }
+    }
+}
+
+// Periodic update checker
+function checkForUpdates() {
+    // Check immediately on page load
+    if (registration) {
+        registration.update();
+    }
+
+    // Then check every 30 minutes
+    setInterval(() => {
+        if (registration) {
+            registration.update();
+        }
+    }, 30 * 60 * 1000);
+}
+
+// Store update state in localStorage
+function setUpdateAvailable(value) {
+    localStorage.setItem('updateAvailable', value);
+}
+
+function isUpdateAvailable() {
+    return localStorage.getItem('updateAvailable') === 'true';
+}
+
+// Modified showUpdateBar function
+function showUpdateBar() {
+    // Only show if we haven't already shown it
+    if (!isUpdateAvailable()) {
+        setUpdateAvailable(true);
+        const updateNotification = UIkit.notification({
+            message: 'A new version is available.<br>Click here to update.',
+            status: 'primary',
+            pos: 'bottom-center',
+            timeout: 0,
+            onclick: () => {
+                updateNotification.close();
+                
+                const loadingNotification = UIkit.notification({
+                    message: 'Updating...',
+                    status: 'warning',
+                    pos: 'bottom-center',
+                    timeout: 0
+                });
+                
+                if (registration?.waiting) {
+                    registration.waiting.postMessage('skipWaiting');
+                }
+            }
+        });
+    }
+}
+
+// Check for stored update state on page load
+function checkStoredUpdateState() {
+    if (isUpdateAvailable()) {
+        showUpdateBar();
+    }
+}
+
+// Initialize
 $(document).ready(function() {
     const Mustache = require('mustache');
     const db = require('./db'); // Import the db module    
@@ -14,30 +88,25 @@ $(document).ready(function() {
         window.router(path);
     });
     
+    registerServiceWorker();
+    checkStoredUpdateState();
 
-    // Register Service Worker
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js')
-            .then(registration => {
-                //console.log('ServiceWorker registration successful');
-                
-                // Check for updates
-                let updateBarShown = false;
-                registration.addEventListener('updatefound', () => {
-                    const newWorker = registration.installing;
-                    newWorker.addEventListener('statechange', () => {
-                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller && !updateBarShown) {
-                            updateBarShown = true;
-                            showUpdateBar();
-                        }
-                    });
-                });
-            })
-            .catch(err => {
-                //console.log('ServiceWorker registration failed:', err);
+    // Clear update flag after successful update
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        setUpdateAvailable(false);
+    });
+
+    // Listen for update events
+    if (registration) {
+        registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    showUpdateBar();
+                }
             });
+        });
     }
-        
 
     // Handle online/offline status
     window.addEventListener('online', function() {
@@ -78,55 +147,6 @@ $(document).ready(function() {
 
     initApp();
 });
-
-function showUpdateBar() {
-    const updateNotification = UIkit.notification({
-        message: 'A new version is available.<br>Click here to update.',
-        status: 'primary',
-        pos: 'bottom-center',
-        timeout: 0,
-        onclick: () => {
-            updateNotification.close();
-            
-            // Show loading notification
-            const loadingNotification = UIkit.notification({
-                message: 'Updating...',
-                status: 'warning',
-                pos: 'bottom-center',
-                timeout: 0
-            });
-            
-            // Trigger update
-            navigator.serviceWorker.getRegistration().then(reg => {
-                if (reg.waiting) {
-                    // Add listener before triggering skipWaiting
-                    navigator.serviceWorker.addEventListener('message', (event) => {
-                        if (event.data.type === 'UPDATE_READY') {
-                            loadingNotification.close();
-                            UIkit.notification({
-                                message: 'Update complete.<br>Please close and restart the app to apply changes.',
-                                status: 'success',
-                                pos: 'bottom-center',
-                                timeout: 0,
-                                onclick: () => {
-                                    if (navigator.app) {
-                                        navigator.app.exitApp();
-                                    } else if (navigator.device) {
-                                        navigator.device.exitApp();
-                                    } else {
-                                        window.location.reload();
-                                    }
-                                }
-                            });
-                        }
-                    }, { once: true }); // Only listen once
-
-                    reg.waiting.postMessage('skipWaiting');
-                }
-            });
-        }
-    });
-}
 
 // Handle reload after update
 let refreshing = false;
@@ -2456,9 +2476,8 @@ class UtilsModule {
     async checkLogin() {
         console.log('Checking authentication ...');
         const db = require('../db');         
-
         const user_id = await this.getCookie('user_id');
-
+    
         if (user_id == "") {
             UIkit.modal('.loginmodal').show();
         } else {
@@ -2466,38 +2485,36 @@ class UtilsModule {
         }
         
         let that = this;
-
+    
         $("#form-login").off("submit").on("submit", async function(e) {
             e.preventDefault();
             $('.login-error').hide();
-            //console.log('Login submitted');
             const form = document.querySelector("#form-login");            
             const user = await db.loginUser(new FormData(form));            
             
             if (user !== false) {
                 $('#m_user_id').val(user.uuid);
-                await that.setCookie('user_id', user.uuid);;
+                await that.setCookie('user_id', user.uuid);
                 await that.setCookie('user_name', user.name);
-                // Sync just THIS users data.  If user has NO data, always PULL it
                 await db.syncData(user.uuid);  
-
+    
                 UIkit.modal($('#login')).hide();
-                window.location.replace("/");
-                //updateDashTable();
+                // Use replace state instead of redirect
+                window.history.replaceState({}, '', '/');
+                location.reload();
             } else {
                 $('.login-error p').html("There was an error logging in. Please try again.");
                 $('.login-error').show();
             }
-    
         });
-   
-
     }
 
     async logout() {
         await this.deleteCookie('user_id');
         await this.deleteCookie('user_name');
-        window.open("/?t=", '_self');
+        // Use replace state instead of redirect
+        window.history.replaceState({}, '', '/?t=');
+        location.reload();
     }
 
     async deleteCookie(cname) {

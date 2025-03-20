@@ -44,9 +44,8 @@ class UtilsModule {
     async checkLogin() {
         console.log('Checking authentication ...');
         const db = require('../db');         
-
         const user_id = await this.getCookie('user_id');
-
+    
         if (user_id == "") {
             UIkit.modal('.loginmodal').show();
         } else {
@@ -54,38 +53,36 @@ class UtilsModule {
         }
         
         let that = this;
-
+    
         $("#form-login").off("submit").on("submit", async function(e) {
             e.preventDefault();
             $('.login-error').hide();
-            //console.log('Login submitted');
             const form = document.querySelector("#form-login");            
             const user = await db.loginUser(new FormData(form));            
             
             if (user !== false) {
                 $('#m_user_id').val(user.uuid);
-                await that.setCookie('user_id', user.uuid);;
+                await that.setCookie('user_id', user.uuid);
                 await that.setCookie('user_name', user.name);
-                // Sync just THIS users data.  If user has NO data, always PULL it
                 await db.syncData(user.uuid);  
-
+    
                 UIkit.modal($('#login')).hide();
-                window.location.replace("/");
-                //updateDashTable();
+                // Use replace state instead of redirect
+                window.history.replaceState({}, '', '/');
+                location.reload();
             } else {
                 $('.login-error p').html("There was an error logging in. Please try again.");
                 $('.login-error').show();
             }
-    
         });
-   
-
     }
 
     async logout() {
         await this.deleteCookie('user_id');
         await this.deleteCookie('user_name');
-        window.open("/?t=", '_self');
+        // Use replace state instead of redirect
+        window.history.replaceState({}, '', '/?t=');
+        location.reload();
     }
 
     async deleteCookie(cname) {

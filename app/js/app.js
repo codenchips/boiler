@@ -1,3 +1,77 @@
+let registration;
+
+async function registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+        try {
+            registration = await navigator.serviceWorker.register('/sw.js');
+            console.log('ServiceWorker registration successful');
+            checkForUpdates();
+        } catch (err) {
+            console.log('ServiceWorker registration failed:', err);
+        }
+    }
+}
+
+// Periodic update checker
+function checkForUpdates() {
+    // Check immediately on page load
+    if (registration) {
+        registration.update();
+    }
+
+    // Then check every 30 minutes
+    setInterval(() => {
+        if (registration) {
+            registration.update();
+        }
+    }, 30 * 60 * 1000);
+}
+
+// Store update state in localStorage
+function setUpdateAvailable(value) {
+    localStorage.setItem('updateAvailable', value);
+}
+
+function isUpdateAvailable() {
+    return localStorage.getItem('updateAvailable') === 'true';
+}
+
+// Modified showUpdateBar function
+function showUpdateBar() {
+    // Only show if we haven't already shown it
+    if (!isUpdateAvailable()) {
+        setUpdateAvailable(true);
+        const updateNotification = UIkit.notification({
+            message: 'A new version is available.<br>Click here to update.',
+            status: 'primary',
+            pos: 'bottom-center',
+            timeout: 0,
+            onclick: () => {
+                updateNotification.close();
+                
+                const loadingNotification = UIkit.notification({
+                    message: 'Updating...',
+                    status: 'warning',
+                    pos: 'bottom-center',
+                    timeout: 0
+                });
+                
+                if (registration?.waiting) {
+                    registration.waiting.postMessage('skipWaiting');
+                }
+            }
+        });
+    }
+}
+
+// Check for stored update state on page load
+function checkStoredUpdateState() {
+    if (isUpdateAvailable()) {
+        showUpdateBar();
+    }
+}
+
+// Initialize
 $(document).ready(function() {
     const Mustache = require('mustache');
     const db = require('./db'); // Import the db module    
@@ -13,30 +87,25 @@ $(document).ready(function() {
         window.router(path);
     });
     
+    registerServiceWorker();
+    checkStoredUpdateState();
 
-    // Register Service Worker
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js')
-            .then(registration => {
-                //console.log('ServiceWorker registration successful');
-                
-                // Check for updates
-                let updateBarShown = false;
-                registration.addEventListener('updatefound', () => {
-                    const newWorker = registration.installing;
-                    newWorker.addEventListener('statechange', () => {
-                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller && !updateBarShown) {
-                            updateBarShown = true;
-                            showUpdateBar();
-                        }
-                    });
-                });
-            })
-            .catch(err => {
-                //console.log('ServiceWorker registration failed:', err);
+    // Clear update flag after successful update
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        setUpdateAvailable(false);
+    });
+
+    // Listen for update events
+    if (registration) {
+        registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    showUpdateBar();
+                }
             });
+        });
     }
-        
 
     // Handle online/offline status
     window.addEventListener('online', function() {
@@ -77,55 +146,6 @@ $(document).ready(function() {
 
     initApp();
 });
-
-function showUpdateBar() {
-    const updateNotification = UIkit.notification({
-        message: 'A new version is available.<br>Click here to update.',
-        status: 'primary',
-        pos: 'bottom-center',
-        timeout: 0,
-        onclick: () => {
-            updateNotification.close();
-            
-            // Show loading notification
-            const loadingNotification = UIkit.notification({
-                message: 'Updating...',
-                status: 'warning',
-                pos: 'bottom-center',
-                timeout: 0
-            });
-            
-            // Trigger update
-            navigator.serviceWorker.getRegistration().then(reg => {
-                if (reg.waiting) {
-                    // Add listener before triggering skipWaiting
-                    navigator.serviceWorker.addEventListener('message', (event) => {
-                        if (event.data.type === 'UPDATE_READY') {
-                            loadingNotification.close();
-                            UIkit.notification({
-                                message: 'Update complete.<br>Please close and restart the app to apply changes.',
-                                status: 'success',
-                                pos: 'bottom-center',
-                                timeout: 0,
-                                onclick: () => {
-                                    if (navigator.app) {
-                                        navigator.app.exitApp();
-                                    } else if (navigator.device) {
-                                        navigator.device.exitApp();
-                                    } else {
-                                        window.location.reload();
-                                    }
-                                }
-                            });
-                        }
-                    }, { once: true }); // Only listen once
-
-                    reg.waiting.postMessage('skipWaiting');
-                }
-            });
-        }
-    });
-}
 
 // Handle reload after update
 let refreshing = false;
