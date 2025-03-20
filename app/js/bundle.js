@@ -2729,7 +2729,7 @@ async function loadTemplate(path) {
         return await response.text();
     } catch (error) {
         console.warn('Fetching from cache:', error);
-        const cache = await caches.open('sst-cache-v1');
+        const cache = await caches.open(CACHE_NAME);
         const cachedResponse = await cache.match(`/views/${path}.html`);
         if (cachedResponse) {
             return await cachedResponse.text();
@@ -2801,7 +2801,7 @@ async function router(path, project_id) {
         }
     } catch (error) {
         console.error('Routing error:', error);
-        $('#page').html('<div class="error">Unable to load page content</div>');
+        window.location.reload();        
     } finally {
         isRouting = false;
     }
@@ -2821,7 +2821,6 @@ window.router = router;
 },{"./db":2,"./modules/utils":6,"./sst":8,"mustache":10}],8:[function(require,module,exports){
 const Mustache = require('mustache');
 const db = require('./db'); 
-const sst = require('./sst'); 
 const tables = require('./modules/tables');
 const utils = require('./modules/utils');
 const sidebar = require('./modules/sidebar');
@@ -2840,25 +2839,11 @@ async function globalBinds() {
         e.preventDefault();
         sync.pushAllUserData();
     });
-
-
-    $('span.tip').balloon({
-        tipSize: 16,
-        position: "left",
-        html: true,
-        hideDuration: "fast",
-        hideAnimation: function(d, c) {  this.fadeOut(d, c); },
-        css: {
-            maxWidth: '380px',
-            margin: '0 20px',
-            border: '2px solid #C8102E',
-            borderRadius: '15px',
-            backgroundColor: '#fff',
-            color: '#000',
-            fontSize: '16px',
-            padding: '5px 10px'
-        }
-    });  
+    $('#syncicon').on('touchend').on('touchend', async function(e) {
+        setTimeout(function() {
+            $('#syncicon').removeClass('active'); 
+        }, 1000);
+    });
 
 }
 
@@ -3742,7 +3727,7 @@ module.exports = {
     accountFunctions 
 };
 
-},{"./db":2,"./modules/sidebar":3,"./modules/sync":4,"./modules/tables":5,"./modules/utils":6,"./sst":8,"mustache":10}],9:[function(require,module,exports){
+},{"./db":2,"./modules/sidebar":3,"./modules/sync":4,"./modules/tables":5,"./modules/utils":6,"mustache":10}],9:[function(require,module,exports){
 'use strict';
 
 const instanceOfAny = (object, constructors) => constructors.some((c) => object instanceof c);

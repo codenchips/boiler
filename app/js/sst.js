@@ -1,6 +1,5 @@
 const Mustache = require('mustache');
 const db = require('./db'); 
-const sst = require('./sst'); 
 const tables = require('./modules/tables');
 const utils = require('./modules/utils');
 const sidebar = require('./modules/sidebar');
@@ -19,25 +18,11 @@ async function globalBinds() {
         e.preventDefault();
         sync.pushAllUserData();
     });
-
-
-    $('span.tip').balloon({
-        tipSize: 16,
-        position: "left",
-        html: true,
-        hideDuration: "fast",
-        hideAnimation: function(d, c) {  this.fadeOut(d, c); },
-        css: {
-            maxWidth: '380px',
-            margin: '0 20px',
-            border: '2px solid #C8102E',
-            borderRadius: '15px',
-            backgroundColor: '#fff',
-            color: '#000',
-            fontSize: '16px',
-            padding: '5px 10px'
-        }
-    });  
+    $('#syncicon').on('touchend').on('touchend', async function(e) {
+        setTimeout(function() {
+            $('#syncicon').removeClass('active'); 
+        }, 1000);
+    });
 
 }
 

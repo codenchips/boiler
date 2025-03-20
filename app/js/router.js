@@ -10,7 +10,7 @@ async function loadTemplate(path) {
         return await response.text();
     } catch (error) {
         console.warn('Fetching from cache:', error);
-        const cache = await caches.open('sst-cache-v1');
+        const cache = await caches.open(CACHE_NAME);
         const cachedResponse = await cache.match(`/views/${path}.html`);
         if (cachedResponse) {
             return await cachedResponse.text();
@@ -82,7 +82,7 @@ async function router(path, project_id) {
         }
     } catch (error) {
         console.error('Routing error:', error);
-        $('#page').html('<div class="error">Unable to load page content</div>');
+        window.location.reload();        
     } finally {
         isRouting = false;
     }
