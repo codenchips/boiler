@@ -404,15 +404,28 @@ const accountFunctions = async () => {
         await sync.getUserData();
     });
 
+
+    // if offline, prevent this happening - disable the button
+    if (!navigator.onLine) {
+        $('#btn_push_user_data').prop("disabled", true);
+    }    
     $('#btn_clear_local_storage').off('click').on('click', async function(e) {
         e.preventDefault();
         await utils.clearServiceWorkerCache();
     });    
 
+    // if offline, disable the logout button
+    if (!navigator.onLine) {
+        $('#btn_logout').prop("disabled", true);
+    }    
     $('#btn_logout').off('click').on('click', async function(e) {
         e.preventDefault();
         await utils.logout();
     });      
+
+    if (!navigator.onLine) {
+        $('#form-update-account').prop("disabled", true);
+    } 
 
     $('#form-update-account').off('submit').on('submit', async function(e) {
         e.preventDefault();

@@ -24,9 +24,6 @@ class UtilsModule {
             return '<span class="icon red" uk-icon="icon: heart; ratio: 1.3" title="Favourite"></span>';
         };   
         
-      
-        
-        
         var login = UIkit.modal('.loginmodal', {
             bgClose : false,
             escClose : false
@@ -78,6 +75,12 @@ class UtilsModule {
     }
 
     async logout() {
+        // if offline show message
+        if (!navigator.onLine) {
+            UIkit.notification({message: 'You are offline. Please connect to the internet and try again.', status: 'warning', pos: 'bottom-center', timeout: 2000 });
+            return;
+        }
+
         await this.deleteCookie('user_id');
         await this.deleteCookie('user_name');
         // Use replace state instead of redirect
@@ -119,11 +122,8 @@ class UtilsModule {
         const user_id = await this.getCookie('user_id');        
         if (user_id) {
             return user_id.toString();
-        } else {
-            // show login modal with UIkit
+        } else {            
             this.checkLogin();
-            // UIkit.modal('#login').show();
-            // return false;
         }       
     }
 
@@ -231,6 +231,12 @@ class UtilsModule {
     }
 
     async clearServiceWorkerCache() {
+        // if offline show message
+        if (!navigator.onLine) {
+            UIkit.notification({message: 'You are offline. Please connect to the internet and try again.', status: 'warning', pos: 'bottom-center', timeout: 2000 });
+            return;
+        }
+
         const registrations = await navigator.serviceWorker.getRegistrations();
         await Promise.all(registrations.map(reg => reg.unregister()));
         const cacheKeys = await caches.keys();

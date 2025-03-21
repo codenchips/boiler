@@ -1,7 +1,7 @@
 const Mustache = require('mustache');
-const db = require('./db');
 const sst = require('./sst');
 const utils = require('./modules/utils');
+const CONFIG = require('./config');
 
 async function loadTemplate(path) {
     try {
@@ -10,7 +10,8 @@ async function loadTemplate(path) {
         return await response.text();
     } catch (error) {
         console.warn('Fetching from cache:', error);
-        const cache = await caches.open(CACHE_NAME);
+        const cache = await caches.open(CONFIG.CACHE_NAME); // Use CONFIG.CACHE_NAME in your cache operations
+        
         const cachedResponse = await cache.match(`/views/${path}.html`);
         if (cachedResponse) {
             return await cachedResponse.text();

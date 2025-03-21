@@ -114,10 +114,27 @@ $(document).ready(function() {
         db.fetchAndStoreProducts();
         //db.fetchAndStoreUsers();
         //db.syncData(utils.getUserID());
+
+        $('#btn_update_account').prop("disabled", false);
+        $('#btn_push_user_data').prop("disabled", false);
+        $('#btn_pull_user_data').prop("disabled", false);
+        $('#btn_clear_local_storage').prop("disabled", false);
+        $('#btn_logout').prop("disabled", false);
+        $('#btn_logout').prop("disabled", false);
+        $('.syncicon').css({'opacity': '100%'});
+
     });
 
     window.addEventListener('offline', function() {
         console.log('App is offline - using cached data');
+        $('#btn_update_account').prop("disabled", true);
+        $('#btn_push_user_data').prop("disabled", true);
+        $('#btn_pull_user_data').prop("disabled", true);
+        $('#btn_clear_local_storage').prop("disabled", true);        
+        $('#btn_logout').prop("disabled", true);
+        $('#btn_logout').prop("disabled", true);
+        $('.syncicon').removeClass('active').css({'opacity': '20%'});
+
     });
 
     // Initialize app
@@ -156,10 +173,28 @@ navigator.serviceWorker.addEventListener('controllerchange', () => {
         window.location.reload();
     }
 });
-},{"./db":2,"./modules/utils":6,"./sst":8,"mustache":10}],2:[function(require,module,exports){
+},{"./db":3,"./modules/utils":7,"./sst":9,"mustache":11}],2:[function(require,module,exports){
+const CONFIG = {
+    CACHE_NAME: 'sst-cache-v29',
+    API_ENDPOINTS: {
+        PRODUCTS: 'https://sst.tamlite.co.uk/api/get_all_products_neat',
+        USER_DATA: 'https://sst.tamlite.co.uk/api/get_all_user_data',
+        SYNC_USER_DATA: 'https://sst.tamlite.co.uk/api/sync_user_data',
+        USERS: 'https://sst.tamlite.co.uk/api/get_all_users_neat',
+        LAST_PUSHED: 'https://sst.tamlite.co.uk/api/get_last_pushed',
+        SYNC_USER_ACCOUNT: 'https://sst.tamlite.co.uk/api/update_user_account'
+    }
+};
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = CONFIG;
+} else if (typeof self !== 'undefined') {
+    self.CONFIG = CONFIG;
+}
+},{}],3:[function(require,module,exports){
 const { openDB } = require('idb');
 const utils = require('./modules/utils');
-
+const CONFIG = require('./config');
 
 const DB_NAME = 'sst_database';
 const DB_VERSION = 18;
@@ -245,7 +280,7 @@ async function fetchAndStoreProducts() {
     if (isEmpty) {
         try {
             console.log('Fetching products from API...');
-            const response = await fetch('https://sst.tamlite.co.uk/api/get_all_products_neat');
+            const response = await fetch(CONFIG.API_ENDPOINTS.PRODUCTS);
 
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
@@ -267,7 +302,7 @@ async function fetchAndStoreUsers() {
     if (isEmpty) {
         try {
             console.log('Fetching products from API...');
-            const response = await fetch('https://sst.tamlite.co.uk/api/get_all_users_neat');
+            const response = await fetch(CONFIG.API_ENDPOINTS.USERS);
 
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
@@ -295,7 +330,7 @@ async function pullUserData(owner_id) {
 
     // user has projects, offer to pull from and show the pushed date on the user table for information
     try {
-        const response = await fetch("https://sst.tamlite.co.uk/api/get_last_pushed", {
+        const response = await fetch(CONFIG.API_ENDPOINTS.LAST_PUSHED, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(userData)
@@ -351,7 +386,7 @@ async function syncData(owner_id, force = false) {
     }
         
     try {
-        const response = await fetch("https://sst.tamlite.co.uk/api/get_all_user_data", {
+        const response = await fetch(CONFIG.API_ENDPOINTS.USER_DATA, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -570,7 +605,6 @@ async function getProductsForProject(projectId) {
         const building = buildings.find(building => building.uuid === floor.building_id_fk);
         if (!building) return false;
         const location = locations.find(location => location.uuid === building.location_id_fk);
-        if (!location) return false;
         const project = projects.find(project => project.uuid === location.project_id_fk);
         return project && project.uuid === projectId;
     });
@@ -1274,6 +1308,25 @@ async function updateUser(formdata, user_id) {
 
     await store.put(user);
     await tx.done;
+
+    // this has also got to save to online db at this time actually, 
+    const response = await fetch(CONFIG.API_ENDPOINTS.SYNC_USER_ACCOUNT, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(user)
+    });
+
+    if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const responseData = await response.json();
+    // console.log('Response Data:', responseData);
+    // console.log('Status:', responseData.status);  // error | success
+    return(responseData);  
+    return user;    
 }
 
 async function getSchedulePerRoom(projectId) {
@@ -1538,7 +1591,7 @@ async function pushUserData(user_id) {
     };
 
        
-    const response = await fetch('https://sst.tamlite.co.uk/api/sync_user_data', {
+    const response = await fetch(CONFIG.API_ENDPOINTS.SYNC_USER_DATA, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -1609,7 +1662,7 @@ module.exports = {
     // Add other database-related functions here
 };
 
-},{"./modules/utils":6,"idb":9}],3:[function(require,module,exports){
+},{"./config":2,"./modules/utils":7,"idb":10}],4:[function(require,module,exports){
 const Mustache = require('mustache');
 const db = require('../db');
 const tables = require('./tables');
@@ -1835,7 +1888,7 @@ class SidebarModule {
 }
 
 module.exports = new SidebarModule();
-},{"../db":2,"./tables":5,"mustache":10}],4:[function(require,module,exports){
+},{"../db":3,"./tables":6,"mustache":11}],5:[function(require,module,exports){
 const db = require('../db');
 const utils = require('./utils');
 let sidebar; // placeholder for sidebar module, lazy loaded later
@@ -1927,7 +1980,7 @@ class SyncModule {
 }
 
 module.exports = new SyncModule();
-},{"../db":2,"./sidebar":3,"./utils":6}],5:[function(require,module,exports){
+},{"../db":3,"./sidebar":4,"./utils":7}],6:[function(require,module,exports){
 const db = require('../db');
 const Mustache = require('mustache');
 const utils = require('./utils');
@@ -2473,7 +2526,7 @@ class TablesModule {
 }
 
 module.exports = new TablesModule();
-},{"../db":2,"./sidebar":3,"./utils":6,"mustache":10}],6:[function(require,module,exports){
+},{"../db":3,"./sidebar":4,"./utils":7,"mustache":11}],7:[function(require,module,exports){
 class UtilsModule {
 
     constructor() {
@@ -2499,9 +2552,6 @@ class UtilsModule {
         this.iconFav = function(cell, formatterParams, onRendered) {
             return '<span class="icon red" uk-icon="icon: heart; ratio: 1.3" title="Favourite"></span>';
         };   
-        
-      
-        
         
         var login = UIkit.modal('.loginmodal', {
             bgClose : false,
@@ -2554,6 +2604,12 @@ class UtilsModule {
     }
 
     async logout() {
+        // if offline show message
+        if (!navigator.onLine) {
+            UIkit.notification({message: 'You are offline. Please connect to the internet and try again.', status: 'warning', pos: 'bottom-center', timeout: 2000 });
+            return;
+        }
+
         await this.deleteCookie('user_id');
         await this.deleteCookie('user_name');
         // Use replace state instead of redirect
@@ -2595,11 +2651,8 @@ class UtilsModule {
         const user_id = await this.getCookie('user_id');        
         if (user_id) {
             return user_id.toString();
-        } else {
-            // show login modal with UIkit
+        } else {            
             this.checkLogin();
-            // UIkit.modal('#login').show();
-            // return false;
         }       
     }
 
@@ -2707,6 +2760,12 @@ class UtilsModule {
     }
 
     async clearServiceWorkerCache() {
+        // if offline show message
+        if (!navigator.onLine) {
+            UIkit.notification({message: 'You are offline. Please connect to the internet and try again.', status: 'warning', pos: 'bottom-center', timeout: 2000 });
+            return;
+        }
+
         const registrations = await navigator.serviceWorker.getRegistrations();
         await Promise.all(registrations.map(reg => reg.unregister()));
         const cacheKeys = await caches.keys();
@@ -2730,11 +2789,11 @@ class UtilsModule {
 
 }
 module.exports = new UtilsModule();
-},{"../db":2}],7:[function(require,module,exports){
+},{"../db":3}],8:[function(require,module,exports){
 const Mustache = require('mustache');
-const db = require('./db');
 const sst = require('./sst');
 const utils = require('./modules/utils');
+const CONFIG = require('./config');
 
 async function loadTemplate(path) {
     try {
@@ -2743,7 +2802,8 @@ async function loadTemplate(path) {
         return await response.text();
     } catch (error) {
         console.warn('Fetching from cache:', error);
-        const cache = await caches.open(CACHE_NAME);
+        const cache = await caches.open(CONFIG.CACHE_NAME); // Use CONFIG.CACHE_NAME in your cache operations
+        
         const cachedResponse = await cache.match(`/views/${path}.html`);
         if (cachedResponse) {
             return await cachedResponse.text();
@@ -2832,7 +2892,7 @@ window.addEventListener('popstate', () => {
 //module.exports = router;
 window.router = router;
 
-},{"./db":2,"./modules/utils":6,"./sst":8,"mustache":10}],8:[function(require,module,exports){
+},{"./config":2,"./modules/utils":7,"./sst":9,"mustache":11}],9:[function(require,module,exports){
 const Mustache = require('mustache');
 const db = require('./db'); 
 const tables = require('./modules/tables');
@@ -3239,15 +3299,28 @@ const accountFunctions = async () => {
         await sync.getUserData();
     });
 
+
+    // if offline, prevent this happening - disable the button
+    if (!navigator.onLine) {
+        $('#btn_push_user_data').prop("disabled", true);
+    }    
     $('#btn_clear_local_storage').off('click').on('click', async function(e) {
         e.preventDefault();
         await utils.clearServiceWorkerCache();
     });    
 
+    // if offline, disable the logout button
+    if (!navigator.onLine) {
+        $('#btn_logout').prop("disabled", true);
+    }    
     $('#btn_logout').off('click').on('click', async function(e) {
         e.preventDefault();
         await utils.logout();
     });      
+
+    if (!navigator.onLine) {
+        $('#form-update-account').prop("disabled", true);
+    } 
 
     $('#form-update-account').off('submit').on('submit', async function(e) {
         e.preventDefault();
@@ -3742,7 +3815,7 @@ module.exports = {
     accountFunctions 
 };
 
-},{"./db":2,"./modules/sidebar":3,"./modules/sync":4,"./modules/tables":5,"./modules/utils":6,"mustache":10}],9:[function(require,module,exports){
+},{"./db":3,"./modules/sidebar":4,"./modules/sync":5,"./modules/tables":6,"./modules/utils":7,"mustache":11}],10:[function(require,module,exports){
 'use strict';
 
 const instanceOfAny = (object, constructors) => constructors.some((c) => object instanceof c);
@@ -4054,7 +4127,7 @@ exports.openDB = openDB;
 exports.unwrap = unwrap;
 exports.wrap = wrap;
 
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
@@ -4828,4 +4901,4 @@ exports.wrap = wrap;
 
 })));
 
-},{}]},{},[3,4,5,6,2,8,7,1]);
+},{}]},{},[4,5,6,7,3,9,8,1]);

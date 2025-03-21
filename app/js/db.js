@@ -1,6 +1,6 @@
 const { openDB } = require('idb');
 const utils = require('./modules/utils');
-
+const CONFIG = require('./config');
 
 const DB_NAME = 'sst_database';
 const DB_VERSION = 18;
@@ -86,7 +86,7 @@ async function fetchAndStoreProducts() {
     if (isEmpty) {
         try {
             console.log('Fetching products from API...');
-            const response = await fetch('https://sst.tamlite.co.uk/api/get_all_products_neat');
+            const response = await fetch(CONFIG.API_ENDPOINTS.PRODUCTS);
 
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
@@ -108,7 +108,7 @@ async function fetchAndStoreUsers() {
     if (isEmpty) {
         try {
             console.log('Fetching products from API...');
-            const response = await fetch('https://sst.tamlite.co.uk/api/get_all_users_neat');
+            const response = await fetch(CONFIG.API_ENDPOINTS.USERS);
 
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
@@ -136,7 +136,7 @@ async function pullUserData(owner_id) {
 
     // user has projects, offer to pull from and show the pushed date on the user table for information
     try {
-        const response = await fetch("https://sst.tamlite.co.uk/api/get_last_pushed", {
+        const response = await fetch(CONFIG.API_ENDPOINTS.LAST_PUSHED, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(userData)
@@ -192,7 +192,7 @@ async function syncData(owner_id, force = false) {
     }
         
     try {
-        const response = await fetch("https://sst.tamlite.co.uk/api/get_all_user_data", {
+        const response = await fetch(CONFIG.API_ENDPOINTS.USER_DATA, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -411,7 +411,6 @@ async function getProductsForProject(projectId) {
         const building = buildings.find(building => building.uuid === floor.building_id_fk);
         if (!building) return false;
         const location = locations.find(location => location.uuid === building.location_id_fk);
-        if (!location) return false;
         const project = projects.find(project => project.uuid === location.project_id_fk);
         return project && project.uuid === projectId;
     });
@@ -1115,6 +1114,25 @@ async function updateUser(formdata, user_id) {
 
     await store.put(user);
     await tx.done;
+
+    // this has also got to save to online db at this time actually, 
+    const response = await fetch(CONFIG.API_ENDPOINTS.SYNC_USER_ACCOUNT, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(user)
+    });
+
+    if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const responseData = await response.json();
+    // console.log('Response Data:', responseData);
+    // console.log('Status:', responseData.status);  // error | success
+    return(responseData);  
+    return user;    
 }
 
 async function getSchedulePerRoom(projectId) {
@@ -1379,7 +1397,7 @@ async function pushUserData(user_id) {
     };
 
        
-    const response = await fetch('https://sst.tamlite.co.uk/api/sync_user_data', {
+    const response = await fetch(CONFIG.API_ENDPOINTS.SYNC_USER_DATA, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

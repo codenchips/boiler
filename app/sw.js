@@ -1,4 +1,5 @@
-const CACHE_NAME = 'sst-cache-v27'; 
+importScripts('/js/config.js');
+const CACHE_NAME = CONFIG.CACHE_NAME;
 
 self.addEventListener('message', (event) => {  
   if (event.data?.type === 'GET_VERSION') {     
