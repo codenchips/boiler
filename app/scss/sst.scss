@@ -489,6 +489,14 @@ label.subheading {
   }
 }
 
+.uk-grid {
+  margin-left: 0;
+  margin-right: 0;
+}
+.uk-grid>* {
+  padding-left: 5px;
+  padding-right: 5px;
+}
 
 
 
@@ -517,11 +525,7 @@ label.subheading {
 }
 
 @media screen and (max-width: 768px) {
-//   [class*=uk-width] {
-//     box-sizing: border-box;
-//     width: auto;
-//     max-width: auto;
-// }
+
   .uk-grid {
     margin-left: 0;
     margin-right: 0;

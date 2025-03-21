@@ -413,6 +413,16 @@ label.subheading {
     transform: rotate(360deg);
   }
 }
+.uk-grid {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.uk-grid > * {
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
 @media screen and (min-width: 1600px) {
   .uk-offcanvas {
     display: flex;
