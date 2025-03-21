@@ -19,6 +19,11 @@ module.exports = function(grunt) {
             'app/js/router.js',                 
             'app/js/app.js'         
           ]      
+        },
+        options: {
+          browserifyOptions: {
+            debug: true
+          }
         }
       }
     },

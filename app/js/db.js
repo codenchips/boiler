@@ -2,6 +2,7 @@ const { openDB } = require('idb');
 const utils = require('./modules/utils');
 const CONFIG = require('./config');
 
+
 const DB_NAME = 'sst_database';
 const DB_VERSION = 18;
 const STORE_NAME = 'product_data';
@@ -234,10 +235,23 @@ async function syncData(owner_id, force = false) {
             );
             // update the users table "pulled" column with durrent datetime
             setPulled(owner_id);
-            UIkit.notification({message: 'Data Fetch Complete ...', status: 'success', pos: 'bottom-center', timeout: 1500 });
+            // also update just this user record from data.users to the users table where data.id = users.uuid
+            // this will update the user record with the latest data from the server
+            const user = data.users[0];
+            user.uuid = data.users[0].id;            
+            const tx = db.transaction("users", "readwrite");
+            const store = tx.objectStore("users");
+            store.put(user);
+            tx.done;
+
+            UIkit.notification({message: 'Data Fetch Complete ...', status: 'success', pos: 'bottom-center', timeout: 1500 });            
             console.log("Data synced to IndexedDB successfully.");
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);            
+
             return(true);            
-        };
+        }
     } catch (error) {
         console.error("Data sync failed:", error);
     }
