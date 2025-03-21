@@ -175,7 +175,7 @@ navigator.serviceWorker.addEventListener('controllerchange', () => {
 });
 },{"./db":3,"./modules/utils":7,"./sst":9,"mustache":11}],2:[function(require,module,exports){
 const CONFIG = {
-    CACHE_NAME: 'sst-cache-v29',
+    CACHE_NAME: 'sst-cache-v30',
     API_ENDPOINTS: {
         PRODUCTS: 'https://sst.tamlite.co.uk/api/get_all_products_neat',
         USER_DATA: 'https://sst.tamlite.co.uk/api/get_all_user_data',
@@ -4901,4 +4901,4 @@ exports.wrap = wrap;
 
 })));
 
-},{}]},{},[4,5,6,7,3,9,8,1]);
+},{}]},{},[2,4,5,6,7,3,9,8,1]);

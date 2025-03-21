@@ -12,6 +12,7 @@ module.exports = function(grunt) {
       dist: {
         files: {
           'app/js/bundle.js': [
+            'app/js/config.js',         
             'app/js/modules/*.js',  
             'app/js/db.js',         
             'app/js/sst.js',

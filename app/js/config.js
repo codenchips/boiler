@@ -1,5 +1,5 @@
 const CONFIG = {
-    CACHE_NAME: 'sst-cache-v29',
+    CACHE_NAME: 'sst-cache-v30',
     API_ENDPOINTS: {
         PRODUCTS: 'https://sst.tamlite.co.uk/api/get_all_products_neat',
         USER_DATA: 'https://sst.tamlite.co.uk/api/get_all_user_data',
