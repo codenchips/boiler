@@ -19,6 +19,35 @@ class TablesModule {
         if (!sidebar) {
             sidebar = require('./sidebar');  // lazy load it to avoid circular dependencies, just use call init when required
         }        
+
+        if ('ontouchstart' in window) {
+            let touchStartX = 0;
+            let touchEndX = 0;
+            
+            document.addEventListener('touchstart', e => {
+                console.log('touchstart');
+                touchStartX = e.changedTouches[0].screenX;
+            }, false);
+            
+            document.addEventListener('touchend', e => {
+                console.log('touchend');
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            }, false);
+            
+            const handleSwipe = () => {
+                const swipeThreshold = 100; // minimum distance for swipe
+                const edgeThreshold = 240;   // pixels from left edge to start swipe
+                
+                if (touchStartX < edgeThreshold && (touchEndX - touchStartX) > swipeThreshold) {
+                    console.log('Swipe right from left edge');
+                    // Swipe right from left edge
+                    UIkit.offcanvas('#offcanvas-sidebar').show();
+                }
+            };
+        }
+
+
         this.isInitialized = true;        
     }
 

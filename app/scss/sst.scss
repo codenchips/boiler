@@ -644,3 +644,11 @@ label.subheading {
   }
 
 }
+
+@media (min-width: 640px) {
+  .uk-offcanvas-bar {
+    left: -350px;
+    width: 350px;
+    padding: 10px;
+  }
+}

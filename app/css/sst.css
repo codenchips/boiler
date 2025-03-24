@@ -516,3 +516,10 @@ label.subheading {
     padding: 3px 0 10px 15px;
   }
 }
+@media (min-width: 640px) {
+  .uk-offcanvas-bar {
+    left: -350px;
+    width: 350px;
+    padding: 10px;
+  }
+}
