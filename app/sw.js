@@ -1,5 +1,5 @@
-importScripts('/js/config.js');
-const CACHE_NAME = CONFIG.CACHE_NAME;
+//importScripts('/js/config.js');
+const CACHE_NAME = 'sst-cache-v33';
 
 self.addEventListener('message', (event) => {  
   if (event.data?.type === 'GET_VERSION') {     
@@ -15,6 +15,9 @@ self.addEventListener('message', (event) => {
       });
   }
 });
+
+
+console.log('cache name:', CACHE_NAME); 
 
 const urlsToCache = [
   '/',
