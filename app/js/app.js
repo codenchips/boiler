@@ -121,12 +121,9 @@ $(document).ready(function() {
         $('#btn_logout').prop("disabled", false);
         $('#btn_logout').prop("disabled", false);
         $('.syncicon').css({'opacity': '100%'});
-
     });
-
     window.addEventListener('offline', function() {
-        console.log('App is offline - using cached data');
-        
+        console.log('App is offline - using cached data');        
         $('#generate_datasheets_button').prop("disabled", true);
         $('#btn_update_account').prop("disabled", true);
         $('#btn_push_user_data').prop("disabled", true);
@@ -135,8 +132,7 @@ $(document).ready(function() {
         $('#btn_logout').prop("disabled", true);
         $('#btn_logout').prop("disabled", true);
         $('.syncicon').removeClass('active').css({'opacity': '20%'});
-
-    });
+    });   
 
     // Initialize app
     async function initApp() {

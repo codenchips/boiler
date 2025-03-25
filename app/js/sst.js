@@ -23,6 +23,28 @@ async function globalBinds() {
         }, 1000);
     });
 
+
+    // Handle online/offline status
+    if (navigator.onLine) {
+        $('#generate_datasheets_button').prop("disabled", false);
+        $('#btn_update_account').prop("disabled", false);
+        $('#btn_push_user_data').prop("disabled", false);
+        $('#btn_pull_user_data').prop("disabled", false);
+        $('#btn_clear_local_storage').prop("disabled", false);
+        $('#btn_logout').prop("disabled", false);
+        $('#btn_logout').prop("disabled", false);
+        $('.syncicon').css({'opacity': '100%'});
+    } else {    
+        $('#generate_datasheets_button').prop("disabled", true);
+        $('#btn_update_account').prop("disabled", true);
+        $('#btn_push_user_data').prop("disabled", true);
+        $('#btn_pull_user_data').prop("disabled", true);
+        $('#btn_clear_local_storage').prop("disabled", true);        
+        $('#btn_logout').prop("disabled", true);
+        $('#btn_logout').prop("disabled", true);
+        $('.syncicon').removeClass('active').css({'opacity': '20%'});
+    }    
+
 }
 
 /*

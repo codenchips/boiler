@@ -1,8 +1,7 @@
 const Mustache = require('mustache');
-const db = require('./db');
 const sst = require('./sst');
 const utils = require('./modules/utils');
-const CACHE_NAME = 'sst-cache-v30'; 
+const CACHE_NAME = 'sst-cache-v32'; 
 
 async function loadTemplate(path) {
     try {
@@ -69,6 +68,7 @@ async function router(path, project_id) {
                 setTimeout(function() {
                     sst.globalBinds();
                     sst.accountFunctions();
+                    $('.version').html('' + CACHE_NAME.split('-').pop());
                 }, 500);
                 break;                
             default:
