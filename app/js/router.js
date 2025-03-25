@@ -3,7 +3,6 @@ const db = require('./db');
 const sst = require('./sst');
 const utils = require('./modules/utils');
 const CACHE_NAME = 'sst-cache-v27'; 
-// test
 
 async function loadTemplate(path) {
     try {
