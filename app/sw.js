@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sst-cache-v28'; 
+const CACHE_NAME = 'sst-cache-v29'; 
 
 self.addEventListener('message', (event) => {  
   if (event.data?.type === 'GET_VERSION') {     
@@ -74,6 +74,41 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Handle navigation requests differently (page loads/refreshes)
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      (async () => {
+        try {
+          // Try network first for fresh content
+          const preloadResponse = await event.preloadResponse;
+          if (preloadResponse) {
+            return preloadResponse;
+          }
+
+          const networkResponse = await fetch(event.request);
+          return networkResponse;
+        } catch (error) {
+          // Network failed, try cache
+          const cache = await caches.open(CACHE_NAME);
+          const cachedResponse = await cache.match('/index.html');
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+
+          // If no cached index.html, try the specific page
+          const specificCachedResponse = await cache.match(event.request);
+          if (specificCachedResponse) {
+            return specificCachedResponse;
+          }
+
+          // If everything fails, return offline page
+          return await cache.match('/views/offline.html');
+        }
+      })()
+    );
+    return;
+  }
+
   // Handle API calls differently
   if (event.request.url.includes('/api/')) {
     event.respondWith(
@@ -114,7 +149,12 @@ self.addEventListener('fetch', (event) => {
               }
               return response;
             })
-            .catch(() => {
+            .catch(async () => {
+              // For HTML requests, return index.html
+              if (event.request.headers.get('accept').includes('text/html')) {
+                const cache = await caches.open(CACHE_NAME);
+                return cache.match('/index.html');
+              }
               return caches.match('/views/offline.html');
             });
         })
