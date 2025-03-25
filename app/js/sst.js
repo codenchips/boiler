@@ -1,4 +1,3 @@
-const Mustache = require('mustache');
 const db = require('./db'); 
 const tables = require('./modules/tables');
 const utils = require('./modules/utils');
