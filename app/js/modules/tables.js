@@ -11,6 +11,34 @@ class TablesModule {
         this.handleFileUpload = this.handleFileUpload.bind(this);
         this.updateImages = this.updateImages.bind(this);        
         this.getRoomImages = this.getRoomImages.bind(this);        
+
+        if ('ontouchstart' in window) {
+            let touchStartX = 0;
+            let touchEndX = 0;
+            
+            document.addEventListener('touchstart', e => {
+                console.log('touchstart');
+                touchStartX = e.changedTouches[0].screenX;
+            }, false);
+            
+            document.addEventListener('touchend', e => {
+                console.log('touchend');
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            }, false);
+            
+            const handleSwipe = () => {
+                const swipeThreshold = 100; // minimum distance for swipe
+                const edgeThreshold = 240;   // pixels from left edge to start swipe
+                
+                if (touchStartX < edgeThreshold && (touchEndX - touchStartX) > swipeThreshold) {
+                    console.log('Swipe right from left edge');
+                    // Swipe right from left edge
+                    UIkit.offcanvas('#offcanvas-sidebar').show();
+                }
+            };
+        }
+
     }
 
     init() {
