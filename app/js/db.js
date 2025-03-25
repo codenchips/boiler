@@ -572,9 +572,12 @@ async function addRoom(floorUuid, roomName) {
     const roomSlug = await utils.slugify(roomName);
     // i need to check if this room already exists in this project
     const existingRooms = await store1.getAll();
-    console.log('Existing rooms:', existingRooms);
+    //console.log('Existing rooms:', existingRooms);
     const existingRoom = existingRooms.find(room => room.slug == roomSlug && room.floor_id_fk == floorUuid);
-    console.log('Existing room:', existingRoom);
+    //console.log('Existing room:', existingRoom);
+
+    const user_uuid = $('#m_user_id').val();
+
     if (existingRoom) {            
         return false;   
     }
@@ -583,8 +586,10 @@ async function addRoom(floorUuid, roomName) {
     const projectStore = db.transaction("projects", "readonly").objectStore("projects");
     const project = await projectStore.get(String(currentProject.project_id));    
     
+    
+
     const locationStore = db.transaction("locations", "readonly").objectStore("locations");
-    const locations = await locationStore.index("project_id_fk").getAll(project.uuid);
+    const locations = await locationStore.index("project_id_fk").getAll(user_uuid);
    
     const buildingStore = db.transaction("buildings", "readonly").objectStore("buildings");
     let buildings = [];
