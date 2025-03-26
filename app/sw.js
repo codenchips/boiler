@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sst-cache-v32'; 
+const CACHE_NAME = 'sst-cache-v33'; 
 
 self.addEventListener('message', (event) => {  
   if (event.data?.type === 'GET_VERSION') {     
@@ -20,27 +20,50 @@ const urlsToCache = [
   '/index.html',
   '/js/bundle.js',
   '/js/vendor/jquery-3.7.1.min.js',
+  '/js/vendor/uikit.min.js',
   '/css/sst.css',
   '/css/vendor/uikit.min.css',
+  '/views/container.html',
+  '/views/modals.html',
   '/views/home.html',
   '/views/tables.html',
-  '/views/schedule.html',  
-  '/views/account.html',  
-  '/manifest.json'
+  '/views/schedule.html',
+  '/views/account.html',
+  '/views/offline.html',
+  '/manifest.json',
+  '/site.webmanifest',  
+  '/img/screen-tall.webp',
+  '/img/screen-wide.webp',
+  '/img/sync.png',
+  '/img/tamlite-logo.jpg',
+  '/img/tamlite-logo-pwa.webp'
 ];
 
-// Add activate event handler to clean up old caches
-self.addEventListener('activate', (event) => {
+self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
+    (async () => {
+      // Clean up old caches
+      const cacheKeys = await caches.keys();
+      await Promise.all(
+        cacheKeys.map(key => {
+          if (key !== CACHE_NAME) {
+            return caches.delete(key);
           }
         })
       );
-    })
+
+      // Take control of all clients immediately
+      await clients.claim();
+
+      // Optionally notify clients that the SW is ready
+      const allClients = await clients.matchAll();
+      allClients.forEach(client => {
+        client.postMessage({
+          type: 'SW_READY',
+          message: 'Service Worker is ready and has cached all required assets'
+        });
+      });
+    })()
   );
 });
 
@@ -60,10 +83,36 @@ self.addEventListener('message', (event) => {
 });
 
 
-self.addEventListener('install', (event) => {
+self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
+    (async () => {
+      try {
+        const cache = await caches.open(CACHE_NAME);
+        console.log('Precaching assets...');
+        
+        // Cache all assets in parallel
+        await Promise.all(
+          urlsToCache.map(async url => {
+            try {
+              const response = await fetch(url);
+              if (!response.ok) {
+                throw new Error(`Failed to fetch ${url}`);
+              }
+              await cache.put(url, response);
+            } catch (error) {
+              console.error(`Failed to cache ${url}:`, error);
+            }
+          })
+        );
+
+        console.log('Precaching complete');
+        
+        // Force the waiting service worker to become the active service worker
+        await self.skipWaiting();
+      } catch (error) {
+        console.error('Precaching failed:', error);
+      }
+    })()
   );
 });
 

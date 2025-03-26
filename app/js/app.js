@@ -71,6 +71,21 @@ function checkStoredUpdateState() {
     }
 }
 
+const checkInstallationStatus = () => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        if (event.data.type === 'SW_READY') {
+          UIkit.notification({
+            message: 'App installation complete. Ready for offline use!',
+            status: 'success',
+            pos: 'bottom-center',
+            timeout: 3000
+          });
+        }
+      });
+    }
+  };
+
 // Initialize
 $(document).ready(function() {
     const Mustache = require('mustache');
@@ -143,6 +158,19 @@ $(document).ready(function() {
             await db.fetchAndStoreUsers();
             //await db.syncData(await utils.getUserID());
         }
+
+        window.addEventListener('appinstalled', (evt) => {
+            console.log('Application installed');
+            installButton.hide();
+            
+            // Show loading indicator
+            UIkit.notification({
+              message: 'Installing app resources...',
+              status: 'primary',
+              pos: 'bottom-center',
+              timeout: 0
+            });
+          });        
 
         // Get current path and route
         const pathParts = window.location.pathname
