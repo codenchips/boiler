@@ -1144,31 +1144,41 @@ async function getSchedulePerRoom(projectId) {
         throw new Error('Project not found');
     }
 
-    console.log('project_id: ', projectId);
-
     const locations = await locationStore.index("project_id_fk").getAll(projectId);    
-    const buildings = await buildingStore.getAll();
-    const floors = await floorStore.getAll();
-    const rooms = await roomStore.getAll();
+    
+    let buildings = [];
+    for (const location of locations) {        
+        const locationBuildings = await buildingStore.index('location_id_fk').getAll(location.uuid);
+        buildings = buildings.concat(locationBuildings);
+    }    
+    await Promise.resolve(); 
+    
+    let floors = [];
+    for (const building of buildings) {        
+        const buildingFloors = await floorStore.index('building_id_fk').getAll(building.uuid);
+        floors = floors.concat(buildingFloors);
+    }
+    await Promise.resolve();    
+
+    let rooms = [];
+    for (const floor of floors) {        
+        const floorRooms = await roomStore.index('floor_id_fk').getAll(floor.uuid);
+        rooms = rooms.concat(floorRooms);
+    }   
+    await Promise.resolve();
+    
     const products = await productStore.getAll();
     const images = await imageStore.getAll();
     const notes = await noteStore.getAll();
-
     const result = {};
-
-    
-
-    rooms.forEach(room => {
-            
-        const roomProducts = products.filter(product => product.room_id_fk === room.uuid);
-        const roomImages = images.filter(image => image.room_id_fk === room.uuid);
-        const roomNotes = notes.filter(note => note.room_id_fk === room.uuid);
-
+  
+    rooms.forEach(room => {        
         const floor = floors.find(floor => floor.uuid === room.floor_id_fk);
         const building = buildings.find(building => building.uuid === floor.building_id_fk);
-        
-        const location = locations.find(location => location.uuid === building.location_id_fk);
-        console.log('location: ', location);
+        const location = locations.find(location => location.uuid === building.location_id_fk);             
+        const roomProducts = products.filter(product => product.room_id_fk === room.uuid);
+        const roomImages = images.filter(image => image.room_id_fk === room.uuid);
+        const roomNotes = notes.filter(note => note.room_id_fk === room.uuid);               
 
         roomProducts.forEach(product => {
             if (!result[room.slug]) {
@@ -1179,8 +1189,6 @@ async function getSchedulePerRoom(projectId) {
             if (result[room.slug].find(p => p.sku === product.sku)) {
                 return;
             }   
-
-            
 
             result[room.slug].push({
                 room_slug: room.slug, 
