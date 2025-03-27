@@ -1144,7 +1144,9 @@ async function getSchedulePerRoom(projectId) {
         throw new Error('Project not found');
     }
 
-    const locations = await locationStore.index("project_id_fk").getAll(projectId);
+    console.log('project_id: ', projectId);
+
+    const locations = await locationStore.index("project_id_fk").getAll(projectId);    
     const buildings = await buildingStore.getAll();
     const floors = await floorStore.getAll();
     const rooms = await roomStore.getAll();
@@ -1154,14 +1156,19 @@ async function getSchedulePerRoom(projectId) {
 
     const result = {};
 
+    
+
     rooms.forEach(room => {
+            
         const roomProducts = products.filter(product => product.room_id_fk === room.uuid);
         const roomImages = images.filter(image => image.room_id_fk === room.uuid);
         const roomNotes = notes.filter(note => note.room_id_fk === room.uuid);
 
         const floor = floors.find(floor => floor.uuid === room.floor_id_fk);
         const building = buildings.find(building => building.uuid === floor.building_id_fk);
+        
         const location = locations.find(location => location.uuid === building.location_id_fk);
+        console.log('location: ', location);
 
         roomProducts.forEach(product => {
             if (!result[room.slug]) {
@@ -1173,8 +1180,10 @@ async function getSchedulePerRoom(projectId) {
                 return;
             }   
 
+            
+
             result[room.slug].push({
-                room_slug: room.slug,
+                room_slug: room.slug, 
                 room_name: room.name,
                 room_width: room.width,
                 room_length: room.length,
