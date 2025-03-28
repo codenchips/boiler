@@ -1078,9 +1078,11 @@ async function getProjectStructure(projectId) {
                     floor_id: floor.uuid
                 };
 
+                
                 // Get rooms for this floor
                 const floorRooms = hierarchy.rooms
-                    .filter(room => room.floor_id_fk === floor.uuid);
+                    .filter(room => room.floor_id_fk === floor.uuid)
+                    .sort((a, b) => a.name.localeCompare(b.name));
 
                 // Build room level
                 floorRooms.forEach(room => {
@@ -2827,7 +2829,7 @@ module.exports = new UtilsModule();
 const Mustache = require('mustache');
 const sst = require('./sst');
 const utils = require('./modules/utils');
-const CACHE_NAME = 'sst-cache-v33'; 
+const CACHE_NAME = 'sst-cache-v34'; 
 
 async function loadTemplate(path) {
     try {

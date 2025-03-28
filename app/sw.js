@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sst-cache-v33'; 
+const CACHE_NAME = 'sst-cache-v34'; 
 
 self.addEventListener('message', (event) => {  
   if (event.data?.type === 'GET_VERSION') {     

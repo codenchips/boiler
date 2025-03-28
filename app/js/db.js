@@ -876,9 +876,11 @@ async function getProjectStructure(projectId) {
                     floor_id: floor.uuid
                 };
 
+                
                 // Get rooms for this floor
                 const floorRooms = hierarchy.rooms
-                    .filter(room => room.floor_id_fk === floor.uuid);
+                    .filter(room => room.floor_id_fk === floor.uuid)
+                    .sort((a, b) => a.name.localeCompare(b.name));
 
                 // Build room level
                 floorRooms.forEach(room => {
