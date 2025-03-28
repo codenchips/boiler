@@ -137,6 +137,7 @@ $(document).ready(function() {
         $('#btn_logout').prop("disabled", false);
         $('#btn_logout').prop("disabled", false);
         $('.syncicon').css({'opacity': '100%'});
+        $('#add-image-label').show();
     });
     window.addEventListener('offline', function() {
         console.log('App is offline - using cached data');        
@@ -148,6 +149,7 @@ $(document).ready(function() {
         $('#btn_logout').prop("disabled", true);
         $('#btn_logout').prop("disabled", true);
         $('.syncicon').removeClass('active').css({'opacity': '20%'});
+        $('#add-image-label').hide();
     });   
 
     // Initialize app
@@ -2454,7 +2456,7 @@ class TablesModule {
     }
 
     async handleFileUpload(event) {
-        
+       
         try {
             const filePicker = event.target;
             
@@ -2829,7 +2831,7 @@ module.exports = new UtilsModule();
 const Mustache = require('mustache');
 const sst = require('./sst');
 const utils = require('./modules/utils');
-const CACHE_NAME = 'sst-cache-v34'; 
+const CACHE_NAME = 'sst-cache-v35'; 
 
 async function loadTemplate(path) {
     try {

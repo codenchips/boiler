@@ -1,7 +1,7 @@
 const Mustache = require('mustache');
 const sst = require('./sst');
 const utils = require('./modules/utils');
-const CACHE_NAME = 'sst-cache-v34'; 
+const CACHE_NAME = 'sst-cache-v35'; 
 
 async function loadTemplate(path) {
     try {

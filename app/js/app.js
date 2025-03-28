@@ -136,6 +136,7 @@ $(document).ready(function() {
         $('#btn_logout').prop("disabled", false);
         $('#btn_logout').prop("disabled", false);
         $('.syncicon').css({'opacity': '100%'});
+        $('#add-image-label').show();
     });
     window.addEventListener('offline', function() {
         console.log('App is offline - using cached data');        
@@ -147,6 +148,7 @@ $(document).ready(function() {
         $('#btn_logout').prop("disabled", true);
         $('#btn_logout').prop("disabled", true);
         $('.syncicon').removeClass('active').css({'opacity': '20%'});
+        $('#add-image-label').hide();
     });   
 
     // Initialize app

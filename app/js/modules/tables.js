@@ -457,7 +457,7 @@ class TablesModule {
     }
 
     async handleFileUpload(event) {
-        
+       
         try {
             const filePicker = event.target;
             
